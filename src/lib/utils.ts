@@ -1,4 +1,3 @@
-
 // @ts-ignore
 import * as pkgJson from "../../package.json";
 
@@ -48,4 +47,4 @@ export function getEncodedString(str: string) {
 
 
 
-export const version = /^\d*.\d*/.exec(pkgJson.version)![0];
+export const version = pkgJson.version.split(".")[0];

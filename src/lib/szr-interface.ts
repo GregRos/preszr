@@ -6,7 +6,7 @@ import {
     SzrEntity,
     SzrPrimitive
 } from "./szr-representation";
-import {getPrototypeDecode, objectEncoding} from "./basic-serializers";
+import {getPrototypeDecoder, objectEncoding} from "./basic.encodings";
 
 export type LegalValue = SzrPrimitive | SzrEntity | undefined;
 
@@ -16,11 +16,20 @@ export interface EncodeContext {
     metadata: unknown;
 }
 
-export interface DecodeContext {
-    deref(value: Leaf): LegalValue;
+export interface DecodeCreateContext {
     options: SzrOptions;
-    metadata: any;
+    metadata: unknown;
 }
+
+export interface DecodeInitContext extends DecodeCreateContext {
+    deref(value: Leaf): LegalValue;
+}
+
+export interface Decoder {
+    create(encodedValue: any, ctx: DecodeCreateContext): any;
+    init?(target: any, encoded: any, ctx: DecodeInitContext): void;
+}
+
 
 export interface SzrSymbolEncoding {
     key: string;
@@ -37,12 +46,7 @@ export interface SzrPrototypeEncoding {
     // The key that identifies this encoding. Must be unique.
     key: string;
 
-    // Called to decode objects with the specified prototype. If not provided,
-    // objects will be decoded using the standard object decoder and then their
-    // prototype will be modified using `Object.setPrototypeOf`.
-    // You usually need this if you want the class constructor to be called
-    // during decoding, or if you're using custom encoding logic.
-    decode(input: any, ctx: DecodeContext): any;
+    decoder: Decoder;
 
     // Called to encode objects with the specified prototype. If not provided,
     // objects will be encoded using the standard object encoding.
@@ -92,7 +96,7 @@ export function getPrototypeEncoding(x: Partial<SzrPrototypeEncoding> | Function
     if (x.prototype === undefined) {
         throw new SzrError("Could not find prototype from constructor.");
     }
-    x.decode ??= getPrototypeDecode(x.prototype);
+    x.decoder ??= getPrototypeDecoder(x.prototype);
     x.encode ??= objectEncoding.encode;
     const detectKey = x.key ?? x.prototype[Symbol.toStringTag] ?? x.clazz?.name;
     if (detectKey == null) {

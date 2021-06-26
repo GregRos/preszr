@@ -1,8 +1,11 @@
 import {
-    DecodeContext,
     LegalValue,
     EncodeContext,
-    SzrPrototypeEncoding, SzrOptions
+    SzrPrototypeEncoding,
+    SzrOptions,
+    DecodeCreateContext,
+    DecodeInitContext,
+    Decoder
 } from "./szr-interface";
 import {getEncodedString} from "./utils";
 import {Leaf, Reference} from "./szr-representation";
@@ -25,7 +28,7 @@ function getKeys(object: object,options: SzrOptions) {
     return options.alsoNonEnumerable ? Object.getOwnPropertyNames(object) : Object.keys(object);
 }
 
-function decodeObject(target, input, ctx: DecodeContext) {
+function decodeObject(target, input, ctx: DecodeInitContext) {
     let stringKeys = input;
     if (Array.isArray(input)) {
         let symbolKeys;
@@ -46,7 +49,7 @@ export const objectEncoding: SzrPrototypeEncoding = {
     encode(input: any, ctx: EncodeContext): any {
         const newObject = {};
         let symbObject: Record<string, Leaf> | undefined;
-        for (const key of getKeys(ctx.options, input)) {
+        for (const key of getKeys(input, ctx.options)) {
             const value = input[key];
             if (typeof key === "symbol") {
                 symbObject ??= {};
@@ -61,8 +64,13 @@ export const objectEncoding: SzrPrototypeEncoding = {
         (ctx as any)._isImplicit = true;
         return newObject;
     },
-    decode(input: any, ctx): any {
-        return decodeObject({}, input, ctx);
+    decoder: {
+        create(encodedValue: any, ctx: DecodeCreateContext): any {
+            return {};
+        },
+        init(target: any, encoded: any, ctx: DecodeInitContext) {
+            decodeObject(target, encoded, ctx);
+        }
     }
 };
 
@@ -93,31 +101,36 @@ export const arrayEncoding: SzrPrototypeEncoding = {
         (ctx as any)._isImplicit = true;
         return newArray;
     },
-    decode(input: any, ctx: DecodeContext): any {
-        const isSparse = !!ctx.metadata;
-        if (isSparse) {
-            // Decode similarly to objects
-            return decodeObject([], input, ctx);
+    decoder: {
+        create(encodedValue: any, ctx: DecodeCreateContext): any {
+            return [];
+        },
+        init(target: any, input: any, ctx: DecodeInitContext) {
+            const isSparse = !!ctx.metadata;
+            if (isSparse) {
+                // Decode similarly to objects
+                decodeObject(target, input, ctx);
+                return;
+            }
+            for (let i = 0; i < target.length; i++) {
+                target[i] = ctx.deref(input[i]);
+            }
+            return target;
         }
-        const newArray = Array(input.length);
-        for (let i = 0; i < newArray.length; i++) {
-            newArray[i] = ctx.deref(input[i]);
-        }
-        return newArray;
     }
 };
-(arrayEncoding as any).implicit = true;
 export const nullPrototypeEncoding: SzrPrototypeEncoding = {
     ...objectEncoding,
     key: getEncodedString("null"),
-    decode: getPrototypeDecode(null),
+    decoder: getPrototypeDecoder(null),
     prototype: nullPlaceholder
 };
 
-export function getPrototypeDecode(proto: object | null) {
-    return (input: any, ctx: DecodeContext) => {
-        const regular = objectEncoding.decode(input, ctx);
-        Object.setPrototypeOf(regular, proto);
-        return regular;
-    };
+export function getPrototypeDecoder(proto: object | null) {
+    return {
+        init: objectEncoding.decoder.init,
+        create(encodedValue: any, ctx: DecodeCreateContext): any {
+            return Object.create(proto);
+        }
+    } as Decoder;
 }
