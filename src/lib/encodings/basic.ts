@@ -5,16 +5,15 @@ import {
     SzrOptions,
     DecodeCreateContext,
     DecodeInitContext,
-    Decoder
-} from "./szr-interface";
-import {getEncodedString} from "./utils";
-import {Leaf, Reference} from "./szr-representation";
+    Decoder, CustomEncoding
+} from "../szr-interface";
+import {getEncodedString} from "../utils";
+import {Leaf, Reference} from "../szr-representation";
 
 export const nullPlaceholder = {};
 export const propertyIsEnumerable = (obj, key) => Object.prototype.propertyIsEnumerable.call(obj, key);
-function getAllOwnProperties(obj: object, onlyEnumerable: boolean): PropertyKey[] {
-    const keys = Object.getOwnPropertyNames(obj) as PropertyKey[];
-    keys.push(...Object.getOwnPropertySymbols(obj));
+function getAllOwnKeys(obj: object, onlyEnumerable: boolean): PropertyKey[] {
+    const keys = Reflect.ownKeys(obj);
     if (onlyEnumerable) {
         return keys.filter(propertyIsEnumerable);
     }
@@ -23,7 +22,7 @@ function getAllOwnProperties(obj: object, onlyEnumerable: boolean): PropertyKey[
 
 function getKeys(object: object,options: SzrOptions) {
     if (options.alsoSymbolKeys) {
-        return getAllOwnProperties(object, options.alsoNonEnumerable);
+        return getAllOwnKeys(object, options.alsoNonEnumerable);
     }
     return options.alsoNonEnumerable ? Object.getOwnPropertyNames(object) : Object.keys(object);
 }

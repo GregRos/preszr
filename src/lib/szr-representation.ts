@@ -26,13 +26,16 @@ export type EncodedScalar =
     | typeof negInfinityEncoding
     | typeof nanEncoding;
 
-export type Leaf = SzrPrimitive | Reference | EncodedScalar;
+export type Leaf = SzrPrimitive | Reference | EncodedScalar | string;
 
 export type SzrRepresentation = [SzrMetadata, ...unknown[]];
 
-export type SzrOutput = SzrRepresentation | SzrPrimitive | EncodedScalar;
+export type SzrOutput = SzrRepresentation | SzrPrimitive | EncodedScalar | string;
 
-export function encodeScalar(num: number): EncodedScalar | number {
+export function encodeScalar(num: number | bigint): EncodedScalar | number | string {
+    if (typeof num === "bigint") {
+        return `B${num}`;
+    }
     if (Object.is(num, -0)) {
         return negZeroEncoding;
     }
@@ -50,6 +53,9 @@ export function encodeScalar(num: number): EncodedScalar | number {
 
 
 export function tryDecodeScalar(candidate: unknown) {
+    if (typeof candidate !== "string") {
+        return null;
+    }
     switch (candidate) {
         case "Infinity":
             return Infinity;
@@ -59,6 +65,9 @@ export function tryDecodeScalar(candidate: unknown) {
             return NaN;
         case "-0":
             return -0;
+    }
+    if (candidate.startsWith("B")) {
+        return BigInt(candidate.slice(1));
     }
     return null;
 }

@@ -1,10 +1,10 @@
 import {
     DecodeCreateContext,
     DecodeInitContext,
-    EncodeContext, getPrototypeEncoding,
+    EncodeContext,
     SzrPrototypeEncoding
-} from "./szr-interface";
-import {getEncodedString} from "./utils";
+} from "../szr-interface";
+import {getEncodedString} from "../utils";
 
 export const regexpEncoding: SzrPrototypeEncoding = {
     prototype: RegExp.prototype,
@@ -18,7 +18,6 @@ export const regexpEncoding: SzrPrototypeEncoding = {
         }
     }
 };
-
 export const dateEncoding: SzrPrototypeEncoding = {
     prototype: Date.prototype,
     key: getEncodedString("date"),
@@ -32,7 +31,7 @@ export const dateEncoding: SzrPrototypeEncoding = {
     }
 };
 
-export function createFundamentalObjectEncoding(ctor: {new(x): any}): SzrPrototypeEncoding {
+export function createFundamentalObjectEncoding(ctor: { new(x): any }): SzrPrototypeEncoding {
     return {
         key: getEncodedString(ctor.name),
         prototype: ctor.prototype,
@@ -47,4 +46,9 @@ export function createFundamentalObjectEncoding(ctor: {new(x): any}): SzrPrototy
     };
 }
 
+export const fundamentalObjectEncodings = [
+    Number,
+    String,
+    Boolean
+].map(createFundamentalObjectEncoding);
 

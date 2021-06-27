@@ -1,14 +1,8 @@
-import {getEncodedString} from "./utils";
-import {
-    Leaf,
-    Reference,
-    SzrEncodingInformation,
-    SzrEntity,
-    SzrPrimitive
-} from "./szr-representation";
-import {getPrototypeDecoder, objectEncoding} from "./basic.encodings";
+import {Leaf, SzrEntity, SzrPrimitive} from "./szr-representation";
+import {getPrototypeDecoder, objectEncoding} from "./encodings/basic";
+import {SzrError} from "./errors";
 
-export type LegalValue = SzrPrimitive | SzrEntity | undefined;
+export type LegalValue = SzrPrimitive | SzrEntity | undefined | bigint;
 
 export interface EncodeContext {
     ref(value: LegalValue): Leaf;
@@ -36,13 +30,7 @@ export interface SzrSymbolEncoding {
     symbol: symbol;
 }
 
-export interface SzrPrototypeEncoding {
-    // The constructor - specify this or prototype, not both.
-    clazz?: Function;
-
-    // The prototype - specify this or class, not both.
-    prototype: object;
-
+export interface CustomEncoding {
     // The key that identifies this encoding. Must be unique.
     key: string;
 
@@ -52,6 +40,14 @@ export interface SzrPrototypeEncoding {
     // objects will be encoded using the standard object encoding.
     // You usually only need this to encode special objects, like collections.
     encode(input: any, ctx: EncodeContext): any;
+}
+
+export interface SzrPrototypeEncoding extends CustomEncoding {
+    // The constructor - specify this or prototype, not both.
+    clazz?: Function;
+
+    // The prototype - specify this or class, not both.
+    prototype: object;
 }
 
 export type SzrEncoding = SzrPrototypeEncoding | SzrSymbolEncoding;
@@ -75,10 +71,6 @@ export type DeepPartial<T> = {
     [K in keyof T]: T[K] extends object ? DeepPartial<T[K]> : T[K] | null | undefined
 };
 
-export class SzrError extends Error {
-
-}
-
 export function getPrototypeEncoding(x: Partial<SzrPrototypeEncoding> | Function) {
     if (typeof x === "function") {
         x = {
@@ -89,7 +81,7 @@ export function getPrototypeEncoding(x: Partial<SzrPrototypeEncoding> | Function
         throw new SzrError("Cannot have both `clazz` and `prototype` in type specifier.");
     }
     if (x.clazz == null && x.prototype == null) {
-        throw new SzrError("Type specifier must have either `clazz` or `prototype`.")
+        throw new SzrError("Type specifier must have either `clazz` or `prototype`.");
     }
     x.clazz ??= x.prototype?.constructor;
     x.prototype ??= x.constructor?.prototype;
