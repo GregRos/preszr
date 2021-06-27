@@ -90,12 +90,12 @@ export const arrayEncoding: SzrPrototypeEncoding = {
             return encodeAsSparseArray(input, ctx);
         }
         // The array still might be sparse, even after that check.
-        const newArray = Array(keys.length);
+        const newArray = [] as any[];
         for (let i = 0; i < keys.length; i++) {
             if (i !== +keys[i]) {
                 return encodeAsSparseArray(input, ctx);
             }
-            newArray.push(input[i]);
+            newArray.push(input[i])
         }
         (ctx as any)._isImplicit = true;
         return newArray;
@@ -111,10 +111,9 @@ export const arrayEncoding: SzrPrototypeEncoding = {
                 decodeObject(target, input, ctx);
                 return;
             }
-            for (let i = 0; i < target.length; i++) {
+            for (let i = 0; i < input.length; i++) {
                 target[i] = ctx.deref(input[i]);
             }
-            return target;
         }
     }
 };

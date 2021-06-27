@@ -12,7 +12,7 @@ export type Reference = string;
 
 export type SzrEntity = string | object | any[] | symbol;
 
-export type SzrPrimitive = boolean | number;
+export type SzrPrimitive = boolean | number | null;
 
 export const undefinedEncoding = "-";
 export const infinityEncoding = "Infinity";

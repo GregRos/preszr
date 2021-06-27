@@ -56,7 +56,7 @@
       "ts"
     ],
     "files": [
-      "src/test/**/*.spec.ts"
+      "src/test/*.spec.ts"
     ],
     "require": [
       "ts-node/register"

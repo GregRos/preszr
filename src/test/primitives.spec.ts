@@ -1,9 +1,27 @@
-import {encodeDecodeTest} from "./helpers";
-import {SzrOutput} from "../lib/szr-representation";
+import {
+    infinityEncoding, nanEncoding,
+    negInfinityEncoding, negZeroEncoding,
+    SzrOutput, undefinedEncoding
+} from "../lib/szr-representation";
+import test, {ExecutionContext, Macro} from "ava";
+import {decode, encode} from "../lib";
+import {stringify} from "./helpers";
 
+const primtiveTests: Macro<any> = (t: ExecutionContext, decoded: any, encoded: SzrOutput) => {
+    const rDecoded = decode(encoded);
+    t.is(rDecoded, decoded);
+    const rEncoded = encode(decoded);
+    t.is(rEncoded, encoded);
+};
 
-function primitiveTests(decoded: any, encoded: SzrOutput, name?: string) {
-    encodeDecodeTest(decoded, encoded, `primitive ${name ?? decoded}`);
-}
+primtiveTests.title = (title, decoded) => title ?? `primitive - ${stringify(decoded)}`;
 
-primitiveTests()
+test(primtiveTests, 1, 1);
+test(primtiveTests, true, true);
+test(primtiveTests, null, null);
+test(primtiveTests, Infinity, infinityEncoding);
+test(primtiveTests, -Infinity, negInfinityEncoding);
+test(primtiveTests, -0, negZeroEncoding);
+test(primtiveTests, NaN, nanEncoding);
+test(primtiveTests, undefined, undefinedEncoding);
+test("primitive 4n", primtiveTests, BigInt(4), "B4");
