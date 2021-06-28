@@ -4,7 +4,7 @@ import {objectEncoding} from "./basic";
 
 export function createErrorEncoding(errorCtor: {new(): Error}) {
     return {
-        prototype: errorCtor.prototype,
+        prototypes: errorCtor.prototype,
         key: getEncodedString(errorCtor.name),
         encode(input: any, ctx: EncodeContext): any {
             const encodedAsObject = objectEncoding.encode(input, ctx);

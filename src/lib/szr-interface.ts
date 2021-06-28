@@ -1,6 +1,7 @@
 import {Leaf, SzrEntity, SzrPrimitive} from "./szr-representation";
 import {getPrototypeDecoder, objectEncoding} from "./encodings/basic";
 import {SzrError} from "./errors";
+import {getClassName} from "./utils";
 
 export type LegalValue = SzrPrimitive | SzrEntity | undefined | bigint;
 
@@ -44,10 +45,10 @@ export interface CustomEncoding {
 
 export interface SzrPrototypeEncoding extends CustomEncoding {
     // The constructor - specify this or prototype, not both.
-    clazz?: Function;
+    classes?: Function[];
 
     // The prototype - specify this or class, not both.
-    prototype: object;
+    prototypes: object[];
 }
 
 export type SzrEncoding = SzrPrototypeEncoding | SzrSymbolEncoding;
@@ -65,6 +66,7 @@ export interface SzrOptions {
 export interface SzrConfig {
     encodings: SzrEncodingSpecifier[];
     options: SzrOptions;
+    unsupported: Function[];
 }
 
 export type DeepPartial<T> = {
@@ -74,25 +76,24 @@ export type DeepPartial<T> = {
 export function getPrototypeEncoding(x: Partial<SzrPrototypeEncoding> | Function) {
     if (typeof x === "function") {
         x = {
-            clazz: x
+            classes: [x]
         } as Partial<SzrPrototypeEncoding>;
     }
-    if (x.clazz != null && x.prototype != null) {
+    if (x.classes != null && x.prototypes != null) {
         throw new SzrError("Cannot have both `clazz` and `prototype` in type specifier.");
     }
-    if (x.clazz == null && x.prototype == null) {
+    if (x.classes == null && x.prototypes == null) {
         throw new SzrError("Type specifier must have either `clazz` or `prototype`.");
     }
-    x.clazz ??= x.prototype?.constructor;
-    x.prototype ??= x.constructor?.prototype;
-    if (x.prototype === undefined) {
+    x.prototypes ??= x.classes?.map(x => x.prototype);
+    if (x.prototypes === undefined) {
         throw new SzrError("Could not find prototype from constructor.");
     }
-    x.decoder ??= getPrototypeDecoder(x.prototype);
+    x.decoder ??= getPrototypeDecoder(x.prototypes);
     x.encode ??= objectEncoding.encode;
-    const detectKey = x.key ?? x.prototype[Symbol.toStringTag] ?? x.clazz?.name;
+    const detectKey = x.key ?? x.prototypes.map(getClassName).find(x => !!x);
     if (detectKey == null) {
-        throw new SzrError(`Could not detect key for type ${x.prototype}`);
+        throw new SzrError(`Could not detect key for type ${x.prototypes}`);
     }
     return x as SzrPrototypeEncoding;
 }

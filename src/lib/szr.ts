@@ -23,10 +23,14 @@ import {
     SzrCustomMetadata,
     SzrEntity,
     SzrPrimitive,
-    encodeScalar, tryDecodeScalar, undefinedEncoding
+    tryEncodeScalar,
+    tryDecodeScalar,
+    undefinedEncoding,
+    isDecodedScalar,
+    noResultPlaceholder
 } from "./szr-representation";
 import {
-    arrayEncoding, nullPlaceholder,
+    arrayEncoding, getUnsupportedEncoding, nullPlaceholder,
     nullPrototypeEncoding,
     objectEncoding
 } from "./encodings/basic";
@@ -34,7 +38,7 @@ import {createFundamentalObjectEncoding} from "./encodings/scalar";
 import {SzrError} from "./errors";
 
 
-const builtinSerializers = [
+const builtinEncodings = [
     objectEncoding,
     arrayEncoding,
     nullPrototypeEncoding,
@@ -44,23 +48,35 @@ const builtinSerializers = [
 ] as SzrEncodingSpecifier[];
 
 const bigintKey = getEncodedString("bigint");
+
+const builtinUnsupportedTypes = [
+    WeakMap.prototype,
+    WeakSet.prototype,
+    Function.prototype
+];
+
 export class Szr {
     private _config = defaultConfig;
     private _keyToEncoding = new Map<string, SzrEncoding>();
     private _symbToEncoding = new Map<symbol, SzrSymbolEncoding>();
     private _protoEncodingCache = new WeakMap<object, SzrPrototypeEncoding>();
     private _protoEncodings = [] as SzrPrototypeEncoding[];
+
     constructor(config?: DeepPartial<SzrConfig>) {
         this._config = defaultsDeep(config, this._config);
-        for (const typeSpecifier of [...this._config.encodings, ...builtinSerializers]) {
-            this.addEncoding(typeSpecifier);
-        }
+        const unsupportedEncoding = getUnsupportedEncoding(
+            ...builtinUnsupportedTypes,
+            ...this._config.unsupported
+        );
+        this.addEncoding(...this._config.encodings, ...builtinEncodings, unsupportedEncoding);
     }
 
     private _buildEncodingCache() {
         this._protoEncodingCache = new WeakMap<object, SzrPrototypeEncoding>();
         for (const encoding of this._protoEncodings) {
-            this._protoEncodingCache.set(encoding.prototype, encoding);
+            for (const proto of encoding.prototypes) {
+                this._protoEncodingCache.set(proto, encoding);
+            }
         }
     }
 
@@ -70,11 +86,9 @@ export class Szr {
             if (this._keyToEncoding.get(encoding.key)) {
                 throw new SzrError(`Encoding with the key '${encoding.key}' already exists.`);
             }
-            if ("prototype" in encoding) {
-                if (this._protoEncodingCache.has(encoding.prototype)) {
-
-                }
+            if ("prototypes" in encoding) {
                 this._protoEncodings.push(encoding);
+
             } else {
                 if (this._symbToEncoding.has(encoding.symbol)) {
                     throw new SzrError(`Symbol ${String(encoding.symbol)} already has an assigned encoding.`);
@@ -93,7 +107,7 @@ export class Szr {
         let foundEncoding: SzrPrototypeEncoding;
         for (let proto = obj;; proto = Object.getPrototypeOf(proto) ?? nullPlaceholder) {
             const cached = this._protoEncodingCache.get(proto);
-            if (cached != null) {
+            if (cached !== undefined) {
                 foundEncoding = cached;
                 break;
             }
@@ -123,11 +137,9 @@ export class Szr {
         return objectEncoding;
     }
 
-    decode(input: SzrOutput): any {
-        if (input === undefinedEncoding) return undefined;
-        if (typeof input === "boolean" || input === null || typeof input === "number") return input;
-        const tryNumeric = tryDecodeScalar(input);
-        if (tryNumeric != null) return tryNumeric;
+    decode(input: any): any {
+        const tryScalar = tryDecodeScalar(input);
+        if (tryScalar !== noResultPlaceholder) return tryScalar;
         const metadata = input?.[0];
         const inputVersion = metadata?.[0];
         const {options} = this._config;
@@ -167,11 +179,9 @@ export class Szr {
             }
         }
 
-        ctx.deref = value => {
-            if (value === undefinedEncoding) return undefined;
+        ctx.deref = (value: any) => {
             const decodedPrimitive = tryDecodeScalar(value);
-            if (decodedPrimitive != null) return decodedPrimitive;
-            if (typeof value === "number" || typeof value === "boolean" || value === null) return value;
+            if (decodedPrimitive !== noResultPlaceholder) return decodedPrimitive;
             return targetArray[value];
         };
         for (let key of needToInit.keys()) {
@@ -184,9 +194,8 @@ export class Szr {
 
 
     encode(root: SzrEntity | SzrPrimitive | undefined | bigint): SzrOutput {
-        if (root === undefined) return undefinedEncoding;
-        if (typeof root === "number" || typeof root === "bigint") return encodeScalar(root);
-        if (root === null || typeof root === "boolean") return root;
+        const tryScalar = tryEncodeScalar(root);
+        if (tryScalar !== noResultPlaceholder) return tryScalar;
         let encodingInfo = {} as SzrEncodingInformation;
         let customMetadata = {} as SzrCustomMetadata;
         const options = this._config.options;
@@ -201,13 +210,12 @@ export class Szr {
         const ctx: EncodeContext = {
             options,
             metadata: undefined,
-            ref(value: LegalValue): Leaf {
+            ref(value: any): Leaf {
                 if (typeof value === "string") {
                     return createNewRef(value);
                 }
-                if (typeof value === "number" || typeof value === "bigint") return encodeScalar(value);
-                if (typeof value === "boolean" || value === null) return value;
-                if (value === undefined) return undefinedEncoding;
+                const tryScalar = tryEncodeScalar(value);
+                if (tryScalar !== noResultPlaceholder) return tryScalar;
                 let existingRef = objectToRef.get(value);
                 if (!existingRef) {
                     existingRef = createNewRef(value);
@@ -256,6 +264,7 @@ export const defaultConfig: SzrConfig = {
         alsoSymbolKeys: false,
         custom: {}
     },
-    encodings: []
+    encodings: [],
+    unsupported: []
 };
 

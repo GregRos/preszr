@@ -7,7 +7,7 @@ import {getEncodedString} from "../utils";
 import {Leaf} from "../szr-representation";
 
 export const mapEncoding: SzrPrototypeEncoding = {
-    prototype: Map.prototype,
+    prototypes: [Map.prototype],
     key: getEncodedString("Map"),
     encode(input: Map<any, any>, ctx: EncodeContext): any {
         const array = [] as [Leaf, Leaf][];
@@ -30,7 +30,7 @@ export const mapEncoding: SzrPrototypeEncoding = {
 };
 
 export const setEncoding: SzrPrototypeEncoding = {
-    prototype: Set.prototype,
+    prototypes: [Set.prototype],
     key: getEncodedString("Set"),
     encode(input: Set<any>, ctx: EncodeContext): any {
         const outArray = [] as Leaf[];

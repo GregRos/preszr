@@ -5,119 +5,135 @@ import {
     infinityEncoding,
     nanEncoding,
     negInfinityEncoding,
-    negZeroEncoding, SzrCustomMetadata,
-    SzrEncodingInformation,
+    negZeroEncoding,
     SzrMetadata,
-    SzrOutput,
-    SzrRepresentation,
     undefinedEncoding
 } from "../lib/szr-representation";
-import {getSparseArray, stringify} from "./utils";
+import {
+    createSparseArray,
+    createSzrRep, createWithTitle,
+    stringify,
+    szrDefaultMetadata
+} from "./utils";
 import {arrayEncoding} from "../lib/encodings/basic";
 
 const emptyMetadata = [version, {}, {}] as SzrMetadata;
 
-function createSzrRep([encodings, meta], ...arr): SzrRepresentation {
-    const metadata = [version, encodings, meta] as SzrMetadata;
-    return [metadata, ...arr];
-}
-
-function createDefaultSzrRep(...arr): SzrRepresentation {
-    return createSzrRep([{}, {}], ...arr);
-}
-
-
-export const getMacro = titleFunc => {
-    const simpleObjTests: Macro<any> = (
-        t: ExecutionContext,
-        decoded: any,
-        encoded: any,
-        hasMetadata = false) => {
-
-        const encodedWithMetadata = hasMetadata ? createSzrRep(encoded[0] as any, ...encoded.slice(1)) : createDefaultSzrRep(...encoded);
-        const rDecoded = decode(encodedWithMetadata);
-        t.deepEqual(rDecoded, decoded);
-        const [m, ...rest] = encode(decoded) as any;
-        t.deepEqual(rest, encoded);
-    };
-    simpleObjTests.title = titleFunc;
-    return simpleObjTests;
+const testEncodeMacro: any = (t: ExecutionContext, decoded: any, encoded: any) => {
+    const rEncoded = encode(decoded) as any;
+    t.deepEqual(rEncoded, encoded);
 };
-const simpleObjectTest = getMacro((x, input) => x ?? `object with ${stringify(input.value)} property`)
 
-test(simpleObjectTest, {value: 1}, [{value: 1}]);
-test(simpleObjectTest, {value: true}, [{value: true}]);
-test(simpleObjectTest, {value: null}, [{value: null}]);
-test(simpleObjectTest, {value: Infinity}, [{value: infinityEncoding}]);
-test(simpleObjectTest, {value: -Infinity}, [{value: negInfinityEncoding}]);
-test(simpleObjectTest, {value: -0}, [{value: negZeroEncoding}]);
-test(simpleObjectTest, {value: NaN}, [{value: nanEncoding}]);
-test(simpleObjectTest, {value: undefined}, [{value: undefinedEncoding}]);
-test(simpleObjectTest, {value: BigInt(4)}, [{value: "B4"}]);
-test(simpleObjectTest, {value: "string"}, [{value: "2"}, "string"]);
-test(simpleObjectTest, {value: []}, [{value: "2"}, []]);
-test("string", simpleObjectTest, "abc", ["abc"]);
-test("empty array", simpleObjectTest, [], [[]]);
+const testDecodeMacro: any = (t: ExecutionContext, decoded: any, encoded: any) => {
+    const rDecoded = decode(encoded);
+    t.deepEqual(rDecoded, decoded);
+};
 
-const simpleArrayTest = getMacro((x, input) => x ?? `array with ${stringify(input[0])} element`);
+testDecodeMacro.label = "decode";
 
-test(simpleArrayTest, [1], [[1]]);
-test(simpleArrayTest, [true], [[true]]);
-test(simpleArrayTest, [null], [[null]]);
-test(simpleArrayTest, [Infinity], [[infinityEncoding]]);
-test(simpleArrayTest, [-Infinity], [[negInfinityEncoding]]);
-test(simpleArrayTest, [-0], [[negZeroEncoding]]);
-test(simpleArrayTest, [NaN], [[nanEncoding]]);
-test(simpleArrayTest, [undefined], [[undefinedEncoding]]);
-test(simpleArrayTest, [BigInt(4)], [["B4"]]);
-test(simpleArrayTest, ["string"], [["2"], "string"]);
+{
+    const combAttachMetadata = titleFunc => {
+        const attachMetadata = (t, decoded, encoded) => [t, decoded, szrDefaultMetadata(...encoded)];
+        return [
+            createWithTitle(
+                testEncodeMacro,
+                attachMetadata,
+                (title, ...args) => `encode:: ${title ?? titleFunc(...args)}`
+            ),
+            createWithTitle(
+                testDecodeMacro,
+                attachMetadata,
+                (title, ...args) => `decode:: ${title ?? titleFunc(...args)}`
+            )
+        ] as [Macro<any>, Macro<any>];
+    };
+    {
+        const simpleObjectTest = combAttachMetadata(input => `{value: ${stringify(input.value)}}`);
 
-test("sparse array", simpleArrayTest, getSparseArray({2: 1, 5: 1}), [{2: 1, 5: 1}], {1: arrayEncoding.key}, {1: true});
+        test(simpleObjectTest, {value: 1}, [{value: 1}]);
+        test(simpleObjectTest, {value: true}, [{value: true}]);
+        test(simpleObjectTest, {value: null}, [{value: null}]);
+        test(simpleObjectTest, {value: Infinity}, [{value: infinityEncoding}]);
+        test(simpleObjectTest, {value: -Infinity},
+            [{value: negInfinityEncoding}]
+        );
+        test(simpleObjectTest, {value: -0}, [{value: negZeroEncoding}]);
+        test(simpleObjectTest, {value: NaN}, [{value: nanEncoding}]);
+        test(simpleObjectTest, {value: undefined},
+            [{value: undefinedEncoding}]
+        );
+        test(simpleObjectTest, {value: BigInt(4)}, [{value: "B4"}]);
+        test(simpleObjectTest, {value: "string"}, [{value: "2"}, "string"]);
+        test(simpleObjectTest, {value: []}, [{value: "2"}, []]);
+        test("string", simpleObjectTest, "abc", ["abc"]);
+        test("object references object", simpleObjectTest, {a: {}},
+            [{a: "2"}, {}]
+        );
+        test("object references two objects", simpleObjectTest, {a: {}, b: {}},
+            [{a: "2", b: "3"}, {}, {}]
+        );
 
-test("array [{}]", simpleArrayTest, [{}], [["2"], {}]);
-test("array [[]]", simpleArrayTest, [[]], [["2"], []]);
-const simpleRefTest = getMacro(x => x);
+        test("test unsupported properties", t => {
+           const encodedFunction = encode({a() {}});
+           t.deepEqual(encodedFunction, szrDefaultMetadata({a: null}));
+           const encodedWeakMap = encode({a: new WeakMap()});
+           t.deepEqual(encodedWeakMap, szrDefaultMetadata({a: null}));
+           const encodedWeakSet = encode({a: new WeakSet()});
+           t.deepEqual(encodedWeakSet, szrDefaultMetadata({a: null}));
+        });
+    }
 
-test("object references object", simpleRefTest, {a: {}}, [{a: "2"}, {}]);
-test("object references two objects", simpleRefTest, {a: {}, b: {}}, [{a: "2", b: "3"}, {}, {}]);
-test("object references same object twice", t => {
-    const o = {};
-    const b = {o1: o, o2: o};
-    const encoded = encode(b) as any[];
-    t.deepEqual(encoded, createDefaultSzrRep({o1: "2", o2: "2"}, {}));
-    const B = decode(encoded);
-    t.deepEqual(B, b);
-    t.is(B.o1, B.o2);
+    {
+        const simpleArrayTest = combAttachMetadata(
+            (x, input) => `array with ${stringify(input[0])} element`);
+
+        test(simpleArrayTest, [1], [[1]]);
+        test(simpleArrayTest, [true], [[true]]);
+        test(simpleArrayTest, [null], [[null]]);
+        test(simpleArrayTest, [Infinity], [[infinityEncoding]]);
+        test(simpleArrayTest, [-Infinity], [[negInfinityEncoding]]);
+        test(simpleArrayTest, [-0], [[negZeroEncoding]]);
+        test(simpleArrayTest, [NaN], [[nanEncoding]]);
+        test(simpleArrayTest, [undefined], [[undefinedEncoding]]);
+        test(simpleArrayTest, [BigInt(4)], [["B4"]]);
+        test(simpleArrayTest, ["string"], [["2"], "string"]);
+        test("array [{}]", simpleArrayTest, [{}], [["2"], {}]);
+        test("array [[]]", simpleArrayTest, [[]], [["2"], []]);
+    }
+}
+test("deepEqual assertions work for sparse arrays", t => {
+    const sparse1 = createSparseArray({5: 1, 6: 1});
+    sparse1[5] = 1;
+    sparse1[6] = 1;
+    t.notDeepEqual(sparse1, [5, 6]);
+    t.notDeepEqual(sparse1, createSparseArray({1: 1, 2: 1}));
+    t.deepEqual(sparse1, createSparseArray({5: 1, 6: 1}));
 });
 
-test("one object, circular reference", t => {
-    const a = {} as any;
-    a.a = a;
-    const encoded = encode(a);
-    t.deepEqual(encoded, createDefaultSzrRep({a: "1"}));
-    const decoded = decode(encoded);
-    t.is(decoded.a, decoded);
-});
+{
+    const testSparseArrays = (t, decoded, encoded) => {
+        encoded[0] = [version, encoded[0][0], {}];
 
-test("one array, circular reference", t => {
-    const a = [] as any;
-    a.push(a);
-    const encoded = encode(a);
-    t.deepEqual(encoded, createDefaultSzrRep(["1"]));
-    const decoded = decode(encoded);
-    t.is(decoded[0], decoded);
-});
+        testEncodeMacro(t, decoded, encoded);
+    };
 
-test("two objects, circular references", t => {
-    const a = {} as any;
-    const b = {} as any;
-    a.b = b;
-    b.a = a;
-    const encoded = encode(a);
-    t.deepEqual(encoded, createDefaultSzrRep({b: "2"}, {a: "1"}));
-    const decoded = decode(encoded);
-    t.deepEqual(decoded, a);
-    t.is(a.b, b);
-    t.is(b.a, a);
-});
+    test("sparse array", testSparseArrays, createSparseArray({1: 5, 2: 6}), [
+        [{1: arrayEncoding.key}],
+        {1: 5, 2: 6}
+    ]);
+
+    test("sparse array with reference", testSparseArrays, createSparseArray({1: {}, 2: {}}), [
+        [{1: arrayEncoding.key}],
+        {1: "2", 2: "3"},
+        {},
+        {}
+    ]);
+
+    test("array with string keys", testSparseArrays, createSparseArray({1: 1, a: 2}), [
+        [{1: arrayEncoding.key}],
+        {1: 1, a: 2}
+    ]);
+
+
+}
 

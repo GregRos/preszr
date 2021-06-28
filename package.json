@@ -59,7 +59,8 @@
       "src/test/*.spec.ts"
     ],
     "require": [
-      "ts-node/register"
+      "ts-node/register",
+      "./src/test/setup.ts"
     ]
   }
 }

@@ -24,7 +24,8 @@ export type EncodedScalar =
     | typeof infinityEncoding
     | typeof negZeroEncoding
     | typeof negInfinityEncoding
-    | typeof nanEncoding;
+    | typeof nanEncoding
+    | string;
 
 export type Leaf = SzrPrimitive | Reference | EncodedScalar | string;
 
@@ -32,7 +33,20 @@ export type SzrRepresentation = [SzrMetadata, ...unknown[]];
 
 export type SzrOutput = SzrRepresentation | SzrPrimitive | EncodedScalar | string;
 
-export function encodeScalar(num: number | bigint): EncodedScalar | number | string {
+export function isDecodedScalar(input: unknown) {
+    const t = typeof input;
+    return input == null || t === "bigint" || t === "number" || t === "boolean";
+}
+
+export const noResultPlaceholder = "";
+
+export function tryEncodeScalar(num: any): EncodedScalar | SzrPrimitive {
+    if (num === null || typeof num === "boolean") {
+        return num;
+    }
+    if (num === undefined) {
+        return undefinedEncoding;
+    }
     if (typeof num === "bigint") {
         return `B${num}`;
     }
@@ -48,26 +62,32 @@ export function encodeScalar(num: number | bigint): EncodedScalar | number | str
     if (Object.is(num, NaN)) {
         return nanEncoding;
     }
-    return num;
+    if (typeof num === "number") {
+        return num;
+    }
+    return noResultPlaceholder;
 }
 
-
-export function tryDecodeScalar(candidate: unknown) {
-    if (typeof candidate !== "string") {
-        return null;
-    }
+export function tryDecodeScalar(candidate: any) {
+    const t = typeof candidate;
+    if (t === "boolean" || t === "number" || candidate === null) return candidate;
     switch (candidate) {
-        case "Infinity":
+        case infinityEncoding:
             return Infinity;
-        case "-Infinity":
+        case negInfinityEncoding:
             return -Infinity;
-        case "NaN":
+        case nanEncoding:
             return NaN;
-        case "-0":
+        case negZeroEncoding:
             return -0;
+        case undefinedEncoding:
+            return undefined;
     }
-    if (candidate.startsWith("B")) {
-        return BigInt(candidate.slice(1));
+    if (t === "string") {
+        if (candidate.startsWith("B")) {
+            return BigInt(candidate.slice(1));
+        }
     }
-    return null;
+    return noResultPlaceholder;
 }
+

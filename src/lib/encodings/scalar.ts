@@ -7,7 +7,7 @@ import {
 import {getEncodedString} from "../utils";
 
 export const regexpEncoding: SzrPrototypeEncoding = {
-    prototype: RegExp.prototype,
+    prototypes: [RegExp.prototype],
     key: getEncodedString("regexp"),
     encode(input: RegExp, ctx: EncodeContext): any {
         return [input.source, input.flags];
@@ -19,7 +19,7 @@ export const regexpEncoding: SzrPrototypeEncoding = {
     }
 };
 export const dateEncoding: SzrPrototypeEncoding = {
-    prototype: Date.prototype,
+    prototypes: [Date.prototype],
     key: getEncodedString("date"),
     encode(input: Date, ctx: EncodeContext): any {
         return input.getTime();
@@ -34,7 +34,7 @@ export const dateEncoding: SzrPrototypeEncoding = {
 export function createFundamentalObjectEncoding(ctor: { new(x): any }): SzrPrototypeEncoding {
     return {
         key: getEncodedString(ctor.name),
-        prototype: ctor.prototype,
+        prototypes: [ctor.prototype],
         encode(input: any, ctx: EncodeContext): any {
             return input.valueOf();
         },

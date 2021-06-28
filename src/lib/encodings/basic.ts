@@ -7,8 +7,9 @@ import {
     DecodeInitContext,
     Decoder, CustomEncoding
 } from "../szr-interface";
-import {getEncodedString} from "../utils";
+import {getClassName, getEncodedString} from "../utils";
 import {Leaf, Reference} from "../szr-representation";
+import {SzrError} from "../errors";
 
 export const nullPlaceholder = {};
 export const propertyIsEnumerable = (obj, key) => Object.prototype.propertyIsEnumerable.call(obj, key);
@@ -43,7 +44,7 @@ function decodeObject(target, input, ctx: DecodeInitContext) {
 }
 
 export const objectEncoding: SzrPrototypeEncoding = {
-    prototype: Object.prototype,
+    prototypes: [Object.prototype],
     key: getEncodedString("object"),
     encode(input: any, ctx: EncodeContext): any {
         const newObject = {};
@@ -76,13 +77,13 @@ export const objectEncoding: SzrPrototypeEncoding = {
 function encodeAsSparseArray(input: any, ctx: EncodeContext) {
     // Sparse arrays are serialized like objects.
     const result = objectEncoding.encode(input, ctx);
-    ctx.metadata = 1;
+    (ctx as any)._isImplicit = false;
     return result;
 }
 
 export const arrayEncoding: SzrPrototypeEncoding = {
     key: getEncodedString("array"),
-    prototype: Array.prototype,
+    prototypes: [Array.prototype],
     encode(input: any, ctx: EncodeContext): any {
         const keys = Object.keys(input);
         let isSparseCanFalseNegative = input.length !== keys.length;
@@ -105,8 +106,7 @@ export const arrayEncoding: SzrPrototypeEncoding = {
             return [];
         },
         init(target: any, input: any, ctx: DecodeInitContext) {
-            const isSparse = !!ctx.metadata;
-            if (isSparse) {
+            if (!Array.isArray(input)) {
                 // Decode similarly to objects
                 decodeObject(target, input, ctx);
                 return;
@@ -121,7 +121,7 @@ export const nullPrototypeEncoding: SzrPrototypeEncoding = {
     ...objectEncoding,
     key: getEncodedString("null"),
     decoder: getPrototypeDecoder(null),
-    prototype: nullPlaceholder
+    prototypes: [nullPlaceholder]
 };
 
 export function getPrototypeDecoder(proto: object | null) {
@@ -131,4 +131,26 @@ export function getPrototypeDecoder(proto: object | null) {
             return Object.create(proto);
         }
     } as Decoder;
+}
+
+export function getUnsupportedName(name: string) {
+    return name;
+}
+
+const unsupportedEncodingKey = getEncodedString("unsupported");
+
+export function getUnsupportedEncoding(...protos: object[]): SzrPrototypeEncoding {
+    return {
+        key: unsupportedEncodingKey,
+        prototypes: protos,
+        encode(input: any, ctx: EncodeContext): any {
+            ctx.metadata = getClassName(input);
+            return null;
+        },
+        decoder: {
+            create(encodedValue: any, ctx: DecodeCreateContext): any {
+                return null;
+            }
+        }
+    };
 }

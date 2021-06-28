@@ -19,7 +19,7 @@ type TypedArrayConstructor =
 
 export const arrayBufferEncoding: SzrPrototypeEncoding = {
     key: getEncodedString("ArrayBuffer"),
-    prototype: ArrayBuffer.prototype,
+    prototypes: [ArrayBuffer.prototype],
     encode(input: ArrayBuffer, ctx: EncodeContext): any {
         const b64 = fromByteArray(new Uint8Array(input));
         return b64;
@@ -35,7 +35,7 @@ export const arrayBufferEncoding: SzrPrototypeEncoding = {
 export function createTypedArrayEncoding(ctor: TypedArrayConstructor): SzrPrototypeEncoding {
     return {
         key: getEncodedString(ctor.name),
-        prototype: ctor.prototype,
+        prototypes: [ctor.prototype],
         encode(input: InstanceType<TypedArrayConstructor>, ctx: EncodeContext): any {
             return arrayBufferEncoding.encode(input.buffer, ctx);
         },

@@ -45,6 +45,8 @@ export function getEncodedString(str: string) {
     return `!@#szr-${str}`;
 }
 
-
+export function getClassName(proto: object) {
+    return proto[Symbol.toStringTag] ?? proto.constructor?.name;
+}
 
 export const version = pkgJson.version.split(".")[0];
