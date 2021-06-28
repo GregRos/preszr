@@ -5,7 +5,7 @@ import {
 } from "../lib/szr-representation";
 import test, {ExecutionContext, Macro} from "ava";
 import {decode, encode} from "../lib";
-import {stringify} from "./helpers";
+import {stringify} from "./utils";
 
 const primtiveTests: Macro<any> = (t: ExecutionContext, decoded: any, encoded: SzrOutput) => {
     const rDecoded = decode(encoded);

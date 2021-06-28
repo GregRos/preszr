@@ -18,3 +18,11 @@ export function getSpecialObject(obj?) {
         }
     });
 }
+
+export function getSparseArray(arrayLikeObj: Record<number, any>) {
+    const arr = [];
+    for (const [key, value] of Object.entries(arrayLikeObj)) {
+        arr[key] = value;
+    }
+    return arr;
+}

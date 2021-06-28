@@ -95,7 +95,7 @@ export const arrayEncoding: SzrPrototypeEncoding = {
             if (i !== +keys[i]) {
                 return encodeAsSparseArray(input, ctx);
             }
-            newArray.push(input[i])
+            newArray.push(ctx.ref(input[i]));
         }
         (ctx as any)._isImplicit = true;
         return newArray;
