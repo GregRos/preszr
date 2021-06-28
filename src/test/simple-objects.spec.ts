@@ -15,7 +15,7 @@ import {
     stringify,
     szrDefaultMetadata
 } from "./utils";
-import {arrayEncoding} from "../lib/encodings/basic";
+import {arrayEncoding, unsupportedEncodingKey} from "../lib/encodings/basic";
 
 const emptyMetadata = [version, {}, {}] as SzrMetadata;
 
@@ -28,9 +28,6 @@ const testDecodeMacro: any = (t: ExecutionContext, decoded: any, encoded: any) =
     const rDecoded = decode(encoded);
     t.deepEqual(rDecoded, decoded);
 };
-
-testDecodeMacro.label = "decode";
-
 {
     const combAttachMetadata = titleFunc => {
         const attachMetadata = (t, decoded, encoded) => [t, decoded, szrDefaultMetadata(...encoded)];
@@ -65,22 +62,28 @@ testDecodeMacro.label = "decode";
         test(simpleObjectTest, {value: BigInt(4)}, [{value: "B4"}]);
         test(simpleObjectTest, {value: "string"}, [{value: "2"}, "string"]);
         test(simpleObjectTest, {value: []}, [{value: "2"}, []]);
+
         test("string", simpleObjectTest, "abc", ["abc"]);
+
         test("object references object", simpleObjectTest, {a: {}},
             [{a: "2"}, {}]
         );
         test("object references two objects", simpleObjectTest, {a: {}, b: {}},
             [{a: "2", b: "3"}, {}, {}]
         );
+    }
+    {
+        const unsupportedObjectProperty = name => createSzrRep([{2: unsupportedEncodingKey}, {2: name}], {a: "2"}, null);
 
-        test("test unsupported properties", t => {
-           const encodedFunction = encode({a() {}});
-           t.deepEqual(encodedFunction, szrDefaultMetadata({a: null}));
-           const encodedWeakMap = encode({a: new WeakMap()});
-           t.deepEqual(encodedWeakMap, szrDefaultMetadata({a: null}));
-           const encodedWeakSet = encode({a: new WeakSet()});
-           t.deepEqual(encodedWeakSet, szrDefaultMetadata({a: null}));
-        });
+        test("unsupported - {a: function}", testEncodeMacro, {a() {}}, unsupportedObjectProperty("Function"));
+        test("unsupported - {a: WeakMap}", testEncodeMacro, {a: new WeakMap()}, unsupportedObjectProperty("WeakMap"));
+        test("unsupported - {a: WeakSet}", testEncodeMacro, {a: new WeakSet()}, unsupportedObjectProperty("WeakSet"));
+
+        const unsupported = name => createSzrRep([{1: unsupportedEncodingKey}, {1: name}], null);
+
+        test("unsupported - function", testEncodeMacro, () => {}, unsupported("Function"));
+        test("unsupported - WeakMap", testEncodeMacro, new WeakMap(), unsupported("WeakMap"));
+        test("unsupported - WeakSet", testEncodeMacro, new WeakSet(), unsupported("WeakSet"));
     }
 
     {

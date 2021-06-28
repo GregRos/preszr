@@ -133,11 +133,7 @@ export function getPrototypeDecoder(proto: object | null) {
     } as Decoder;
 }
 
-export function getUnsupportedName(name: string) {
-    return name;
-}
-
-const unsupportedEncodingKey = getEncodedString("unsupported");
+export const unsupportedEncodingKey = getEncodedString("unsupported");
 
 export function getUnsupportedEncoding(...protos: object[]): SzrPrototypeEncoding {
     return {
