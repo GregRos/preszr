@@ -12,7 +12,6 @@ import {Leaf, Reference} from "../szr-representation";
 import {SzrError} from "../errors";
 
 export const nullPlaceholder = {};
-export const propertyIsEnumerable = (obj, key) => Object.prototype.propertyIsEnumerable.call(obj, key);
 function getAllOwnKeys(obj: object, onlyEnumerable: boolean): PropertyKey[] {
     const keys = Reflect.ownKeys(obj);
     if (onlyEnumerable) {

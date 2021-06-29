@@ -1,17 +1,6 @@
 // @ts-ignore
 import * as pkgJson from "../../package.json";
 
-export function defaults(target: any, source: any) {
-    target = Object(target);
-    if (!source) return target;
-    source = Object(source);
-    for (const [key, value] of Object.entries(source)) {
-        if (source[key] === undefined) {
-            target[key] = value;
-        }
-    }
-}
-
 export function _defaultsDeep(target: any, source: any) {
     target = Object(target);
     if (!source) return target;
@@ -33,12 +22,6 @@ export function defaultsDeep(target: any, ...sources: any[]) {
         target = _defaultsDeep(target, source);
     }
     return target;
-}
-
-export function getRandomizedEncodedString(str: string) {
-    const rnd = Math.random() * 100_000 | 0;
-    return `${getLibraryString(str)}-${rnd.toString(36)}`;
-
 }
 
 export function getLibraryString(str: string) {

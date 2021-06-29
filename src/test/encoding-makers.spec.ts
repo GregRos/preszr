@@ -83,6 +83,14 @@ test("encoding with multiple prototypes", t => {
     t.is(encoding.key, "blah");
     t.is(encoding.decoder.create, f);
     t.is(encoding.encode, f);
+});
+
+test("encoding prototype field", t => {
+    const encoding = getFullEncoding({
+        prototype: TestClass.prototype
+    }) as SzrPrototypeEncoding;
+    t.is(encoding.key, getImplicitClassEncodingName("TestClass"));
+    t.deepEqual(encoding.decoder.create({}, {} as any), Object.create(TestClass.prototype));
 
 });
 

@@ -35,11 +35,6 @@ export type SzrRepresentation = [SzrMetadata, ...unknown[]];
 
 export type SzrOutput = SzrRepresentation | SzrPrimitive | EncodedScalar | string;
 
-export function isDecodedScalar(input: unknown) {
-    const t = typeof input;
-    return input == null || t === "bigint" || t === "number" || t === "boolean";
-}
-
 export const noResultPlaceholder = "";
 
 export function tryEncodeScalar(num: any): EncodedScalar | SzrPrimitive {

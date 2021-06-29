@@ -1,6 +1,7 @@
 import {createSzrRep, testEncodeMacro} from "./utils";
 import {unsupportedEncodingKey} from "../lib/encodings/basic";
 import test from "ava";
+import {decode} from "../lib";
 
 const unsupportedObjectProperty = name => createSzrRep([{2: unsupportedEncodingKey}, {2: name}], {a: "2"}, null);
 
@@ -13,3 +14,9 @@ const unsupported = name => createSzrRep([{1: unsupportedEncodingKey}, {1: name}
 test("unsupported - function", testEncodeMacro, () => {}, unsupported("Function"));
 test("unsupported - WeakMap", testEncodeMacro, new WeakMap(), unsupported("WeakMap"));
 test("unsupported - WeakSet", testEncodeMacro, new WeakSet(), unsupported("WeakSet"));
+
+test("decode unsupported", t => {
+    const unsupported = unsupportedObjectProperty("Function");
+    const result = decode(unsupported);
+    t.deepEqual(result, {a: null});
+});

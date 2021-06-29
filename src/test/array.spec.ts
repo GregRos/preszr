@@ -1,4 +1,4 @@
-import {combAttachMetadata, createSparseArray, stringify, testEncodeMacro} from "./utils";
+import {combAttachMetadata, createSparseArray, encodeDecodeMacro, stringify, testDecodeMacro, testEncodeMacro} from "./utils";
 import test from "ava";
 import {
     infinityEncoding,
@@ -38,26 +38,25 @@ test("deepEqual assertions work for sparse arrays", t => {
 });
 
 {
-    const testSparseArrays = (t, decoded, encoded) => {
-        encoded[0] = [version, encoded[0][0], {}];
-
-        testEncodeMacro(t, decoded, encoded);
-    };
+    const testSparseArrays = encodeDecodeMacro({
+        encode: testEncodeMacro,
+        decode: testDecodeMacro
+    });
 
     test("sparse array", testSparseArrays, createSparseArray({1: 5, 2: 6}), [
-        [{1: arrayEncoding.key}],
+        [{1: arrayEncoding.key}, {}],
         {1: 5, 2: 6}
     ]);
 
     test("sparse array with reference", testSparseArrays, createSparseArray({1: {}, 2: {}}), [
-        [{1: arrayEncoding.key}],
+        [{1: arrayEncoding.key}, {}],
         {1: "2", 2: "3"},
         {},
         {}
     ]);
 
     test("array with string keys", testSparseArrays, createSparseArray({1: 1, a: 2}), [
-        [{1: arrayEncoding.key}],
+        [{1: arrayEncoding.key}, {}],
         {1: 1, a: 2}
     ]);
 }

@@ -26,6 +26,12 @@ test("unrecognized symbol input", unrecognizedSymbolMacro((t, encoded) => {
     t.is(decoded.description, getUnrecognizedSymbolName("test"));
 }), testSymbol, [[{1: unrecognizedSymbolKey}, {1: "test"}], 0]);
 
+test("unrecognized symbol no name", unrecognizedSymbolMacro((t, encoded) => {
+    const decoded = decode(encoded);
+    t.is(typeof decoded, "symbol");
+    t.is(getSymbolName(decoded as any), getUnrecognizedSymbolName("#1"));
+}), Symbol(), [[{1: unrecognizedSymbolKey}, {1: "#1"}], 0]);
+
 test("unrecognized symbol property value", unrecognizedSymbolMacro((t, encoded) => {
     const decoded = decode(encoded);
     t.is(typeof decoded.a, "symbol");
