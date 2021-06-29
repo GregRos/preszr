@@ -60,12 +60,15 @@ export const testEncodeMacro: any = (t: ExecutionContext, decoded: any, encoded:
     const rEncoded = szr.encode(decoded) as any;
     t.deepEqual(rEncoded, encoded);
 };
-export const testEncodeMacroBindSzr = szr => (a, b, c) => testEncodeMacro(a, b, c, szr);
 
 export const testDecodeMacro: any = (t: ExecutionContext, decoded: any, encoded: any, szr = defaultSzr) => {
     const rDecoded = szr.decode(encoded);
     t.deepEqual(rDecoded, decoded);
 };
+
+export const testEncodeMacroBindSzr = szr => (a, b, c) => testEncodeMacro(a, b, c, szr);
+
+
 
 export const testDecodeMacroBindSzr = szr => (a, b, c) => testDecodeMacro(a, b, c, szr);
 

@@ -35,23 +35,28 @@ function decodeObject(target, input, ctx: DecodeInitContext) {
     return target;
 }
 
-function encodeObject(input, ctx: EncodeContext, alsoNonEnumerable: boolean) {
-    const newObject = {};
-    let symbObject: Record<string, Leaf> | undefined;
+export function encodeObject(input, ctx: EncodeContext, alsoNonEnumerable: boolean, explicitlyInclude = [] as string[]) {
+    const strKeyObject = {};
+    let symbKeyObject: Record<string, Leaf> | undefined;
     for (const key of getAllOwnKeys(input, !alsoNonEnumerable)) {
         const value = input[key];
         if (typeof key === "symbol") {
-            symbObject ??= {};
-            symbObject[ctx.ref(key) as string] = ctx.ref(value);
+            symbKeyObject ??= {};
+            symbKeyObject[ctx.ref(key) as string] = ctx.ref(value);
         } else {
-            newObject[key] = ctx.ref(value);
+            strKeyObject[key] = ctx.ref(value);
         }
     }
-    if (symbObject) {
-        return [newObject, symbObject];
+    for (const key of explicitlyInclude) {
+        if (!(key in strKeyObject) && key in input) {
+            strKeyObject[key] = ctx.ref(input[key]);
+        }
+    }
+    if (symbKeyObject) {
+        return [strKeyObject, symbKeyObject];
     }
     (ctx as any)._isImplicit = true;
-    return newObject;
+    return strKeyObject;
 }
 
 export const objectEncoding: SzrPrototypeEncoding = {
@@ -145,11 +150,11 @@ export function getUnsupportedEncoding(...protos: object[]): SzrPrototypeEncodin
         prototypes: protos,
         encode(input: any, ctx: EncodeContext): any {
             ctx.metadata = getClassName(input);
-            return null;
+            return 0;
         },
         decoder: {
             create(encodedValue: any, ctx: DecodeCreateContext): any {
-                return null;
+                return undefined;
             }
         }
     };

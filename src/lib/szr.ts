@@ -36,6 +36,8 @@ import {
 import {createFundamentalObjectEncoding, dateEncoding, regexpEncoding} from "./encodings/scalar";
 import {SzrError} from "./errors";
 import {arrayBufferEncoding, typedArrayEncodings} from "./encodings/binary";
+import {mapEncoding, setEncoding} from "./encodings/collections";
+import {errorEncodings} from "./encodings/built-in";
 
 
 const builtinEncodings = [
@@ -48,7 +50,10 @@ const builtinEncodings = [
     dateEncoding,
     regexpEncoding,
     ...typedArrayEncodings,
-    arrayBufferEncoding
+    arrayBufferEncoding,
+    mapEncoding,
+    setEncoding,
+    ...errorEncodings
 ] as SzrEncodingSpecifier[];
 
 const builtinUnsupportedTypes = [
@@ -294,6 +299,7 @@ export class Szr {
                 if (!(ctx as any)._isImplicit) {
                     encodingInfo[index] = handler.key;
                 }
+                (ctx as any)._isImplicit = false;
                 if (ctx.metadata !== undefined) {
                     customMetadata[index] = ctx.metadata;
                 }

@@ -1,21 +1,23 @@
 import {EncodeContext, SzrPrototypeEncoding} from "../szr-interface";
 import {getLibraryString} from "../utils";
-import {objectEncoding} from "./basic";
+import {encodeObject, getPrototypeDecoder, objectEncoding} from "./basic";
 
+const errorProperties = ["stack", "name", "message"];
 export function createErrorEncoding(errorCtor: {new(): Error}) {
     return {
-        prototypes: errorCtor.prototype,
+        prototypes: [errorCtor.prototype],
         key: getLibraryString(errorCtor.name),
         encode(input: any, ctx: EncodeContext): any {
-            const encodedAsObject = objectEncoding.encode(input, ctx);
-            let insertStackTarget = encodedAsObject;
-            if (Array.isArray(encodedAsObject)) {
-                insertStackTarget = encodedAsObject[1];
+            const encodedAsObject = encodeObject(input, ctx, false,errorProperties );
+            for (const name of errorProperties) {
+                Object.defineProperty(encodedAsObject, name, {
+                    enumerable: false
+                });
             }
-            insertStackTarget.stack = ctx.ref(input.stack);
             (ctx as any)._isImplicit = false;
             return encodedAsObject;
-        }
+        },
+        decoder: getPrototypeDecoder(errorCtor.prototype)
     } as SzrPrototypeEncoding;
 }
 

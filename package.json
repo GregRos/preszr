@@ -40,10 +40,13 @@
   },
   "nyc": {
     "produce-source-map": true,
+    "extension": [
+      ".ts"
+    ],
     "include": [
-      "dist/lib/**/*.js",
       "src/lib/**/*.ts"
     ],
+    "all": true,
     "reporter": [
       "lcov",
       "text-summary"
