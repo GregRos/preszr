@@ -34,8 +34,9 @@ import {
     nullPrototypeEncoding,
     objectEncoding, unsupportedEncodingKey
 } from "./encodings/basic";
-import {createFundamentalObjectEncoding} from "./encodings/scalar";
+import {createFundamentalObjectEncoding, dateEncoding, regexpEncoding} from "./encodings/scalar";
 import {SzrError} from "./errors";
+import {arrayBufferEncoding, typedArrayEncodings} from "./encodings/binary";
 
 
 const builtinEncodings = [
@@ -44,7 +45,11 @@ const builtinEncodings = [
     nullPrototypeEncoding,
     createFundamentalObjectEncoding(Number),
     createFundamentalObjectEncoding(Boolean),
-    createFundamentalObjectEncoding(String)
+    createFundamentalObjectEncoding(String),
+    dateEncoding,
+    regexpEncoding,
+    ...typedArrayEncodings,
+    arrayBufferEncoding
 ] as SzrEncodingSpecifier[];
 
 const bigintKey = getLibraryString("bigint");
@@ -188,6 +193,10 @@ export class Szr {
                     reason = "version is not string";
                 } else if (+versionInfo !== parseInt(versionInfo)) {
                     reason = "version is not numeric";
+                } else if (typeof metadata[1] !== "object") {
+                    reason = "no encoding data or encoding data is not an object";
+                } else if (typeof metadata[2] !== "object") {
+                    reason = "no custom metadata or custom metadata is not an object";
                 } else if (input.length === 1) {
                     reason = "input must have at least 2 elements";
                 }
@@ -222,12 +231,12 @@ export class Szr {
         for (let i = 1; i < input.length; i++) {
             const encodingKey = encodingInfo[i];
             let cur = input[i];
-            if (typeof cur === "string") {
-                targetArray[i] = cur;
-                continue;
-            }
             if (encodingKey === unrecognizedSymbolKey) {
                 targetArray[i] = getUnrecognizedSymbol(customMetadata[i]);
+                continue;
+            }
+            if (encodingKey == null && typeof cur === "string") {
+                targetArray[i] = cur;
                 continue;
             }
             const encoding = this._findEncodingByKeyValue(cur, encodingKey);

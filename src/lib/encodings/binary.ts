@@ -5,7 +5,7 @@ import {
 } from "../szr-interface";
 import {getLibraryString} from "../utils";
 import {fromByteArray, toByteArray} from "base64-js";
-type TypedArrayConstructor =
+export type TypedArrayConstructor =
     Int8ArrayConstructor
     | Int16ArrayConstructor
     | Int32ArrayConstructor
@@ -48,7 +48,7 @@ export function createTypedArrayEncoding(ctor: TypedArrayConstructor): SzrProtot
     };
 }
 
-export const typedArrayEncodings = [
+export const typedArrayCtors = [
     Uint8Array,
     Uint16Array,
     Uint32Array,
@@ -58,5 +58,7 @@ export const typedArrayEncodings = [
     Int32Array,
     Float32Array,
     Float64Array,
-    DataView   
-].map(createTypedArrayEncoding);
+    DataView
+];
+
+export const typedArrayEncodings = typedArrayCtors.map(createTypedArrayEncoding);

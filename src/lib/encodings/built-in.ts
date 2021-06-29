@@ -13,6 +13,7 @@ export function createErrorEncoding(errorCtor: {new(): Error}) {
                 insertStackTarget = encodedAsObject[1];
             }
             insertStackTarget.stack = ctx.ref(input.stack);
+            (ctx as any)._isImplicit = false;
             return encodedAsObject;
         }
     } as SzrPrototypeEncoding;

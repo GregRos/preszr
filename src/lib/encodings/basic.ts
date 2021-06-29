@@ -115,8 +115,8 @@ export const arrayEncoding: SzrPrototypeEncoding = {
     }
 };
 export const nullPrototypeEncoding: SzrPrototypeEncoding = {
-    ...objectEncoding,
     key: getLibraryString("null"),
+    encode: getPrototypeEncoder(null),
     decoder: getPrototypeDecoder(null),
     prototypes: [nullPlaceholder]
 };

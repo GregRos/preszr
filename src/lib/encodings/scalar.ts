@@ -8,19 +8,24 @@ import {getLibraryString} from "../utils";
 
 export const regexpEncoding: SzrPrototypeEncoding = {
     prototypes: [RegExp.prototype],
-    key: getLibraryString("regexp"),
-    encode(input: RegExp, ctx: EncodeContext): any {
-        return [input.source, input.flags];
+    key: getLibraryString("RegExp"),
+    encode({source, flags}: RegExp, ctx: EncodeContext): any {
+        return flags ? [source, flags] : source;
+
     },
     decoder: {
-        create([source, flags], ctx: DecodeInitContext) {
-            return new RegExp(source, flags);
+        create(input, ctx: DecodeInitContext) {
+            if (typeof input === "string") {
+                return new RegExp(input);
+            } else {
+                return new RegExp(input[0], input[1]);
+            }
         }
     }
 };
 export const dateEncoding: SzrPrototypeEncoding = {
     prototypes: [Date.prototype],
-    key: getLibraryString("date"),
+    key: getLibraryString("Date"),
     encode(input: Date, ctx: EncodeContext): any {
         return input.getTime();
     },

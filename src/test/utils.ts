@@ -1,8 +1,7 @@
 import {SzrMetadata, SzrRepresentation} from "../lib/szr-representation";
 import {version} from "../lib/utils";
 import {ExecutionContext, Macro} from "ava";
-import {decode, encode} from "../lib";
-import { cloneDeep } from "lodash";
+import {cloneDeep} from "lodash";
 import {defaultConfig, Szr} from "../lib/szr";
 import {DecodeInitContext, EncodeContext} from "../lib/szr-interface";
 
@@ -93,4 +92,25 @@ export function getDummyCtx() {
         options: defaultConfig.options,
         deref: x => x
     } as EncodeContext & DecodeInitContext;
+}
+
+export interface EncodeDecodeMacros {
+    decode(t: ExecutionContext, decoded, encoded);
+
+    encode(t: ExecutionContext, decoded, encoded);
+}
+
+export const encodeDecodeMacro = (args: EncodeDecodeMacros) => {
+    return [
+        createWithTitle(args.encode, (decoded, encoded, szr) => [decoded, embedSzrVersion(encoded), szr], title => `encode :: ${title}`),
+        createWithTitle(args.decode, (decoded, encoded, szr) => [decoded, embedSzrVersion(encoded), szr], title => `decode :: ${title}`)
+    ] as [any, any];
+};
+
+export function toBase64(buf: ArrayBuffer) {
+    return Buffer.from(buf).toString("base64");
+}
+
+export function fromBase64(b64: string) {
+    return Buffer.from(b64, "base64").buffer;
 }
