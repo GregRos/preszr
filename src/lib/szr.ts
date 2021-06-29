@@ -10,7 +10,7 @@ import {
     getPrototypeEncoding, DecodeInitContext
 } from "./szr-interface";
 import {
-    defaultsDeep, getEncodedString, getRandomizedEncodedString,
+    defaultsDeep, getEncodedString, getRandomizedEncodedString, getSymbolName, getUnrecognizedSymbol,
     version
 } from "./utils";
 import {
@@ -27,7 +27,7 @@ import {
     tryDecodeScalar,
     undefinedEncoding,
     isDecodedScalar,
-    noResultPlaceholder
+    noResultPlaceholder, unrecognizedSymbolKey
 } from "./szr-representation";
 import {
     arrayEncoding, getUnsupportedEncoding, nullPlaceholder,
@@ -48,7 +48,6 @@ const builtinEncodings = [
 ] as SzrEncodingSpecifier[];
 
 const bigintKey = getEncodedString("bigint");
-
 const builtinUnsupportedTypes = [
     WeakMap.prototype,
     WeakSet.prototype,
@@ -66,7 +65,7 @@ export class Szr {
         this._config = defaultsDeep(config, this._config);
         const unsupportedEncoding = getUnsupportedEncoding(
             ...builtinUnsupportedTypes,
-            ...this._config.unsupported
+            ...this._config.unsupported,
         );
         this.addEncoding(...this._config.encodings, ...builtinEncodings, unsupportedEncoding);
     }
@@ -90,9 +89,6 @@ export class Szr {
                 this._protoEncodings.push(encoding);
 
             } else {
-                if (this._symbToEncoding.has(encoding.symbol)) {
-                    throw new SzrError(`Symbol ${String(encoding.symbol)} already has an assigned encoding.`);
-                }
                 this._symbToEncoding.set(encoding.symbol, encoding);
             }
             this._keyToEncoding.set(encoding.key, encoding);
@@ -120,9 +116,14 @@ export class Szr {
     }
 
     private _findEncodingForSymbol(symb: symbol): SzrSymbolEncoding {
-        const encoding = this._symbToEncoding.get(symb);
+        let encoding = this._symbToEncoding.get(symb);
         if (encoding == null) {
-            throw new SzrError(`Unrecognized symbol ${String(symb)}`);
+            encoding = {
+                symbol: symb,
+                key: unrecognizedSymbolKey,
+                metadata: getSymbolName(symb) ?? `#${this._symbToEncoding.size}`
+            };
+            this._symbToEncoding.set(symb, encoding);
         }
         return encoding;
     }
@@ -165,6 +166,10 @@ export class Szr {
             let cur = input[i];
             if (typeof cur === "string") {
                 targetArray[i] = cur;
+                continue;
+            }
+            if (encodingKey === unrecognizedSymbolKey) {
+                targetArray[i] = getUnrecognizedSymbol(customMetadata[i]);
                 continue;
             }
             const encoding = this._findEncodingByKeyValue(cur, encodingKey);
@@ -235,6 +240,9 @@ export class Szr {
             if (typeof value === "symbol") {
                 const encoding = this._findEncodingForSymbol(value);
                 encodingInfo[index] = encoding.key;
+                if (encoding.metadata) {
+                    customMetadata[index] = encoding.metadata;
+                }
                 return ref;
             }
             const handler = this._findEncodingForObject(value);
@@ -261,7 +269,6 @@ export const defaultConfig: SzrConfig = {
         alsoNonEnumerable: false,
         errorOnUnknownClass: false,
         skipValidateVersion: false,
-        alsoSymbolKeys: false,
         custom: {}
     },
     encodings: [],

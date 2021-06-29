@@ -16,16 +16,9 @@ export const propertyIsEnumerable = (obj, key) => Object.prototype.propertyIsEnu
 function getAllOwnKeys(obj: object, onlyEnumerable: boolean): PropertyKey[] {
     const keys = Reflect.ownKeys(obj);
     if (onlyEnumerable) {
-        return keys.filter(propertyIsEnumerable);
+        return keys.filter(x => Object.prototype.propertyIsEnumerable.call(obj, x));
     }
     return keys;
-}
-
-function getKeys(object: object,options: SzrOptions) {
-    if (options.alsoSymbolKeys) {
-        return getAllOwnKeys(object, options.alsoNonEnumerable);
-    }
-    return options.alsoNonEnumerable ? Object.getOwnPropertyNames(object) : Object.keys(object);
 }
 
 function decodeObject(target, input, ctx: DecodeInitContext) {
@@ -43,26 +36,30 @@ function decodeObject(target, input, ctx: DecodeInitContext) {
     return target;
 }
 
+function encodeObject(input, ctx: EncodeContext, alsoNonEnumerable: boolean) {
+    const newObject = {};
+    let symbObject: Record<string, Leaf> | undefined;
+    for (const key of getAllOwnKeys(input, !alsoNonEnumerable)) {
+        const value = input[key];
+        if (typeof key === "symbol") {
+            symbObject ??= {};
+            symbObject[ctx.ref(key) as string] = ctx.ref(value);
+        } else {
+            newObject[key] = ctx.ref(value);
+        }
+    }
+    if (symbObject) {
+        return [newObject, symbObject];
+    }
+    (ctx as any)._isImplicit = true;
+    return newObject;
+}
+
 export const objectEncoding: SzrPrototypeEncoding = {
     prototypes: [Object.prototype],
     key: getEncodedString("object"),
     encode(input: any, ctx: EncodeContext): any {
-        const newObject = {};
-        let symbObject: Record<string, Leaf> | undefined;
-        for (const key of getKeys(input, ctx.options)) {
-            const value = input[key];
-            if (typeof key === "symbol") {
-                symbObject ??= {};
-                symbObject[ctx.ref(key) as string] = ctx.ref(value);
-            } else {
-                newObject[key] = ctx.ref(value);
-            }
-        }
-        if (symbObject) {
-            return [newObject, symbObject];
-        }
-        (ctx as any)._isImplicit = true;
-        return newObject;
+        return encodeObject(input, ctx, ctx.options.alsoNonEnumerable);
     },
     decoder: {
         create(encodedValue: any, ctx: DecodeCreateContext): any {
@@ -76,7 +73,7 @@ export const objectEncoding: SzrPrototypeEncoding = {
 
 function encodeAsSparseArray(input: any, ctx: EncodeContext) {
     // Sparse arrays are serialized like objects.
-    const result = objectEncoding.encode(input, ctx);
+    const result = encodeObject(input, ctx, false);
     (ctx as any)._isImplicit = false;
     return result;
 }

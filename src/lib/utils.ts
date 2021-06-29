@@ -49,4 +49,16 @@ export function getClassName(proto: object) {
     return proto[Symbol.toStringTag] ?? proto.constructor?.name;
 }
 
+export function getSymbolName(symb: symbol) {
+    return symb.toString().slice(7, -1);
+}
+
+export function getUnrecognizedSymbolName(name: string) {
+    return `szr unknown: ${name}`;
+}
+
+export function getUnrecognizedSymbol(name: string) {
+    return Symbol(getUnrecognizedSymbolName(name));
+}
+
 export const version = pkgJson.version.split(".")[0];

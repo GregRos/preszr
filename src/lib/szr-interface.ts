@@ -29,6 +29,7 @@ export interface Decoder {
 export interface SzrSymbolEncoding {
     key: string;
     symbol: symbol;
+    metadata?: any;
 }
 
 export interface CustomEncoding {
@@ -59,7 +60,6 @@ export interface SzrOptions {
     skipValidateVersion: boolean;
     alsoNonEnumerable: boolean;
     errorOnUnknownClass: boolean;
-    alsoSymbolKeys: boolean;
     custom: Record<string, any>;
 }
 

@@ -1,5 +1,8 @@
 import {SzrMetadata, SzrRepresentation} from "../lib/szr-representation";
 import {version} from "../lib/utils";
+import {ExecutionContext, Macro} from "ava";
+import {decode, encode} from "../lib";
+import { cloneDeep } from "lodash";
 
 export function stringify(value: any) {
     if (typeof value === "object") {
@@ -29,6 +32,12 @@ export function createSparseArray<T>(arrayLikeObj: Record<any, T>): T[] {
     return arr;
 }
 
+export function embedSzrVersion(encoded) {
+    encoded = cloneDeep(encoded);
+    encoded[0].unshift(version);
+    return encoded;
+}
+
 export function createSzrRep([encodings, meta], ...arr): SzrRepresentation {
     const metadata = [version, encodings, meta] as SzrMetadata;
     return [metadata, ...arr];
@@ -39,7 +48,32 @@ export function szrDefaultMetadata(...arr): SzrRepresentation {
 }
 
 export function createWithTitle(macro, argsFunc, titleFunc) {
-    const newMacro = (...args) => macro(...argsFunc(...args));
+    const newMacro = (t, ...args) => macro(t, ...argsFunc(...args));
     newMacro.title = titleFunc;
     return newMacro;
 }
+
+export const testEncodeMacro: any = (t: ExecutionContext, decoded: any, encoded: any) => {
+    const rEncoded = encode(decoded) as any;
+    t.deepEqual(rEncoded, encoded);
+};
+export const testDecodeMacro: any = (t: ExecutionContext, decoded: any, encoded: any) => {
+    const rDecoded = decode(encoded);
+    t.deepEqual(rDecoded, decoded);
+};
+export const combAttachMetadata = titleFunc => {
+    const attachMetadata = (decoded, encoded) => [decoded, szrDefaultMetadata(...encoded)];
+    return [
+        createWithTitle(
+            testEncodeMacro,
+            attachMetadata,
+            (title, ...args) => `encode:: ${title ?? titleFunc(...args)}`
+        ),
+        createWithTitle(
+            testDecodeMacro,
+            attachMetadata,
+            (title, ...args) => `decode:: ${title ?? titleFunc(...args)}`
+        )
+    ] as [Macro<any>, Macro<any>];
+};
+

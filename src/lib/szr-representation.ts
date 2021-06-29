@@ -1,3 +1,5 @@
+import {getEncodedString} from "./utils";
+
 export type Version = string;
 
 export interface SzrEncodingInformation {
@@ -90,4 +92,5 @@ export function tryDecodeScalar(candidate: any) {
     }
     return noResultPlaceholder;
 }
+export const unrecognizedSymbolKey = getEncodedString("symbol?");
 
