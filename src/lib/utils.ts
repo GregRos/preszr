@@ -37,15 +37,23 @@ export function defaultsDeep(target: any, ...sources: any[]) {
 
 export function getRandomizedEncodedString(str: string) {
     const rnd = Math.random() * 100_000 | 0;
-    return `${getEncodedString(str)}-${rnd.toString(36)}`;
+    return `${getLibraryString(str)}-${rnd.toString(36)}`;
 
 }
 
-export function getEncodedString(str: string) {
+export function getLibraryString(str: string) {
     return `!@#szr-${str}`;
 }
 
-export function getClassName(proto: object) {
+export function getImplicitSymbolEncodingName(str: string) {
+    return getLibraryString(`symbol-${str}`);
+}
+
+export function getImplicitClassEncodingName(str: string) {
+    return getLibraryString(`class-${str}`);
+}
+
+export function getClassName(proto: object): string {
     return proto[Symbol.toStringTag] ?? proto.constructor?.name;
 }
 

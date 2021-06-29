@@ -1,4 +1,4 @@
-import {getEncodedString} from "./utils";
+import {getLibraryString} from "./utils";
 
 export type Version = string;
 
@@ -92,5 +92,5 @@ export function tryDecodeScalar(candidate: any) {
     }
     return noResultPlaceholder;
 }
-export const unrecognizedSymbolKey = getEncodedString("symbol?");
+export const unrecognizedSymbolKey = getLibraryString("symbol?");
 

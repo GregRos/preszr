@@ -7,10 +7,10 @@ import {
     SzrEncodingSpecifier,
     SzrEncoding,
     SzrSymbolEncoding,
-    getPrototypeEncoding, DecodeInitContext
+    getFullEncoding, DecodeInitContext
 } from "./szr-interface";
 import {
-    defaultsDeep, getEncodedString, getRandomizedEncodedString, getSymbolName, getUnrecognizedSymbol,
+    defaultsDeep, getLibraryString, getRandomizedEncodedString, getSymbolName, getUnrecognizedSymbol,
     version
 } from "./utils";
 import {
@@ -32,7 +32,7 @@ import {
 import {
     arrayEncoding, getUnsupportedEncoding, nullPlaceholder,
     nullPrototypeEncoding,
-    objectEncoding
+    objectEncoding, unsupportedEncodingKey
 } from "./encodings/basic";
 import {createFundamentalObjectEncoding} from "./encodings/scalar";
 import {SzrError} from "./errors";
@@ -47,7 +47,7 @@ const builtinEncodings = [
     createFundamentalObjectEncoding(String)
 ] as SzrEncodingSpecifier[];
 
-const bigintKey = getEncodedString("bigint");
+const bigintKey = getLibraryString("bigint");
 const builtinUnsupportedTypes = [
     WeakMap.prototype,
     WeakSet.prototype,
@@ -62,12 +62,39 @@ export class Szr {
     private _protoEncodings = [] as SzrPrototypeEncoding[];
 
     constructor(config?: DeepPartial<SzrConfig>) {
-        this._config = defaultsDeep(config, this._config);
+        this._config = defaultsDeep({}, config, this._config);
         const unsupportedEncoding = getUnsupportedEncoding(
             ...builtinUnsupportedTypes,
             ...this._config.unsupported,
         );
         this.addEncoding(...this._config.encodings, ...builtinEncodings, unsupportedEncoding);
+    }
+
+
+
+    get config() {
+        return this._config;
+    }
+
+    get encodings() {
+        const arr = this._protoEncodings.slice() as SzrEncoding[];
+        for (const encoding of this._symbToEncoding.values()) {
+            arr.push(encoding);
+        }
+        return arr;
+    }
+
+    hasEncoding(input: unknown): boolean {
+        const tryScalar = tryEncodeScalar(input);
+        if (tryScalar !== noResultPlaceholder) {
+            return true;
+        }
+        if (typeof input === "symbol") {
+            return !!this._symbToEncoding.get(input);
+        } else {
+            const protoEncoding = this._findEncodingForObject(input as object);
+            return protoEncoding && protoEncoding.key !== unsupportedEncodingKey;
+        }
     }
 
     private _buildEncodingCache() {
@@ -81,7 +108,7 @@ export class Szr {
 
     addEncoding(...encoders: SzrEncodingSpecifier[]) {
         for (const encSpecifier of encoders) {
-            const encoding = "symbol" in encSpecifier ? encSpecifier : getPrototypeEncoding(encSpecifier);
+            const encoding = getFullEncoding(encSpecifier);
             if (this._keyToEncoding.get(encoding.key)) {
                 throw new SzrError(`Encoding with the key '${encoding.key}' already exists.`);
             }
@@ -106,6 +133,9 @@ export class Szr {
             if (cached !== undefined) {
                 foundEncoding = cached;
                 break;
+            }
+            if (proto === nullPlaceholder) {
+                throw new SzrError("FindEncodingForObject got stuck. Internal Error.");
             }
         }
         foundEncoding ??= objectEncoding;
@@ -138,18 +168,46 @@ export class Szr {
         return objectEncoding;
     }
 
+    private _checkInputValid(input) {
+        let reason = "" as string;
+        let versionInfo = "" as any;
+        if (!Array.isArray(input)) {
+            reason = "input is not array";
+        } else {
+            const metadata = input?.[0];
+
+            if (!metadata) {
+                reason = "no metadata element";
+            } else if (!Array.isArray(metadata)) {
+                reason = "metadata element is not array";
+            } else {
+                versionInfo = metadata[0];
+                if (versionInfo == null) {
+                    reason = "no version info";
+                } else if (typeof versionInfo !== "string") {
+                    reason = "version is not string";
+                } else if (+versionInfo !== parseInt(versionInfo)) {
+                    reason = "version is not numeric";
+                } else if (input.length === 1) {
+                    reason = "input must have at least 2 elements";
+                }
+            }
+        }
+        if (reason) {
+            throw new SzrError(`Input is not szr-encoded: ${reason}`);
+        }
+        if (versionInfo !== version && !this._config.options.skipValidateVersion) {
+            throw new SzrError(`Input was encoded using version ${versionInfo}, but szr is version ${version}`);
+        }
+    }
+
     decode(input: any): any {
         const tryScalar = tryDecodeScalar(input);
         if (tryScalar !== noResultPlaceholder) return tryScalar;
         const metadata = input?.[0];
         const inputVersion = metadata?.[0];
         const {options} = this._config;
-        if (!Array.isArray(metadata) || inputVersion == null || +inputVersion !== parseInt(inputVersion) || input.length === 1) {
-            throw new SzrError("Input is not szr-encoded.");
-        }
-        if (inputVersion !== version && !options.skipValidateVersion) {
-            throw new SzrError(`Input was encoded using version ${inputVersion}, but szr is version ${version}`);
-        }
+        this._checkInputValid(input);
 
         const encodingInfo = metadata[1] as SzrEncodingInformation;
         const customMetadata = metadata[2] as SzrCustomMetadata;
@@ -267,7 +325,6 @@ export class Szr {
 export const defaultConfig: SzrConfig = {
     options: {
         alsoNonEnumerable: false,
-        errorOnUnknownClass: false,
         skipValidateVersion: false,
         custom: {}
     },

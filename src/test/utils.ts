@@ -3,6 +3,8 @@ import {version} from "../lib/utils";
 import {ExecutionContext, Macro} from "ava";
 import {decode, encode} from "../lib";
 import { cloneDeep } from "lodash";
+import {defaultConfig, Szr} from "../lib/szr";
+import {DecodeInitContext, EncodeContext} from "../lib/szr-interface";
 
 export function stringify(value: any) {
     if (typeof value === "object") {
@@ -53,14 +55,22 @@ export function createWithTitle(macro, argsFunc, titleFunc) {
     return newMacro;
 }
 
-export const testEncodeMacro: any = (t: ExecutionContext, decoded: any, encoded: any) => {
-    const rEncoded = encode(decoded) as any;
+const defaultSzr = new Szr();
+
+export const testEncodeMacro: any = (t: ExecutionContext, decoded: any, encoded: any, szr = defaultSzr) => {
+    const rEncoded = szr.encode(decoded) as any;
     t.deepEqual(rEncoded, encoded);
 };
-export const testDecodeMacro: any = (t: ExecutionContext, decoded: any, encoded: any) => {
-    const rDecoded = decode(encoded);
+export const testEncodeMacroBindSzr = szr => (a, b, c) => testEncodeMacro(a, b, c, szr);
+
+export const testDecodeMacro: any = (t: ExecutionContext, decoded: any, encoded: any, szr = defaultSzr) => {
+    const rDecoded = szr.decode(encoded);
     t.deepEqual(rDecoded, decoded);
 };
+
+export const testDecodeMacroBindSzr = szr => (a, b, c) => testDecodeMacro(a, b, c, szr);
+
+
 export const combAttachMetadata = titleFunc => {
     const attachMetadata = (decoded, encoded) => [decoded, szrDefaultMetadata(...encoded)];
     return [
@@ -77,3 +87,10 @@ export const combAttachMetadata = titleFunc => {
     ] as [Macro<any>, Macro<any>];
 };
 
+export function getDummyCtx() {
+    return {
+        ref: x => x,
+        options: defaultConfig.options,
+        deref: x => x
+    } as EncodeContext & DecodeInitContext;
+}

@@ -3,7 +3,7 @@ import {
     EncodeContext,
     SzrPrototypeEncoding
 } from "../szr-interface";
-import {getEncodedString} from "../utils";
+import {getLibraryString} from "../utils";
 import {fromByteArray, toByteArray} from "base64-js";
 type TypedArrayConstructor =
     Int8ArrayConstructor
@@ -18,7 +18,7 @@ type TypedArrayConstructor =
     | DataViewConstructor;
 
 export const arrayBufferEncoding: SzrPrototypeEncoding = {
-    key: getEncodedString("ArrayBuffer"),
+    key: getLibraryString("ArrayBuffer"),
     prototypes: [ArrayBuffer.prototype],
     encode(input: ArrayBuffer, ctx: EncodeContext): any {
         const b64 = fromByteArray(new Uint8Array(input));
@@ -34,7 +34,7 @@ export const arrayBufferEncoding: SzrPrototypeEncoding = {
 
 export function createTypedArrayEncoding(ctor: TypedArrayConstructor): SzrPrototypeEncoding {
     return {
-        key: getEncodedString(ctor.name),
+        key: getLibraryString(ctor.name),
         prototypes: [ctor.prototype],
         encode(input: InstanceType<TypedArrayConstructor>, ctx: EncodeContext): any {
             return arrayBufferEncoding.encode(input.buffer, ctx);

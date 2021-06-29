@@ -1,5 +1,6 @@
 import test from "ava";
 import {Szr} from "../lib/szr";
+import {getLibraryString} from "../lib/utils";
 
 function getCircular() {
     const a: any = {x: "a"};
@@ -15,6 +16,10 @@ function getCircular() {
 }
 
 const srz = new Szr();
+
+test("library string function", t => {
+    t.is(getLibraryString("a"), "!@#szr-a");
+});
 
 test("circular graph", t => {
     const result = srz.encode(getCircular());

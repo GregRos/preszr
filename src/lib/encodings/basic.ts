@@ -7,7 +7,7 @@ import {
     DecodeInitContext,
     Decoder, CustomEncoding
 } from "../szr-interface";
-import {getClassName, getEncodedString} from "../utils";
+import {getClassName, getLibraryString} from "../utils";
 import {Leaf, Reference} from "../szr-representation";
 import {SzrError} from "../errors";
 
@@ -57,7 +57,7 @@ function encodeObject(input, ctx: EncodeContext, alsoNonEnumerable: boolean) {
 
 export const objectEncoding: SzrPrototypeEncoding = {
     prototypes: [Object.prototype],
-    key: getEncodedString("object"),
+    key: getLibraryString("object"),
     encode(input: any, ctx: EncodeContext): any {
         return encodeObject(input, ctx, ctx.options.alsoNonEnumerable);
     },
@@ -79,7 +79,7 @@ function encodeAsSparseArray(input: any, ctx: EncodeContext) {
 }
 
 export const arrayEncoding: SzrPrototypeEncoding = {
-    key: getEncodedString("array"),
+    key: getLibraryString("array"),
     prototypes: [Array.prototype],
     encode(input: any, ctx: EncodeContext): any {
         const keys = Object.keys(input);
@@ -116,7 +116,7 @@ export const arrayEncoding: SzrPrototypeEncoding = {
 };
 export const nullPrototypeEncoding: SzrPrototypeEncoding = {
     ...objectEncoding,
-    key: getEncodedString("null"),
+    key: getLibraryString("null"),
     decoder: getPrototypeDecoder(null),
     prototypes: [nullPlaceholder]
 };
@@ -130,7 +130,15 @@ export function getPrototypeDecoder(proto: object | null) {
     } as Decoder;
 }
 
-export const unsupportedEncodingKey = getEncodedString("unsupported");
+export function getPrototypeEncoder(proto: object | null) {
+    return (input, ctx: EncodeContext) => {
+        const result = encodeObject(input, ctx, ctx.options.alsoNonEnumerable);
+        (ctx as any)._isImplicit = false;
+        return result;
+    };
+}
+
+export const unsupportedEncodingKey = getLibraryString("unsupported");
 
 export function getUnsupportedEncoding(...protos: object[]): SzrPrototypeEncoding {
     return {

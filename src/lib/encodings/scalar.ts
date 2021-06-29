@@ -4,11 +4,11 @@ import {
     EncodeContext,
     SzrPrototypeEncoding
 } from "../szr-interface";
-import {getEncodedString} from "../utils";
+import {getLibraryString} from "../utils";
 
 export const regexpEncoding: SzrPrototypeEncoding = {
     prototypes: [RegExp.prototype],
-    key: getEncodedString("regexp"),
+    key: getLibraryString("regexp"),
     encode(input: RegExp, ctx: EncodeContext): any {
         return [input.source, input.flags];
     },
@@ -20,7 +20,7 @@ export const regexpEncoding: SzrPrototypeEncoding = {
 };
 export const dateEncoding: SzrPrototypeEncoding = {
     prototypes: [Date.prototype],
-    key: getEncodedString("date"),
+    key: getLibraryString("date"),
     encode(input: Date, ctx: EncodeContext): any {
         return input.getTime();
     },
@@ -33,7 +33,7 @@ export const dateEncoding: SzrPrototypeEncoding = {
 
 export function createFundamentalObjectEncoding(ctor: { new(x): any }): SzrPrototypeEncoding {
     return {
-        key: getEncodedString(ctor.name),
+        key: getLibraryString(ctor.name),
         prototypes: [ctor.prototype],
         encode(input: any, ctx: EncodeContext): any {
             return input.valueOf();

@@ -8,7 +8,7 @@ import {
     SzrMetadata,
     undefinedEncoding
 } from "../lib/szr-representation";
-import {combAttachMetadata, createSparseArray, createSzrRep, stringify, testEncodeMacro} from "./utils";
+import {combAttachMetadata, createSparseArray, createSzrRep, stringify, szrDefaultMetadata, testEncodeMacro} from "./utils";
 import {arrayEncoding, unsupportedEncodingKey} from "../lib/encodings/basic";
 import {encode} from "../lib";
 
@@ -40,4 +40,15 @@ const emptyMetadata = [version, {}, {}] as SzrMetadata;
     test("object references two objects", simpleObjectTest, {a: {}, b: {}},
         [{a: "2", b: "3"}, {}, {}]
     );
+
+    test("skips non-enumerable", t => {
+        const x = {};
+        Object.defineProperty(x, "test", {
+            enumerable: false,
+            value: "test"
+        });
+        const encoded = encode(x);
+        t.deepEqual(encoded, szrDefaultMetadata({}));
+    });
+
 }

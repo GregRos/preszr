@@ -3,12 +3,12 @@ import {
     EncodeContext,
     SzrPrototypeEncoding
 } from "../szr-interface";
-import {getEncodedString} from "../utils";
+import {getLibraryString} from "../utils";
 import {Leaf} from "../szr-representation";
 
 export const mapEncoding: SzrPrototypeEncoding = {
     prototypes: [Map.prototype],
-    key: getEncodedString("Map"),
+    key: getLibraryString("Map"),
     encode(input: Map<any, any>, ctx: EncodeContext): any {
         const array = [] as [Leaf, Leaf][];
         for (const key of input.keys()) {
@@ -31,7 +31,7 @@ export const mapEncoding: SzrPrototypeEncoding = {
 
 export const setEncoding: SzrPrototypeEncoding = {
     prototypes: [Set.prototype],
-    key: getEncodedString("Set"),
+    key: getLibraryString("Set"),
     encode(input: Set<any>, ctx: EncodeContext): any {
         const outArray = [] as Leaf[];
         for (const item of input) {

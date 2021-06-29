@@ -1,11 +1,11 @@
 import {EncodeContext, SzrPrototypeEncoding} from "../szr-interface";
-import {getEncodedString} from "../utils";
+import {getLibraryString} from "../utils";
 import {objectEncoding} from "./basic";
 
 export function createErrorEncoding(errorCtor: {new(): Error}) {
     return {
         prototypes: errorCtor.prototype,
-        key: getEncodedString(errorCtor.name),
+        key: getLibraryString(errorCtor.name),
         encode(input: any, ctx: EncodeContext): any {
             const encodedAsObject = objectEncoding.encode(input, ctx);
             let insertStackTarget = encodedAsObject;
