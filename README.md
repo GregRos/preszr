@@ -1,8 +1,12 @@
 # Szr
 
-A lightweight library for encoding complex objects with references as simple JSON objects so they can be serialized. It also supports encoding type information, restoring an object's prototype after it has been decoded, and custom encodings in general. Szr does not use decorators or schemas.
+`szr` is a lightweight library for encoding complex objects so they can be serialized. The encoding `szr` uses creates a simple JSON output that describes objects, references between those objects, their prototypes, and so on. You can send this output over the network and use `szr` to reconstruct the original object at the destination, possibly attaching the correct prototype.
 
-For information about how szr encodes objects, see *szr representation* below.
+For more information about how `szr`represents objects, see *szr output* below.
+
+`szr` supports almost all platform-independent objects out of the box and can be easily configured to support your own. You can also write more involved encodings to support platform-specific objects and so on.
+
+Szr does not use decorators or schemas. It's a lot simpler than that.
 
 For example, this library can encode the object `obj` so that it can be serialized, sent over the network, and then deserialized at the destination.
 
@@ -24,14 +28,16 @@ obj.c = c;
 const encoded = JSON.stringify(encode(obj));
 ```
 
-Szr has support for all JavaScript primitives.
+Szr has support for almost all JavaScript primitives.
 
 * strings
 * undefined
 * null
 * numbers
+  * Including JSON-illegal values such as `Infinity`.
 * boolean
-* symbols*
+* bigint
+* symbols<sup>Requires some configuration</sup>
 
 And many built-in objects:
 
@@ -43,17 +49,19 @@ And many built-in objects:
 * Collections
   * Set
   * Map
-* Binary data
+* Platform-independent binary data
   * ArrayBuffer
-  * TypedArray
-  * etc
+  * TypedArrays
 * The object versions of primitives: Number, String, etc.
+* Errors have special support
+* 
 
 \* Using symbols requires configuration. By default they are ignored.
 
-The following aren't supported:
+The following are explicitly unsupported:
 
-* <s>functions</s>
+* Functions.
+* `WeakMap` and `WeakSet`. It's impossible to support them.
 
 ## Usage
 
@@ -82,7 +90,7 @@ const result = decode(serialized);
 
 ### `Szr`
 
-A encoder and decoder class. Use this to encode and decode objects using custom encoding.
+A encoder and decoder class. Use this to encode and decode objects with user-defined prototypes, symbols, and advanced encodings.
 
 ```typescript
 import {Szr} from "szr";
@@ -92,6 +100,119 @@ const szr = new Szr({
 const encoded = szr.encode(someObject);
 const result = szr.decode(encoded);
 ```
+
+You need to make sure `szr` is configured in the same way in the source and the destination.
+
+## Custom types
+
+By default, `szr` is only familiar with the built-in prototypes and symbols. If you want it to correctly attach your own prototypes, you'll need to supply them. To do that, you can pass the constructors to the `encodings` property during creation:
+
+```typescript
+class A {}
+
+class B {}
+
+const szr = new Szr({
+	encodings: [
+		A,
+        B
+    ]
+});
+```
+
+When `szr` encounters a prototype it doesn't know, it will use the closest prototype it *does* know, possibly descending down to `Object.prototype`. 
+
+Note that if your constructor is nameless, or if some of them have the same names, you might have to do some more configuration. See the *encodings* section below.
+
+### Symbols
+
+`szr` recognizes symbols in general and knows about most of the built-in symbols. If you want it to recognize your own symbols, you'll need to supply them to `encodings` in the same way.
+
+```typescript
+const symbol = Symbol("test")
+const szr = new Szr({
+	encodings: [
+        symbol
+    ]
+});
+```
+
+Just like with prototypes, if your symbol doesn't have a description or if you have several symbols with the same description, you'll have to supply a few more details. See more below.
+
+*Unlike with prototypes*, `szr` will still deal with symbols it doesn't know. When encoding, they will be marked as unknown symbols and their descriptions will be saved. When decoding, `szr` will generate a new symbol with a description similar to `szr unknown symbol X` for each symbol it doesn't recognize.
+
+## Encodings
+
+`szr` determines how to represent a particular object using an *encoding*. There are basically two types of encodings:
+
+1. Symbol encodings.
+2. Prototype encodings.
+
+Every encoding has a unique `key` that identifies it.
+
+### Symbol encodings
+
+A symbol encoding is just an object that tells `szr` about a symbol. Here is its type:
+
+```typescript
+export interface SzrSymbolEncoding {
+    key: string;
+    symbol: symbol;
+    metadata?: any;
+}
+```
+
+If you supply a symbol to `encodings` directly, it will be converted to this type under the hood. The `key` is taken from the symbol description.
+
+The `metadata` property is generally only used internally.
+
+### Prototype encoding
+
+A prototype encoding lets `szr` know how to encode and decode objects with specific prototypes. This only applies to proper objects - strings and the like are handled separately.
+
+If you pass a constructor as an encoding, `szr` will generate a complete prototype encoding under the hood as best it can. In general, it will work properly, but in some cases you will need more configuration.
+
+For example, if the prototype is nameless or if there are several prototypes with the same name, you will need to at least supply a `key`.
+
+```typescript
+export interface SzrPrototypeEncodingSpecifier {
+    key?: string;
+    prototype: object | null;
+    decoder?: Decoder;
+    encode?(input: any, ctx: EncodeContext): any;
+}
+```
+
+You can write the same code in the previous section as follows:
+
+```typescript
+class A {}
+
+class B {}
+
+const szr = new Szr({
+	encodings: [
+		{
+            key:"A", 
+            prototype: A.prototype
+        },
+        {
+            key: "B", 
+            prototype: B.prototype
+        }
+    ]
+});
+```
+
+You might notice that the encoding lets you specify `encode `and `decoder`. The default `encode` function uses the default object encoding. The `decoder` will attach the prototype during decoding. For more about what these functions do and how you can write more advanced encodings, see the following section.
+
+## Advanced encodings
+
+Encodings are incredibly versatile and can be used to handle objects, arrays, collections such as `Map`, binary data, regular expressions, and so on. It's all about how `encode` and `decoder` work.
+
+### Encode
+
+This function 
 
 ## Classes and custom encodings
 

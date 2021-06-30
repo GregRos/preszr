@@ -122,3 +122,5 @@ test("two recognized symbols", recognizedSymbolMacro,
     {a: testSymbol, b: testSymbol2},
     [[{2: getImplicitSymbolEncodingName("test"), 3: "test2"}, {}], {a: "2", b: "3"}, 0, 0]
 );
+
+// TODO: built-in symbols
