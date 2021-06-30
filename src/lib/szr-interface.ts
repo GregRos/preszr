@@ -1,23 +1,22 @@
-import {Leaf, SzrEntity, SzrPrimitive} from "./szr-representation";
-import {getPrototypeDecoder, getPrototypeEncoder, objectEncoding} from "./encodings/basic";
+import {SzrLeaf, SzrEntity, SzrPrimitive} from "./szr-representation";
+import {getPrototypeDecoder, getPrototypeEncoder, nullPlaceholder, objectEncoding} from "./encodings/basic";
 import {SzrError} from "./errors";
 import {getClassName, getImplicitClassEncodingName, getImplicitSymbolEncodingName, getLibraryString, getSymbolName} from "./utils";
 
-export type LegalValue = SzrPrimitive | SzrEntity | undefined | bigint;
 
 export interface EncodeContext {
-    ref(value: LegalValue): Leaf;
+    ref(value: any): SzrLeaf;
     options: SzrOptions;
-    metadata: unknown;
+    metadata: any;
 }
 
 export interface DecodeCreateContext {
     options: SzrOptions;
-    metadata: unknown;
+    metadata: any;
 }
 
 export interface DecodeInitContext extends DecodeCreateContext {
-    deref(value: Leaf): LegalValue;
+    deref(value: SzrLeaf): any;
 }
 
 export interface Decoder {
@@ -25,33 +24,29 @@ export interface Decoder {
     init?(target: any, encoded: any, ctx: DecodeInitContext): void;
 }
 
-
 export interface SzrSymbolEncoding {
     key: string;
     symbol: symbol;
     metadata?: any;
 }
 
-export interface CustomEncoding {
-    // The key that identifies this encoding. Must be unique.
-    key: string;
-
-    decoder: Decoder;
-
-    // Called to encode objects with the specified prototype. If not provided,
-    // objects will be encoded using the standard object encoding.
-    // You usually only need this to encode special objects, like collections.
-    encode(input: any, ctx: EncodeContext): any;
+export interface SzrPrototypeEncodingSpecifier {
+    key?: string;
+    prototype: object | null;
+    decoder?: Decoder;
+    encode?(input: any, ctx: EncodeContext): any;
 }
 
-export interface SzrPrototypeEncoding extends CustomEncoding {
-    // The prototype - specify this or prototype, not both
+export interface SzrPrototypeEncoding {
+    key: string;
     prototypes: object[];
+    decoder: Decoder;
+    encode(input: any, ctx: EncodeContext): any;
 }
 
 export type SzrEncoding = SzrPrototypeEncoding | SzrSymbolEncoding;
 
-export type SzrEncodingSpecifier = symbol | Function | Partial<SzrPrototypeEncoding & {prototype: object}> | SzrSymbolEncoding;
+export type SzrEncodingSpecifier = symbol | Function | SzrPrototypeEncodingSpecifier | SzrPrototypeEncoding | SzrSymbolEncoding;
 
 export interface SzrOptions {
     skipValidateVersion: boolean;
@@ -69,7 +64,11 @@ export type DeepPartial<T> = {
     [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K]
 };
 
-export function getSymbolEncoding(x: symbol): SzrSymbolEncoding {
+
+export function getSymbolEncoding(x: SzrSymbolEncoding | symbol): SzrSymbolEncoding {
+    if (typeof x !== "symbol") {
+        return x as any;
+    }
     const key = getSymbolName(x);
     if (!key) {
         throw new SzrError(`Failed to detect symbol name for ${String(x)}`);
@@ -77,46 +76,47 @@ export function getSymbolEncoding(x: symbol): SzrSymbolEncoding {
     return {
         key: getImplicitSymbolEncodingName(key),
         symbol: x,
-    };
+    } as any;
 }
 
-export function getFullEncoding(input: SzrEncodingSpecifier): SzrEncoding {
-    if (typeof input === "symbol") {
-        return getSymbolEncoding(input);
+export function getEncodingFromConstructor(ctor: Function) {
+    if (!ctor.prototype) {
+        throw new SzrError("Failed to detect prototype from constructor.");
     }
-    if ("symbol" in input) {
-        return input;
+    return getEncodingFromPrototypeSpecifier({
+        prototype: ctor.prototype
+    })
+}
+
+export function getEncodingFromPrototypeSpecifier(specifier: SzrPrototypeEncodingSpecifier) {
+    const encoding = {} as SzrPrototypeEncoding;
+    if (specifier.prototype === undefined) {
+        throw new SzrError("Encoding must specify prototype.");
     }
-    if (typeof input === "function") {
-        const proto = input.prototype;
-        if (!proto) {
-            throw new SzrError("Could not find prototype from constructor.");
-        }
-        input = {
-            prototypes: [proto]
-        } as Partial<SzrPrototypeEncoding>;
+    const proto = specifier.prototype ?? nullPlaceholder;
+    encoding.prototypes = [proto];
+    const className = getClassName(proto);
+    if (!className && !specifier.key) {
+        throw new SzrError(`No key has been provided, and the prototype has no name.`);
     }
-    if ("prototype" in input) {
-        input.prototypes = [input.prototype!];
+    encoding.key = specifier.key ?? getImplicitClassEncodingName(className!);
+    encoding.encode = specifier.encode ?? getPrototypeEncoder(proto);
+    encoding.decoder = specifier.decoder ?? getPrototypeDecoder(proto);
+    return encoding;
+}
+
+export function getFullEncoding(specifier: SzrEncodingSpecifier): SzrEncoding {
+    if (typeof specifier === "symbol" || "symbol" in specifier) return getSymbolEncoding(specifier);
+    if (typeof specifier === "function") return getEncodingFromConstructor(specifier);
+    if ("prototype" in specifier) return getEncodingFromPrototypeSpecifier(specifier);
+    if (!specifier.prototypes || specifier.prototypes.length === 0) {
+        throw new SzrError("Encoding must specify prototypes.");
     }
-    if (input.prototypes == null || input.prototypes.length === 0) {
-        throw new SzrError("Encoding specifier must specify prototypes.");
+    if (!("decoder" in specifier && "encode" in specifier)) {
+        throw new SzrError("Multi-prototype specifier must have both decoder and encode.");
     }
-    if (input.prototypes.length === 1) {
-        const [proto] = input.prototypes;
-        input.decoder ??= getPrototypeDecoder(proto);
-        input.encode ??= getPrototypeEncoder(proto);
-        if (input.key == null) {
-            const className = getClassName(proto);
-            if (!className) {
-                throw new SzrError(`No key has been provided, and the prototype has no name.`);
-            }
-            input.key = getImplicitClassEncodingName(className);
-        }
-    } else if (!("decoder" in input && "encode" in input)) {
-        throw new SzrError("If you specify multiple prototypes, you have to specify both `encode` and `decoder`");
-    } else if (input.key == null) {
-        throw new SzrError("If you provide multiple prototypes, you must provide a key.");
+    if (!specifier.key) {
+        throw new SzrError("Multi-prototype specifier must provide a key.");
     }
-    return input as SzrPrototypeEncoding;
+    return specifier;
 }

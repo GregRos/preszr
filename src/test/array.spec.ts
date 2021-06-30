@@ -1,4 +1,4 @@
-import {combAttachMetadata, createSparseArray, encodeDecodeMacro, stringify, testDecodeMacro, testEncodeMacro} from "./utils";
+import {combAttachHeader, createSparseArray, encodeDecodeMacro, stringify, testDecodeMacro, testEncodeMacro} from "./utils";
 import test from "ava";
 import {
     infinityEncoding,
@@ -11,7 +11,7 @@ import {version} from "../lib/utils";
 import {arrayEncoding} from "../lib/encodings/basic";
 
 {
-    const simpleArrayTest = combAttachMetadata(
+    const simpleArrayTest = combAttachHeader(
         (x, input) => `array with ${stringify(input[0])} element`);
 
     test(simpleArrayTest, [1], [[1]]);

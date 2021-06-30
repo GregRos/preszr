@@ -1,14 +1,13 @@
 import {
-    LegalValue,
     EncodeContext,
     SzrPrototypeEncoding,
     SzrOptions,
     DecodeCreateContext,
     DecodeInitContext,
-    Decoder, CustomEncoding
+    Decoder
 } from "../szr-interface";
 import {getClassName, getLibraryString} from "../utils";
-import {Leaf, Reference} from "../szr-representation";
+import {SzrLeaf, Reference} from "../szr-representation";
 import {SzrError} from "../errors";
 
 export const nullPlaceholder = {};
@@ -26,18 +25,18 @@ function decodeObject(target, input, ctx: DecodeInitContext) {
         let symbolKeys;
         [stringKeys, symbolKeys] = input;
         for (const [key, value] of Object.entries(symbolKeys)) {
-            target[ctx.deref(key) as symbol] = ctx.deref(value as Leaf);
+            target[ctx.deref(key) as symbol] = ctx.deref(value as SzrLeaf);
         }
     }
     for (const [key, value] of Object.entries(stringKeys)) {
-        target[key] = ctx.deref(value as Leaf);
+        target[key] = ctx.deref(value as SzrLeaf);
     }
     return target;
 }
 
 export function encodeObject(input, ctx: EncodeContext, alsoNonEnumerable: boolean, explicitlyInclude = [] as string[]) {
     const strKeyObject = {};
-    let symbKeyObject: Record<string, Leaf> | undefined;
+    let symbKeyObject: Record<string, SzrLeaf> | undefined;
     for (const key of getAllOwnKeys(input, !alsoNonEnumerable)) {
         const value = input[key];
         if (typeof key === "symbol") {

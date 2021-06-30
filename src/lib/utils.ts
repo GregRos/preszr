@@ -36,7 +36,7 @@ export function getImplicitClassEncodingName(str: string) {
     return getLibraryString(`class-${str}`);
 }
 
-export function getClassName(proto: object): string {
+export function getClassName(proto: object): string | null | undefined {
     return proto[Symbol.toStringTag] ?? proto.constructor?.name;
 }
 

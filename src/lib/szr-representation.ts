@@ -6,38 +6,42 @@ export interface SzrEncodingInformation {
     [key: number]: string;
 }
 
-export type SzrCustomMetadata = any;
+export type SzrData = SzrPrimitive | string | SzrDataObject | SzrData[];
 
-export type SzrMetadata = [Version, SzrEncodingInformation?, SzrCustomMetadata?];
+export interface SzrDataObject {
+    [key: string]: SzrData;
+    [key: number]: SzrData;
+}
+
+export interface SzrMetadata {
+    [key: number]: SzrData;
+}
+
+export type SzrHeader = [Version, SzrEncodingInformation, SzrMetadata];
 
 export type Reference = string;
 
-export type SzrEntity = string | object | any[] | symbol;
+export type SzrEntity = string | object | any[] | symbol | Function;
 
 export type SzrPrimitive = boolean | number | null;
+
+export type SzrEncodedScalar = string;
+
+export type SzrLeaf = SzrPrimitive | Reference | SzrEncodedScalar | string;
+
+export type SzrRepresentation = [SzrHeader, ...SzrData[]];
+
+export type SzrOutput = SzrRepresentation | SzrPrimitive | SzrEncodedScalar;
 
 export const undefinedEncoding = "-";
 export const infinityEncoding = "Infinity";
 export const negInfinityEncoding = "-Infinity";
 export const negZeroEncoding = "-0";
 export const nanEncoding = "NaN";
-export type EncodedScalar =
-    typeof undefinedEncoding
-    | typeof infinityEncoding
-    | typeof negZeroEncoding
-    | typeof negInfinityEncoding
-    | typeof nanEncoding
-    | string;
-
-export type Leaf = SzrPrimitive | Reference | EncodedScalar | string;
-
-export type SzrRepresentation = [SzrMetadata, ...unknown[]];
-
-export type SzrOutput = SzrRepresentation | SzrPrimitive | EncodedScalar | string;
 
 export const noResultPlaceholder = "";
 
-export function tryEncodeScalar(num: any): EncodedScalar | SzrPrimitive {
+export function tryEncodeScalar(num: any): SzrEncodedScalar | SzrPrimitive {
     if (num === null || typeof num === "boolean") {
         return num;
     }

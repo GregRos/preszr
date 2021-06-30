@@ -2,7 +2,7 @@ import test from "ava";
 import {Szr} from "../lib/szr";
 import {version} from "../lib/utils";
 import {decode} from "../lib";
-import {szrDefaultMetadata} from "./utils";
+import {szrDefaultHeader} from "./utils";
 
 test("version check disable", t => {
     const szr = new Szr({
@@ -30,7 +30,7 @@ test("non-enumerable properties", t => {
         value: true
     });
     const encoded = szr.encode(o);
-    t.deepEqual(encoded, szrDefaultMetadata({test: true}));
+    t.deepEqual(encoded, szrDefaultHeader({test: true}));
 });
 class TestClass {}
 

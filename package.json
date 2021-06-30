@@ -64,6 +64,7 @@
     "require": [
       "ts-node/register",
       "./src/test/setup.ts"
-    ]
+    ],
+    "timeout": "20s"
   }
 }

@@ -1,6 +1,5 @@
 import {
     DeepPartial,
-    LegalValue,
     EncodeContext,
     SzrConfig,
     SzrPrototypeEncoding,
@@ -14,13 +13,13 @@ import {
     version
 } from "./utils";
 import {
-    Leaf,
+    SzrLeaf,
     Reference,
-    SzrMetadata,
+    SzrHeader,
     SzrOutput,
     SzrRepresentation,
     SzrEncodingInformation,
-    SzrCustomMetadata,
+    SzrMetadata,
     SzrEntity,
     SzrPrimitive,
     tryEncodeScalar,
@@ -76,7 +75,7 @@ export class Szr {
             ...builtinUnsupportedTypes,
             ...this._config.unsupported,
         );
-        this.addEncoding(...this._config.encodings, ...builtinEncodings, unsupportedEncoding);
+        this.addEncoding(...builtinEncodings, unsupportedEncoding, ...this._config.encodings);
     }
 
     private _buildEncodingCache() {
@@ -96,7 +95,6 @@ export class Szr {
             }
             if ("prototypes" in encoding) {
                 this._protoEncodings.push(encoding);
-
             } else {
                 this._symbToEncoding.set(encoding.symbol, encoding);
             }
@@ -160,23 +158,23 @@ export class Szr {
         if (!Array.isArray(input)) {
             reason = "input is not array";
         } else {
-            const metadata = input?.[0];
+            const header = input?.[0];
 
-            if (!metadata) {
-                reason = "no metadata element";
-            } else if (!Array.isArray(metadata)) {
-                reason = "metadata element is not array";
+            if (!header) {
+                reason = "no header element";
+            } else if (!Array.isArray(header)) {
+                reason = "header element is not array";
             } else {
-                versionInfo = metadata[0];
+                versionInfo = header[0];
                 if (versionInfo == null) {
                     reason = "no version info";
                 } else if (typeof versionInfo !== "string") {
                     reason = "version is not string";
                 } else if (+versionInfo !== parseInt(versionInfo)) {
                     reason = "version is not numeric";
-                } else if (typeof metadata[1] !== "object" || !metadata[1]) {
+                } else if (typeof header[1] !== "object" || !header[1]) {
                     reason = "no encoding data or encoding data is not an object";
-                } else if (typeof metadata[2] !== "object" || !metadata[2]) {
+                } else if (typeof header[2] !== "object" || !header[2]) {
                     reason = "no custom metadata or custom metadata is not an object";
                 } else if (input.length === 1) {
                     reason = "input must have at least 2 elements";
@@ -194,12 +192,12 @@ export class Szr {
     decode(input: any): any {
         const tryScalar = tryDecodeScalar(input);
         if (tryScalar !== noResultPlaceholder) return tryScalar;
-        const metadata = input?.[0];
+        const header = input?.[0];
         const {options} = this._config;
         this._checkInputValid(input);
 
-        const encodingInfo = metadata[1] as SzrEncodingInformation;
-        const customMetadata = metadata[2] as SzrCustomMetadata;
+        const encodingInfo = header[1] as SzrEncodingInformation;
+        const metadata = header[2] as SzrMetadata;
         const targetArray = Array(input.length - 1);
         const needToInit = new Map<number, SzrPrototypeEncoding>();
         const ctx: DecodeInitContext = {
@@ -212,7 +210,7 @@ export class Szr {
             const encodingKey = encodingInfo[i];
             let cur = input[i];
             if (encodingKey === unrecognizedSymbolKey) {
-                targetArray[i] = getUnrecognizedSymbol(customMetadata[i]);
+                targetArray[i] = getUnrecognizedSymbol(metadata[i] as string);
                 continue;
             }
             if (encodingKey == null && typeof cur === "string") {
@@ -224,7 +222,7 @@ export class Szr {
                 targetArray[i] = encoding.symbol;
                 continue;
             }
-            ctx.metadata = customMetadata[i];
+            ctx.metadata = metadata[i];
             targetArray[i] = encoding.decoder.create(cur, ctx);
             if (encoding.decoder.init) {
                 needToInit.set(i, encoding);
@@ -238,32 +236,32 @@ export class Szr {
         };
         for (let key of needToInit.keys()) {
             const encoding = needToInit.get(key)!;
-            ctx.metadata = customMetadata[key];
+            ctx.metadata = metadata[key];
             encoding.decoder.init!(targetArray[key], input[key], ctx);
         }
         return targetArray[1];
     }
 
 
-    encode(root: SzrEntity | SzrPrimitive | undefined | bigint): SzrOutput {
+    encode(root: any): SzrOutput {
         try {
             const tryScalar = tryEncodeScalar(root);
             if (tryScalar !== noResultPlaceholder) return tryScalar;
             let encodingInfo = {} as SzrEncodingInformation;
-            let customMetadata = {} as SzrCustomMetadata;
+            let metadata = {} as SzrMetadata;
             const options = this._config.options;
-            const metadataArray = [
+            const header = [
                 version,
                 encodingInfo,
-                customMetadata
-            ] as SzrMetadata;
+                metadata
+            ] as SzrHeader;
 
-            const szrRep = [metadataArray] as SzrRepresentation;
+            const szrRep = [header] as SzrRepresentation;
             const objectToRef = new Map<object | symbol, Reference>();
             const ctx: EncodeContext = {
                 options,
                 metadata: undefined,
-                ref(value: any): Leaf {
+                ref(value: any): SzrLeaf {
                     if (typeof value === "string") {
                         return createNewRef(value);
                     }
@@ -276,20 +274,21 @@ export class Szr {
                     return existingRef;
                 }
             };
-            const createNewRef = (value: SzrEntity): Reference => {
+            const createNewRef = <T>(value: SzrEntity): Reference => {
                 const index = szrRep.length;
                 const ref = `${index}` as Reference;
                 if (typeof value === "string") {
                     szrRep.push(value);
                     return ref;
                 }
+
                 szrRep.push(0);
                 objectToRef.set(value, ref);
                 if (typeof value === "symbol") {
                     const encoding = this._findEncodingForSymbol(value);
                     encodingInfo[index] = encoding.key;
                     if (encoding.metadata) {
-                        customMetadata[index] = encoding.metadata;
+                        metadata[index] = encoding.metadata;
                     }
                     return ref;
                 }
@@ -301,7 +300,7 @@ export class Szr {
                 }
                 (ctx as any)._isImplicit = false;
                 if (ctx.metadata !== undefined) {
-                    customMetadata[index] = ctx.metadata;
+                    metadata[index] = ctx.metadata;
                 }
                 ctx.metadata = oldMetadata;
                 szrRep[index] = szed;

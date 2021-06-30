@@ -6,9 +6,9 @@ test("encoding - entity is array", t => {
     t.true(Array.isArray(encode({})));
 });
 
-test("decoding - first element is metadata", t => {
-    const [metadata, ...rest] = encode({}) as any[];
-    const [version, types, custom] = metadata;
+test("decoding - first element is header", t => {
+    const [header, ...rest] = encode({}) as any[];
+    const [version, types, custom] = header;
     t.is(version, pkgVersion);
     t.deepEqual(types, {});
     t.deepEqual(custom, {});
@@ -25,14 +25,14 @@ function isBadVersionError(err: Error) {
 test("decoding - error when trying to decode anomalous object", t => {
     const badPayloads = [
         {}, // non-array
-        [], // no metadata
-        [1], // invalid metadata
+        [], // no header
+        [1], // invalid header
         [[]], // no version
         [[pkgVersion, {}, {}]], // no data
         [["g", {}, {}], 1], // non-numeric version
         [[1, {}, {}], 1], // non-string version
         [["1"], 1], // no encoding info
-        [["1", {}], 1] // no custom metadata,
+        [["1", {}], 1] // no metadata,
     ] as any[];
 
     for (const payload of badPayloads) {

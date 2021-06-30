@@ -94,3 +94,6 @@ test("null prototype object", encodeDecodeMacro({
 
 
 
+// TODO: Add tests for override
+// TODO: Duplicate keys
+// TODO: override default, override unsupported

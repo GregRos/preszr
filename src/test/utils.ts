@@ -1,4 +1,4 @@
-import {SzrMetadata, SzrRepresentation} from "../lib/szr-representation";
+import {SzrHeader, SzrRepresentation} from "../lib/szr-representation";
 import {version} from "../lib/utils";
 import {ExecutionContext, Macro} from "ava";
 import {cloneDeep} from "lodash";
@@ -40,11 +40,11 @@ export function embedSzrVersion(encoded) {
 }
 
 export function createSzrRep([encodings, meta], ...arr): SzrRepresentation {
-    const metadata = [version, encodings, meta] as SzrMetadata;
-    return [metadata, ...arr];
+    const header = [version, encodings, meta] as SzrHeader;
+    return [header, ...arr];
 }
 
-export function szrDefaultMetadata(...arr): SzrRepresentation {
+export function szrDefaultHeader(...arr): SzrRepresentation {
     return createSzrRep([{}, {}], ...arr);
 }
 
@@ -73,17 +73,17 @@ export const testEncodeMacroBindSzr = szr => (a, b, c) => testEncodeMacro(a, b, 
 export const testDecodeMacroBindSzr = szr => (a, b, c) => testDecodeMacro(a, b, c, szr);
 
 
-export const combAttachMetadata = titleFunc => {
-    const attachMetadata = (decoded, encoded) => [decoded, szrDefaultMetadata(...encoded)];
+export const combAttachHeader = titleFunc => {
+    const attachHeader = (decoded, encoded) => [decoded, szrDefaultHeader(...encoded)];
     return [
         createWithTitle(
             testEncodeMacro,
-            attachMetadata,
+            attachHeader,
             (title, ...args) => `encode:: ${title ?? titleFunc(...args)}`
         ),
         createWithTitle(
             testDecodeMacro,
-            attachMetadata,
+            attachHeader,
             (title, ...args) => `decode:: ${title ?? titleFunc(...args)}`
         )
     ] as [Macro<any>, Macro<any>];

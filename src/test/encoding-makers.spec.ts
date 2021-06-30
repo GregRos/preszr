@@ -58,7 +58,7 @@ test("encoding from class", t => {
 
 test("encoding from prototype", t => {
     const encoding = getFullEncoding({
-        prototypes: [TestClass.prototype]
+        prototype: TestClass.prototype
     }) as SzrPrototypeEncoding;
     t.is(encoding.key, getImplicitClassEncodingName("TestClass"));
     t.is(encoding.prototypes.length, 1);
@@ -111,7 +111,7 @@ test("error - multiple prototypes provide key", t => {
         prototypes: [{}, {}],
         encode: (() => {}) as any,
         decoder: {} as any
-    }));
+    } as any));
     t.regex(err.message, /provide a key/);
 });
 
@@ -119,14 +119,14 @@ test("error - multiple prototypes, provide encoder/decoder", t => {
     const err = t.throws(() => getFullEncoding({
         prototypes: [{}, {}],
         key: "blah"
-    }));
+    } as any));
     t.regex(err.message, /encode.*decoder/);
 });
 
 test("error - no prototype(s)", t => {
     const err = t.throws(() => getFullEncoding({
 
-    }));
+    } as any));
 
     t.regex(err.message, /specify prototypes/);
 });
