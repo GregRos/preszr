@@ -277,7 +277,7 @@ export class Szr {
             };
             const createNewRef = <T>(value: SzrEntity): Reference => {
                 const index = szrRep.length;
-                const ref = `${index}` as Reference;
+                const ref = `${index}`;
                 if (typeof value === "string") {
                     szrRep.push(value);
                     return ref;

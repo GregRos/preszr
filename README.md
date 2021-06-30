@@ -1,4 +1,6 @@
 # Szr
+[![Coverage Status](https://coveralls.io/repos/github/GregRos/szr/badge.svg?branch=master)](https://coveralls.io/github/GregRos/szr?branch=master)
+[![Node.js CI](https://github.com/GregRos/szr/actions/workflows/main.yaml/badge.svg)](https://github.com/GregRos/szr/actions/workflows/main.yaml)
 
 `szr` is a lightweight library for encoding complex objects so they can be serialized. 
 

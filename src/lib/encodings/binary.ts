@@ -30,7 +30,7 @@ export const arrayBufferEncoding: SzrPrototypeEncoding = {
             return byteArray.buffer;
         }
     }
-}
+};
 
 export function createTypedArrayEncoding(ctor: TypedArrayConstructor): SzrPrototypeEncoding {
     return {
