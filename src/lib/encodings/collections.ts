@@ -13,7 +13,7 @@ export const mapEncoding: SzrPrototypeEncoding = {
         const array = [] as [SzrLeaf, SzrLeaf][];
         for (const key of input.keys()) {
             const value = input.get(key);
-            array.push([ctx.ref(key), ctx.ref(value)]);
+            array.push([ctx.encode(key), ctx.encode(value)]);
         }
         return array;
     },
@@ -23,7 +23,7 @@ export const mapEncoding: SzrPrototypeEncoding = {
         },
         init(target: Map<any, any>, encoded: [SzrLeaf, SzrLeaf][], ctx: DecodeInitContext) {
             for (const [key, value] of encoded) {
-                target.set(ctx.deref(key), ctx.deref(value));
+                target.set(ctx.decode(key), ctx.decode(value));
             }
         }
     }
@@ -35,7 +35,7 @@ export const setEncoding: SzrPrototypeEncoding = {
     encode(input: Set<any>, ctx: EncodeContext): any {
         const outArray = [] as SzrLeaf[];
         for (const item of input) {
-            outArray.push(ctx.ref(item));
+            outArray.push(ctx.encode(item));
         }
         return outArray;
     },
@@ -45,7 +45,7 @@ export const setEncoding: SzrPrototypeEncoding = {
         },
         init(target: Set<any>, encoded: SzrLeaf[], ctx: DecodeInitContext) {
             for (const item of encoded) {
-                target.add(ctx.deref(item));
+                target.add(ctx.decode(item));
             }
         }
     }

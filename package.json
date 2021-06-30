@@ -1,9 +1,9 @@
 {
   "name": "szr",
   "version": "0.1.0",
-  "description": "Library for serialization",
-  "main": "index.js",
-  "repository": "https://www.github.com/GregRos/transcurse",
+  "description": "A lightweight library for encoding complex objects so they can be serialized",
+  "main": "dist/lib/index.js",
+  "repository": "https://www.github.com/GregRos/szr",
   "author": "GregRos",
   "license": "MIT",
   "scripts": {

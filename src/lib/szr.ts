@@ -6,7 +6,7 @@ import {
     SzrEncodingSpecifier,
     SzrEncoding,
     SzrSymbolEncoding,
-    getFullEncoding, DecodeInitContext
+    DecodeInitContext
 } from "./szr-interface";
 import {
     defaultsDeep, getLibraryString, getSymbolName, getUnrecognizedSymbol,
@@ -37,6 +37,7 @@ import {SzrError} from "./errors";
 import {arrayBufferEncoding, typedArrayEncodings} from "./encodings/binary";
 import {mapEncoding, setEncoding} from "./encodings/collections";
 import {errorEncodings} from "./encodings/built-in";
+import {getFullEncoding} from "./encoding-constructors";
 
 
 const builtinEncodings = [
@@ -201,7 +202,7 @@ export class Szr {
         const targetArray = Array(input.length - 1);
         const needToInit = new Map<number, SzrPrototypeEncoding>();
         const ctx: DecodeInitContext = {
-            deref: null!,
+            decode: null!,
             metadata: undefined,
             options
         };
@@ -229,7 +230,7 @@ export class Szr {
             }
         }
 
-        ctx.deref = (value: any) => {
+        ctx.decode = (value: any) => {
             const decodedPrimitive = tryDecodeScalar(value);
             if (decodedPrimitive !== noResultPlaceholder) return decodedPrimitive;
             return targetArray[value];
@@ -261,7 +262,7 @@ export class Szr {
             const ctx: EncodeContext = {
                 options,
                 metadata: undefined,
-                ref(value: any): SzrLeaf {
+                encode(value: any): SzrLeaf {
                     if (typeof value === "string") {
                         return createNewRef(value);
                     }
@@ -306,7 +307,7 @@ export class Szr {
                 szrRep[index] = szed;
                 return ref;
             };
-            ctx.ref(root);
+            ctx.encode(root);
             return szrRep;
         } finally {
             this._tempSymbEncoding.clear();

@@ -27,7 +27,7 @@ export type SzrPrimitive = boolean | number | null;
 
 export type SzrEncodedScalar = string;
 
-export type SzrLeaf = SzrPrimitive | Reference | SzrEncodedScalar | string;
+export type SzrLeaf = SzrPrimitive | Reference | SzrEncodedScalar;
 
 export type SzrRepresentation = [SzrHeader, ...SzrData[]];
 

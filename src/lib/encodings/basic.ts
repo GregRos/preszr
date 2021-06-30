@@ -19,17 +19,17 @@ function getAllOwnKeys(obj: object, onlyEnumerable: boolean): PropertyKey[] {
     return keys;
 }
 
-function decodeObject(target, input, ctx: DecodeInitContext) {
+export function decodeObject(target, input, ctx: DecodeInitContext) {
     let stringKeys = input;
     if (Array.isArray(input)) {
         let symbolKeys;
         [stringKeys, symbolKeys] = input;
         for (const [key, value] of Object.entries(symbolKeys)) {
-            target[ctx.deref(key) as symbol] = ctx.deref(value as SzrLeaf);
+            target[ctx.decode(key) as symbol] = ctx.decode(value as SzrLeaf);
         }
     }
     for (const [key, value] of Object.entries(stringKeys)) {
-        target[key] = ctx.deref(value as SzrLeaf);
+        target[key] = ctx.decode(value as SzrLeaf);
     }
     return target;
 }
@@ -41,14 +41,14 @@ export function encodeObject(input, ctx: EncodeContext, alsoNonEnumerable: boole
         const value = input[key];
         if (typeof key === "symbol") {
             symbKeyObject ??= {};
-            symbKeyObject[ctx.ref(key) as string] = ctx.ref(value);
+            symbKeyObject[ctx.encode(key) as string] = ctx.encode(value);
         } else {
-            strKeyObject[key] = ctx.ref(value);
+            strKeyObject[key] = ctx.encode(value);
         }
     }
     for (const key of explicitlyInclude) {
         if (!(key in strKeyObject) && key in input) {
-            strKeyObject[key] = ctx.ref(input[key]);
+            strKeyObject[key] = ctx.encode(input[key]);
         }
     }
     if (symbKeyObject) {
@@ -96,7 +96,7 @@ export const arrayEncoding: SzrPrototypeEncoding = {
             if (i !== +keys[i]) {
                 return encodeAsSparseArray(input, ctx);
             }
-            newArray.push(ctx.ref(input[i]));
+            newArray.push(ctx.encode(input[i]));
         }
         (ctx as any)._isImplicit = true;
         return newArray;
@@ -112,7 +112,7 @@ export const arrayEncoding: SzrPrototypeEncoding = {
                 return;
             }
             for (let i = 0; i < input.length; i++) {
-                target[i] = ctx.deref(input[i]);
+                target[i] = ctx.decode(input[i]);
             }
         }
     }

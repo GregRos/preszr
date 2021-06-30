@@ -6,3 +6,5 @@ export const encode = x => defaultSzr.encode(x);
 
 export const decode = x => defaultSzr.decode(x);
 
+export {Szr};
+

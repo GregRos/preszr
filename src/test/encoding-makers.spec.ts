@@ -1,7 +1,8 @@
 import test from "ava";
-import {DecodeCreateContext, EncodeContext, getFullEncoding, SzrPrototypeEncoding, SzrSymbolEncoding} from "../lib/szr-interface";
+import {DecodeCreateContext, EncodeContext, SzrPrototypeEncoding, SzrSymbolEncoding} from "../lib/szr-interface";
 import {getImplicitClassEncodingName, getImplicitSymbolEncodingName, getLibraryString} from "../lib/utils";
 import {getDummyCtx} from "./utils";
+import {getFullEncoding} from "../lib/encoding-constructors";
 
 const testSymbol = Symbol("test");
 
@@ -120,7 +121,7 @@ test("error - multiple prototypes, provide encoder/decoder", t => {
         prototypes: [{}, {}],
         key: "blah"
     } as any));
-    t.regex(err.message, /encode.*decoder/);
+    t.regex(err.message, /decoder.*encode/);
 });
 
 test("error - no prototype(s)", t => {

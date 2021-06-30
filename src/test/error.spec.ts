@@ -9,6 +9,7 @@ function errorsEqualWithTrace(err1: Error, err2: Error) {
         err1.message === err2.message &&
         err1.stack === err2.stack;
 }
+
 export const errorDecodeMacro: any = (t: ExecutionContext, decoded: any, encoded: any) => {
     const rDecoded = decode(encoded);
     t.is(rDecoded.name, decoded.name);
@@ -18,14 +19,11 @@ export const errorDecodeMacro: any = (t: ExecutionContext, decoded: any, encoded
     t.deepEqual(rDecoded, decoded);
 };
 
-function getErrorFields(err: Error) {
-    const err2 = {...err};
-    for (const key of ["stack", "name", "message"]) {
-        if (Object.prototype.hasOwnProperty.call(err, key)) {
-            err2[key] = err[key];
-        }
-    }
-}
+test("works on Error", t => {
+    const err1 = new Error();
+    const err2 = new Error();
+    t.deepEqual(err1, err2);
+});
 
 const macro = encodeDecodeMacro({
     encode: testEncodeMacro,
@@ -60,8 +58,29 @@ test("error subclass", macro, err2, [
 ]);
 
 class SubError extends Error {
-
+    name = "hello";
 }
 SubError.prototype.name = "SubError";
-const err3 = new SubError();
+const err3 = new SubError("test");
 
+test("Unknown error subclass", encodeDecodeMacro({
+    encode: testEncodeMacro,
+    decode(t: ExecutionContext, decoded, encoded) {
+        const rDecoded = decode(encoded);
+        t.is(rDecoded.name, decoded.name);
+        t.is(rDecoded.stack, decoded.stack);
+        t.is(rDecoded.message, decoded.message);
+        t.is(Object.getPrototypeOf(rDecoded), Error.prototype);
+    }
+
+}), err3, [
+    [{1: getLibraryString("Error")}, {}],
+    {
+        stack: "3",
+        name: "2",
+        message: "4"
+    },
+    err3.name,
+    err3.stack,
+    err3.message
+]);
