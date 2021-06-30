@@ -1,6 +1,11 @@
 // @ts-ignore
-import * as pkgJson from "../../package.json";
 
+let pkgJson;
+try {
+    pkgJson = require("../../package.json");
+} catch (err) {
+    pkgJson = require("./package.json");
+}
 export function _defaultsDeep(target: any, source: any) {
     target = Object(target);
     if (!source) return target;

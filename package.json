@@ -1,11 +1,16 @@
 {
   "name": "szr",
-  "version": "0.1.0",
-  "description": "A lightweight library for encoding complex objects so they can be serialized",
-  "main": "dist/lib/index.js",
+  "version": "0.1.2",
+  "description": "A lightweight library for encoding complex objects so they can be serialized.",
+  "main": "index.js",
   "repository": "https://www.github.com/GregRos/szr",
   "author": "GregRos",
   "license": "MIT",
+  "keywords": [
+    "serialize",
+    "deserialize",
+    "serialization"
+  ],
   "scripts": {
     "clean": "shx rm -rf dist/",
     "build": "tsc",
@@ -65,6 +70,6 @@
       "ts-node/register",
       "./src/test/setup.ts"
     ],
-    "timeout": "20s"
+    "timeout": "30s"
   }
 }

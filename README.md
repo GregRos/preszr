@@ -1,6 +1,7 @@
 # Szr
-[![Coverage Status](https://coveralls.io/repos/github/GregRos/szr/badge.svg?branch=master)](https://coveralls.io/github/GregRos/szr?branch=master)
 [![Node.js CI](https://github.com/GregRos/szr/actions/workflows/main.yaml/badge.svg)](https://github.com/GregRos/szr/actions/workflows/main.yaml)
+[![Coverage Status](https://coveralls.io/repos/github/GregRos/szr/badge.svg?branch=master)](https://coveralls.io/github/GregRos/szr?branch=master)
+[![npm](https://img.shields.io/npm/v/szr)](https://www.npmjs.com/package/szr)
 
 `szr` is a lightweight library for encoding complex objects so they can be serialized. 
 
@@ -12,10 +13,24 @@ For more information about how `szr`represents objects, see *szr output* below.
 
 Szr does not use decorators or schemas. It's a lot simpler than that.
 
-## Examples
+## Installing
+
+First, install the package.
+
+```
+yarn add szr
+```
+
+Or:
+
+```
+npm install szr --save
+```
+
+## Example
 
 ```javascript
-import {decode, encode, Szr} from "szr";
+import {decode, encode} from "szr";
 
 
 test("simple object", t => {
@@ -122,7 +137,7 @@ A encoder and decoder class. Use this to encode and decode objects with user-def
 import {Szr} from "szr";
 
 const szr = new Szr({
-	encodings: [
+    encodings: [
         //... optional
     ],
     options: {
@@ -146,8 +161,8 @@ class A {}
 class B {}
 
 const szr = new Szr({
-	encodings: [
-		A,
+    encodings: [
+        A,
         B
     ]
 });
@@ -164,7 +179,7 @@ Note that if your constructor is nameless, or if some of them have the same name
 ```typescript
 const symbol = Symbol("test")
 const szr = new Szr({
-	encodings: [
+    encodings: [
         symbol
     ]
 });
@@ -222,8 +237,8 @@ class A {}
 class B {}
 
 const szr = new Szr({
-	encodings: [
-		{
+    encodings: [
+        {
             key:"A", 
             prototype: A.prototype
         },
@@ -314,11 +329,11 @@ While this system is flexible enough to encode all sorts of objects, there are t
 
 ```typescript
 class ClassWithPrivateField {
- 	#value;
-  	constructor(input) {
-		this.#value = input;
- 	}
-	get value() {
+    #value;
+    constructor(input) {
+        this.#value = input;
+    }
+    get value() {
         return this.#value;
     }
 }
@@ -388,8 +403,8 @@ The encoding information is an object where the keys are szr references and the 
 
 ```typescript
 {
-	1: "Type1",
-	2: "Type2",
+    1: "Type1",
+    2: "Type2",
     3: "symbol1"
 }
 ```
@@ -402,7 +417,7 @@ Metadata is used to store extra information about an encoded entity. Its format 
 
 ```typescript
 {
-	1: true,
+    1: true,
     2: {text: "hello"}
 }
 ```
