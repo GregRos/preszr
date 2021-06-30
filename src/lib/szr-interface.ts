@@ -27,7 +27,7 @@ export interface SzrSymbolEncoding {
     metadata?: any;
 }
 
-export interface SzrPrototypeEncodingSpecifier {
+export interface SzrPrototypeSpecifier {
     key?: string;
     prototype: object | null;
     decoder?: Decoder;
@@ -43,7 +43,7 @@ export interface SzrPrototypeEncoding {
 
 export type SzrEncoding = SzrPrototypeEncoding | SzrSymbolEncoding;
 
-export type SzrEncodingSpecifier = symbol | Function | SzrPrototypeEncodingSpecifier | SzrPrototypeEncoding | SzrSymbolEncoding;
+export type SzrEncodingSpecifier = symbol | Function | SzrPrototypeSpecifier | SzrPrototypeEncoding | SzrSymbolEncoding;
 
 export interface SzrOptions {
     skipValidateVersion: boolean;

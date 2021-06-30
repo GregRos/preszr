@@ -3,7 +3,7 @@ import {decode, encode} from "../lib";
 import {createSzrRep, createWithTitle, embedSzrVersion, testDecodeMacro, testEncodeMacro} from "./utils";
 import {objectEncoding, unsupportedEncodingKey} from "../lib/encodings/basic";
 import {unrecognizedSymbolKey} from "../lib/szr-representation";
-import {getImplicitSymbolEncodingName, getSymbolName, getUnrecognizedSymbol, getUnrecognizedSymbolName} from "../lib/utils";
+import {getImplicitSymbolEncodingName, getLibraryString, getSymbolName, getUnrecognizedSymbol, getUnrecognizedSymbolName} from "../lib/utils";
 import {Szr} from "../lib/szr";
 
 const testSymbol = Symbol("test");
@@ -15,6 +15,10 @@ const unrecognizedSymbolMacro = (decodeImpl: UntitledMacro<[any]>) => {
         createWithTitle(decodeImpl, (decoded, encoded) => [embedSzrVersion(encoded)], title => `decode :: ${title}`)
     ] as [any, any];
 };
+
+test("library string function", t => {
+    t.is(getLibraryString("a"), "!@#szr-a");
+});
 
 test("unrecognized symbol name generator", t => {
     t.is(getSymbolName(getUnrecognizedSymbol("x")), "szr unknown: x");

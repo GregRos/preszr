@@ -3,7 +3,7 @@ import test from "ava";
 import {encodeDecodeMacro, testDecodeMacroBindSzr, testEncodeMacro, testEncodeMacroBindSzr} from "./utils";
 import {decode} from "../lib";
 import {Szr} from "../lib/szr";
-import {getImplicitClassEncodingName} from "../lib/utils";
+import {getImplicitClassEncodingName, version} from "../lib/utils";
 import {nullPrototypeEncoding} from "../lib/encodings/basic";
 
 class TestClass {
@@ -91,9 +91,42 @@ test("null prototype object", encodeDecodeMacro({
     }
 }), Object.create(null), [[{1: nullPrototypeEncoding.key}, {}], {}]);
 
+test("override prototype", t => {
+    const szr = new Szr({
+        encodings: [
+            TestClass,
+            {
+                key: "override",
+                prototype: TestClass.prototype,
+                encode: () => 5,
+                decoder: {
+                    create: () => 5
+                }
+            }
+        ]
+    });
 
+    const encoded = szr.encode(new TestClass());
+    t.deepEqual(encoded, [[version, {1: "override"}, {}], 5]);
+    const decoded = szr.decode(encoded);
+    t.is(decoded, 5);
+});
 
+test("override built-in prototype", t => {
+    const szr = new Szr({
+        encodings: [
+            {
+                prototype: Date.prototype,
+                key: "new-date",
+                encode: () => 5,
+                decoder: {
+                    create: () => 5
+                }
+            }
+        ]
+    });
 
-// TODO: Add tests for override
-// TODO: Duplicate keys
-// TODO: override default, override unsupported
+    const encoded = szr.encode(new Date());
+    t.deepEqual(encoded, [[version, {1: "new-date"}, {}], 5]);
+    t.is(szr.decode(encoded), 5);
+});

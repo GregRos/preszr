@@ -10,27 +10,40 @@ For more information about how `szr`represents objects, see *szr output* below.
 
 Szr does not use decorators or schemas. It's a lot simpler than that.
 
-For example, this library can encode the object `obj` so that it can be serialized, sent over the network, and then deserialized at the destination.
+## Examples
 
 ```javascript
-import {encode} from "szr";
+import {decode, encode, Szr} from "szr";
 
-const obj = {};
-const b = {
-    int: 1,
-    bool: true,
-    obj
-};
-const c = {
-    obj,
-    b
-};
-obj.b = b;
-obj.c = c;
-const encoded = JSON.stringify(encode(obj));
+
+test("simple object", t => {
+    const obj2 = {};
+    const obj = {
+        boolean: true,
+        number: 1,
+        nonJsonNumber: Infinity,
+        string: "hello",
+        null: null,
+        map: new Map([[
+            1, 1
+        ]]),
+        set: new Set([5]),
+        array: [1],
+        date: new Date(),
+        regexp: /abc/gi,
+        ref1: obj2,
+        ref2: obj2
+    };
+
+    const decoded = decode(
+        JSON.parse(JSON.stringify(encode(obj)))
+    );
+    t.deepEqual(decoded, obj);
+    t.is(decoded.ref1, decoded.ref2);
+});
 ```
 
-## Support
+## Supported Inputs
 
 Szr has support for almost all JavaScript primitives.
 
@@ -66,6 +79,12 @@ The following are explicitly unsupported:
 * Functions.
 * `WeakMap` and `WeakSet`. It's impossible to support them.
 
+The following information is generally discarded:
+
+1. Additional object properties you add to known objects such as `Map`.
+2. Property descriptors.
+3. The state of sticky regular expressions.
+
 ## Usage
 
 The `szr` package exposes three main members.
@@ -78,6 +97,7 @@ Encodes an object using default settings. Uses only built-in encodings.
 
 ```javascript
 import {encode} from "szr";
+
 const result = encode(someObject);
 ```
 
@@ -87,6 +107,7 @@ Decodes an object encoded using default settings. Uses only built-in encodings.
 
 ```javascript
 import {encode, decode} from "szr";
+
 const encoded = encode(someObject);
 const result = decode(serialized);
 ```
@@ -97,11 +118,18 @@ A encoder and decoder class. Use this to encode and decode objects with user-def
 
 ```typescript
 import {Szr} from "szr";
+
 const szr = new Szr({
-	// Options, type information, etc
+	encodings: [
+        //... optional
+    ],
+    options: {
+        //... optional
+    }
 });
+
 const encoded = szr.encode(someObject);
-const result = szr.decode(encoded);
+const decoded = szr.decode(encoded);
 ```
 
 You need to make sure `szr` is configured in the same way in the source and the destination.
@@ -176,7 +204,7 @@ A prototype encoding lets `szr` know how to encode and decode objects with speci
 If you pass a constructor as an encoding, `szr` will generate a complete prototype encoding under the hood as best it can. In general, it will work properly, but in some cases you will need more configuration. For example, if the prototype is nameless or if there are several prototypes with the same name, you will need to at least supply a `key`.
 
 ```typescript
-export interface SzrPrototypeEncodingSpecifier {
+export interface SzrPrototypeSpecifier {
     key?: string;
     prototype: object | null;
     decoder?: Decoder;

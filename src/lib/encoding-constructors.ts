@@ -1,7 +1,7 @@
 import {SzrError} from "./errors";
 import {getPrototypeDecoder, getPrototypeEncoder, nullPlaceholder} from "./encodings/basic";
 import {getClassName, getImplicitClassEncodingName, getImplicitSymbolEncodingName, getSymbolName} from "./utils";
-import {SzrEncoding, SzrEncodingSpecifier, SzrPrototypeEncoding, SzrPrototypeEncodingSpecifier, SzrSymbolEncoding} from "./szr-interface";
+import {SzrEncoding, SzrEncodingSpecifier, SzrPrototypeEncoding, SzrPrototypeSpecifier, SzrSymbolEncoding} from "./szr-interface";
 
 export function getSymbolEncoding(x: SzrSymbolEncoding | symbol): SzrSymbolEncoding {
     if (typeof x !== "symbol") {
@@ -26,10 +26,13 @@ export function getEncodingFromConstructor(ctor: Function) {
     });
 }
 
-export function getEncodingFromPrototypeSpecifier(specifier: SzrPrototypeEncodingSpecifier) {
+export function getEncodingFromPrototypeSpecifier(specifier: SzrPrototypeSpecifier) {
     const encoding = {} as SzrPrototypeEncoding;
     if (specifier.prototype === undefined) {
         throw new SzrError("Encoding must specify prototype.");
+    }
+    if (typeof specifier.prototype === "function") {
+        throw new SzrError("Prototype cannot be a function. Did you supply a constructor instead?");
     }
     const proto = specifier.prototype ?? nullPlaceholder;
     encoding.prototypes = [proto];
