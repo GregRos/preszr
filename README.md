@@ -76,6 +76,7 @@ Szr has support for almost all JavaScript primitives.
 And many built-in objects:
 
 * Plain objects and arrays
+  * Note that by default only enumerable keys are used.
 * Sparse arrays, arrays with string keys
 * Objects with symbol keys
 * Regular expressions
@@ -241,7 +242,7 @@ export interface SzrPrototypeSpecifier {
     key?: string;
     prototype: object | null;
     decoder?: Decoder;
-    encode?(input: any, ctx: EncodeContext): SzrData;
+    encode?(input: any, ctx: EncodeContext): SzrEncodedEntity;
 }
 ```
 
@@ -254,7 +255,7 @@ Note that instead of the `prototype` property, you can supply `prototypes` inste
 The signature of this function is as follows:
 
 ```typescript
-(input: any, ctx: EncodeContext) => SzrData;
+(input: any, ctx: EncodeContext) => SzrEncodedEntity;
 ```
 
 This function should return simple data that can be represented in JSON. So that means:
@@ -289,8 +290,8 @@ Unlike encoding, decoding is a two-step process. Here is the type of the decoder
 
 ```typescript
 interface Decoder {
-    create(encoded: SzrData, ctx: DecodeCreateContext): any;
-    init?(target: any, encoded: SzrData, ctx: DecodeInitContext): void;
+    create(encoded: SzrEncodedEntity, ctx: DecodeCreateContext): any;
+    init?(target: any, encoded: SzrEncodedEntity, ctx: DecodeInitContext): void;
 }
 ```
 
@@ -313,10 +314,10 @@ Here `ctx` exposes the member `ctx.decode` which is the reverse of `ctx.encode`.
 Take a look at how the `SetEncoding` is implemented in the library.
 
 ```typescript
-export const setEncoding: SzrPrototypeEncoding = {
+export const SetEncoding: SzrPrototypeEncoding = {
     prototypes: [Set.prototype],
     key: getLibraryString("Set"),
-    encode(input: Set<any>, ctx: EncodeContext): any {
+    encode(input: Set<any>, ctx: EncodeContext): SzrEncodedEntity {
         const outArray = [] as SzrLeaf[];
         for (const item of input) {
             outArray.push(ctx.encode(item));
@@ -324,7 +325,7 @@ export const setEncoding: SzrPrototypeEncoding = {
         return outArray;
     },
     decoder: {
-        create(encoded: any, ctx: DecodeCreateContext): any {
+        create(): any {
             return new Set();
         },
         init(target: Set<any>, encoded: SzrLeaf[], ctx: DecodeInitContext) {
@@ -336,9 +337,11 @@ export const setEncoding: SzrPrototypeEncoding = {
 };
 ```
 
+Note how each element of the set is encoded using `ctx.encode`. In `create`, an empty set is created, while in `init` we decode the elements of the set.
+
 #### Caveats
 
-While this system is flexible enough to encode all sorts of objects, there are things it can't encode. For example, take the following object, which uses [JS private fields](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_class_fields):
+While this system is flexible enough to work with all sorts of objects, there are objects it can't decode. For example, take the following object, which uses [JS private fields](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_class_fields):
 
 ```typescript
 class ClassWithPrivateField {
@@ -352,57 +355,46 @@ class ClassWithPrivateField {
 }
 ```
 
-`szr` cannot decode this class.
+While `szr` can encode this class (you would need to write a special encoder for it), it can't decode it, as the only way to set the field `#value` is via the constructor. The field might contain an object, so it has to be decoded as well. This raises a problem:
 
-1. During `create`, decoding internal data isn't available, so the contents of `value` (which could be another object) cannot be decoded.
-2. During `init`, you can't return a newly constructed value and there is no way to call a class constructor on an arbitrary object. 
+1. During `create`, decoding values isn't available since objects haven't been created yet.
+2. During `init`, it's impossible to access the private field `#value` outside the class and it's also impossible to return a new instance.
 
-This problem might be solved by adding a `decode` function in the `create` phase. However, since objects haven't been created yet, this means the function would have to decode objects recursively. If an encoding tried to decode a reference to an object higher up the stack, it would have to error to avoid infinite recursion.
+This problem can be solved by adding another member to the class so the `#value` field could be set outside the constructor.
 
-This could be solved by adding another member so it can be initialized separately.
+One approach to solving this problem in the library is to add a `decode` function in the `create` phase (or else just have one decode phase, similarly to encode). The problem is `decode` would need to be recursive, and wouldn't be able to deal with circular references.
+
+Splitting up the decoding process like this lets us avoid that problem.
 
 ## Szr Output
 
-### Entities
+The *szr output* is the result of encoding a value using `szr`. If used to encode primitives other than strings and symbols, it will return a single value:
 
-An entity is one of the following:
+1. For JSON-legal primitives, it will return the value unchanged.
+2. For other primitives it will return an encoded value, usually a string of some sort.
 
-1. An object.
-2. An array.
-3. A string.
-4. A symbol
+For example, encoding a `bigint` returns the string `B${n}`. Other inputs, including objects, strings, and symbols, will return an array in the *szr format*. These inputs are also known as *entities* in the context of this library.
 
-When encoded, it will result in an array:
+### Szr Format
+
+The *szr format* is an array as follows:
 
 ```typescript
 [header, szrData1, szrData2, szrData3, ...]
 ```
 
-The first element of the array is always the *header*, which contains version and encoding information. The next element is the *szr representation* for the entity being encoded.
+The first element of the array is always the *header*, which contains version and encoding information. All the other elements are the results of applying an encoding on an *entity*.
 
-When encoding an entity, `szr` will recursively traverse it, applying different encodings, replacing entities with references to some entities, and encoding special scalars. 
+As we discussed earlier, while encoding a value `szr` will encode its contents recursively. Each entity encoded in this way will be added to the end of the array, so that the final result will contain all encoded entities in the order of appearance.
 
-adding the entities it references to the output and replacing them with *szr references* to those entities. An *szr reference* is simply `"${i}"` which `i` is the index of the entity in the array, e.g. `"1"`, `"2"` and so forth. Note that because the first element is always the header, `"0"` doesn't correspond to anything.
+When an entity is encoded using the `ctx.encode` function, it will return an *szr reference* to the entity, which is just a numeric string that is the index of the encoded entity in the array, e.g. `"1"`, `"2"`, etc. Note that because the first element is always the header, `"0"` doesn't correspond to anything.
 
-The exact *szr representation* of an entity depends on the encoding used. Here are representations for common entities.
+The exact format of an szr encoded entity varies depending on the encoding:
 
-1. **An object** - An object, with all references to entities replaced by *szr references*. Non-entity values remain as-is. Objects with symbol properties are handled differently.
-2. **An array** - An array, with all entity elements replaced by *szr references*. Sparse arrays and arrays with string keys are handled differently.
-3. **A string** - No special representation. Strings are treated as entities so that they aren't confused with szr references.
-4. **A symbol** - 0. The identity of the symbol is stored as metadata.
-
-In general, however, an *szr representation* can be any JSON-legal value - such as an object, a string, and so on.
-
-### Encoding scalars
-
-Some numeric values are valid in JavaScript but not in JSON. These values are specially encoded.
-
-1. `Infinity` is encoded as `"Infinity"`.
-2. `-Infinity` is encoded as `"-Infinity"`.
-3. `-0` is encoded is `"-0"`.
-4. `NaN` is encoded as `"NaN"`.
-5. `undefined` is encoded as `-`
-6. `bigint` is encoded as `"B${value}"`
+1. **An object** - An object with all its property values encoded using `ctx.encode`. Non-entity values remain as-is. Objects with symbol properties have a more complex encoding.
+2. **An array** - An array with its elements encoded using `ctx.encode`. Sparse arrays and arrays with string object keys are encoded like objects.
+3. **A string** - No special representation. Strings are treated as entities because otherwise it would be harder to implement references, encoded values, and so on. This also reduces the payload size since identical strings only need to appear once in the output.
+4. **A symbol** - 0. The identity of the symbol is the encoding itself, which is part of the header.=
 
 ### Header Structure
 

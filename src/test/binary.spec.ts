@@ -1,7 +1,7 @@
 import test from "ava";
 import {encodeDecodeMacro, testDecodeMacro, testEncodeMacro, toBase64} from "./utils";
-import {getLibraryString} from "../lib/utils";
-import {typedArrayCtors} from "../lib/encodings/binary";
+import {getLibraryString} from "../lib/internal/utils";
+import {typedArrayCtors} from "../lib/internal/encodings/binary";
 
 const scalarMacros = encodeDecodeMacro({
     encode: testEncodeMacro,

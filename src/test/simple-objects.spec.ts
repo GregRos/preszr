@@ -1,5 +1,5 @@
 import test from "ava";
-import {version} from "../lib/utils";
+import {version} from "../lib/internal/utils";
 import {
     infinityEncoding,
     nanEncoding,
@@ -7,9 +7,9 @@ import {
     negZeroEncoding,
     SzrHeader,
     undefinedEncoding
-} from "../lib/szr-representation";
+} from "../lib/internal/szr-representation";
 import {combAttachHeader, createSparseArray, createSzrRep, stringify, szrDefaultHeader, testEncodeMacro} from "./utils";
-import {ArrayEncoding, unsupportedEncodingKey} from "../lib/encodings/basic";
+import {ArrayEncoding, unsupportedEncodingKey} from "../lib/internal/encodings/basic";
 import {encode} from "../lib";
 
 const simpleObjectTest = combAttachHeader(input => `{value: ${stringify(input.value)}}`);

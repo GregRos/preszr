@@ -2,7 +2,7 @@
 
 let pkgJson;
 try {
-    pkgJson = require("../../package.json");
+    pkgJson = require("../../../package.json");
 } catch (err) {
     pkgJson = require("./package.json");
 }

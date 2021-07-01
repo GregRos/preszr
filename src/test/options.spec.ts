@@ -1,8 +1,9 @@
 import test from "ava";
-import {Szr} from "../lib/szr";
-import {version} from "../lib/utils";
+import {Szr} from "../lib/internal/szr";
+import {version} from "../lib/internal/utils";
 import {decode} from "../lib";
 import {szrDefaultHeader} from "./utils";
+import {SzrFormat} from "../lib/internal/szr-representation";
 
 test("version check disable", t => {
     const szr = new Szr({
@@ -11,7 +12,7 @@ test("version check disable", t => {
         }
     });
     const fakeVersion = `${version}1`;
-    const badEncoded = [[fakeVersion, {}, {}], {}];
+    const badEncoded = [[fakeVersion, {}, {}], {}] as SzrFormat;
     t.throws(() => decode(badEncoded));
     const result = szr.decode(badEncoded);
     t.deepEqual(result, {});

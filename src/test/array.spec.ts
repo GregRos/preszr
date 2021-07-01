@@ -6,9 +6,9 @@ import {
     negInfinityEncoding,
     negZeroEncoding,
     undefinedEncoding
-} from "../lib/szr-representation";
-import {version} from "../lib/utils";
-import {ArrayEncoding} from "../lib/encodings/basic";
+} from "../lib/internal/szr-representation";
+import {version} from "../lib/internal/utils";
+import {ArrayEncoding} from "../lib/internal/encodings/basic";
 
 {
     const simpleArrayTest = combAttachHeader(

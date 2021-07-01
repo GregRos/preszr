@@ -17,7 +17,7 @@ import {
     Reference,
     SzrHeader,
     SzrOutput,
-    SzrRepresentation,
+    SzrFormat,
     SzrEncodingInformation,
     SzrMetadata,
     SzrEntity,
@@ -25,7 +25,7 @@ import {
     tryEncodeScalar,
     tryDecodeScalar,
     undefinedEncoding,
-    noResultPlaceholder, unrecognizedSymbolKey
+    noResultPlaceholder, unrecognizedSymbolKey, SzrEncodedEntity
 } from "./szr-representation";
 import {
     ArrayEncoding, getUnsupportedEncoding, nullPlaceholder,
@@ -190,13 +190,13 @@ export class Szr {
         }
     }
 
-    decode(input: any): any {
+    decode(input: SzrOutput): any {
         const tryScalar = tryDecodeScalar(input);
         if (tryScalar !== noResultPlaceholder) return tryScalar;
+        input = input as SzrFormat;
         const header = input?.[0];
         const {options} = this._config;
         this._checkInputValid(input);
-
         const encodingInfo = header[1] as SzrEncodingInformation;
         const metadata = header[2] as SzrMetadata;
         const targetArray = Array(input.length - 1);
@@ -209,7 +209,7 @@ export class Szr {
 
         for (let i = 1; i < input.length; i++) {
             const encodingKey = encodingInfo[i];
-            let cur = input[i];
+            let cur = input[i] as SzrEncodedEntity;
             if (encodingKey === unrecognizedSymbolKey) {
                 targetArray[i] = getUnrecognizedSymbol(metadata[i] as string);
                 continue;
@@ -238,7 +238,7 @@ export class Szr {
         for (let key of needToInit.keys()) {
             const encoding = needToInit.get(key)!;
             ctx.metadata = metadata[key];
-            encoding.decoder.init!(targetArray[key], input[key], ctx);
+            encoding.decoder.init!(targetArray[key], input[key] as SzrEncodedEntity, ctx);
         }
         return targetArray[1];
     }
@@ -257,7 +257,7 @@ export class Szr {
                 metadata
             ] as SzrHeader;
 
-            const szrRep = [header] as SzrRepresentation;
+            const szrRep = [header] as SzrFormat;
             const objectToRef = new Map<object | symbol, Reference>();
             const ctx: EncodeContext = {
                 options,

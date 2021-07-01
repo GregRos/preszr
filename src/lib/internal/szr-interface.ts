@@ -1,4 +1,4 @@
-import {SzrData, SzrLeaf} from "./szr-representation";
+import {SzrEncodedEntity, SzrLeaf} from "./szr-representation";
 
 
 export interface EncodeContext {
@@ -17,8 +17,8 @@ export interface DecodeInitContext extends DecodeCreateContext {
 }
 
 export interface Decoder {
-    create(encoded: SzrData, ctx: DecodeCreateContext): any;
-    init?(target: any, encoded: SzrData, ctx: DecodeInitContext): void;
+    create(encoded: SzrEncodedEntity, ctx: DecodeCreateContext): any;
+    init?(target: any, encoded: SzrEncodedEntity, ctx: DecodeInitContext): void;
 }
 
 export interface SzrSymbolEncoding {
@@ -31,7 +31,7 @@ export interface SzrPrototypeSpecifier {
     key?: string;
     prototype: object | null;
     decoder?: Decoder;
-    encode?(input: any, ctx: EncodeContext): SzrData;
+    encode?(input: any, ctx: EncodeContext): SzrEncodedEntity;
 }
 
 export interface SzrPrototypeEncoding {

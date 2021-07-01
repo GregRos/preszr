@@ -14,7 +14,7 @@ export const regexpEncoding: SzrPrototypeEncoding = {
 
     },
     decoder: {
-        create(input, ctx: DecodeInitContext) {
+        create(input: string | string[], ctx: DecodeInitContext) {
             if (typeof input === "string") {
                 return new RegExp(input);
             } else {

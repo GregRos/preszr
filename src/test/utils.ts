@@ -1,9 +1,9 @@
-import {SzrHeader, SzrRepresentation} from "../lib/szr-representation";
-import {version} from "../lib/utils";
+import {SzrHeader, SzrFormat} from "../lib/internal/szr-representation";
+import {version} from "../lib/internal/utils";
 import {ExecutionContext, Macro} from "ava";
 import {cloneDeep} from "lodash";
-import {defaultConfig, Szr} from "../lib/szr";
-import {DecodeInitContext, EncodeContext} from "../lib/szr-interface";
+import {defaultConfig, Szr} from "../lib/internal/szr";
+import {DecodeInitContext, EncodeContext} from "../lib/internal/szr-interface";
 
 export function stringify(value: any) {
     if (typeof value === "object") {
@@ -39,12 +39,12 @@ export function embedSzrVersion(encoded) {
     return encoded;
 }
 
-export function createSzrRep([encodings, meta], ...arr): SzrRepresentation {
+export function createSzrRep([encodings, meta], ...arr): SzrFormat {
     const header = [version, encodings, meta] as SzrHeader;
     return [header, ...arr];
 }
 
-export function szrDefaultHeader(...arr): SzrRepresentation {
+export function szrDefaultHeader(...arr): SzrFormat {
     return createSzrRep([{}, {}], ...arr);
 }
 

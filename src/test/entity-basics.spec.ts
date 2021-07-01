@@ -1,6 +1,6 @@
 import test from "ava";
 import {decode, encode} from "../lib";
-import {version as pkgVersion, version} from "../lib/utils";
+import {version as pkgVersion, version} from "../lib/internal/utils";
 
 test("encoding - entity is array", t => {
     t.true(Array.isArray(encode({})));

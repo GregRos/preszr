@@ -1,4 +1,4 @@
-import {Szr} from "./szr";
+import {Szr} from "./internal/szr";
 
 const defaultSzr = new Szr();
 
@@ -6,5 +6,5 @@ export const encode = x => defaultSzr.encode(x);
 
 export const decode = x => defaultSzr.decode(x);
 
-export {Szr};
+export {Szr, };
 

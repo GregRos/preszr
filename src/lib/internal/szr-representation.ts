@@ -6,15 +6,15 @@ export interface SzrEncodingInformation {
     [key: number]: string;
 }
 
-export type SzrData = SzrPrimitive | string | SzrDataObject | SzrData[];
+export type SzrEncodedEntity = SzrPrimitive | string | SzrDataObject | SzrEncodedEntity[];
 
 export interface SzrDataObject {
-    [key: string]: SzrData;
-    [key: number]: SzrData;
+    [key: string]: SzrEncodedEntity;
+    [key: number]: SzrEncodedEntity;
 }
 
 export interface SzrMetadata {
-    [key: number]: SzrData;
+    [key: number]: SzrEncodedEntity;
 }
 
 export type SzrHeader = [Version, SzrEncodingInformation, SzrMetadata];
@@ -29,9 +29,9 @@ export type SzrEncodedScalar = string;
 
 export type SzrLeaf = SzrPrimitive | Reference | SzrEncodedScalar;
 
-export type SzrRepresentation = [SzrHeader, ...SzrData[]];
+export type SzrFormat = [SzrHeader, ...SzrEncodedEntity[]];
 
-export type SzrOutput = SzrRepresentation | SzrPrimitive | SzrEncodedScalar;
+export type SzrOutput = SzrFormat | SzrPrimitive | SzrEncodedScalar;
 
 export const undefinedEncoding = "-";
 export const infinityEncoding = "Infinity";

@@ -2,9 +2,9 @@
 import test from "ava";
 import {encodeDecodeMacro, testDecodeMacroBindSzr, testEncodeMacro, testEncodeMacroBindSzr} from "./utils";
 import {decode} from "../lib";
-import {Szr} from "../lib/szr";
-import {getImplicitClassEncodingName, version} from "../lib/utils";
-import {NullPrototypeEncoding} from "../lib/encodings/basic";
+import {Szr} from "../lib/internal/szr";
+import {getImplicitClassEncodingName, version} from "../lib/internal/utils";
+import {NullPrototypeEncoding} from "../lib/internal/encodings/basic";
 
 class TestClass {
     constructor(obj = {}) {

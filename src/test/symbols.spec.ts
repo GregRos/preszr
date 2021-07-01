@@ -1,10 +1,10 @@
 import test, {Implementation, UntitledMacro} from "ava";
 import {decode, encode} from "../lib";
 import {createSzrRep, createWithTitle, embedSzrVersion, testDecodeMacro, testEncodeMacro} from "./utils";
-import {ObjectEncoding, unsupportedEncodingKey} from "../lib/encodings/basic";
-import {unrecognizedSymbolKey} from "../lib/szr-representation";
-import {getImplicitSymbolEncodingName, getLibraryString, getSymbolName, getUnrecognizedSymbol, getUnrecognizedSymbolName} from "../lib/utils";
-import {Szr} from "../lib/szr";
+import {ObjectEncoding, unsupportedEncodingKey} from "../lib/internal/encodings/basic";
+import {unrecognizedSymbolKey} from "../lib/internal/szr-representation";
+import {getImplicitSymbolEncodingName, getLibraryString, getSymbolName, getUnrecognizedSymbol, getUnrecognizedSymbolName} from "../lib/internal/utils";
+import {Szr} from "../lib/internal/szr";
 
 const testSymbol = Symbol("test");
 const testSymbol2 = Symbol("test");

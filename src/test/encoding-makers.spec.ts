@@ -1,8 +1,8 @@
 import test from "ava";
-import {DecodeCreateContext, EncodeContext, SzrPrototypeEncoding, SzrSymbolEncoding} from "../lib/szr-interface";
-import {getImplicitClassEncodingName, getImplicitSymbolEncodingName, getLibraryString} from "../lib/utils";
+import {DecodeCreateContext, EncodeContext, SzrPrototypeEncoding, SzrSymbolEncoding} from "../lib/internal/szr-interface";
+import {getImplicitClassEncodingName, getImplicitSymbolEncodingName, getLibraryString} from "../lib/internal/utils";
 import {getDummyCtx} from "./utils";
-import {getFullEncoding} from "../lib/encoding-constructors";
+import {getFullEncoding} from "../lib/internal/encoding-constructors";
 
 const testSymbol = Symbol("test");
 
