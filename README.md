@@ -457,9 +457,17 @@ Here is the input and output for the example object shown at the start of this d
 ```javascript
 [
   [
-    '0',
-    [ '!@#szr-Map', '!@#szr-Set', '!@#szr-Date', '!@#szr-RegExp' ],
-    { '3': 0, '4': 1, '6': 2, '7': 3 },
+    '1',
+    [
+      '!@#szr-Uint8Array',
+      '!@#szr-Error',
+      '!@#szr-null',
+      '!@#szr-Map',
+      '!@#szr-Set',
+      '!@#szr-Date',
+      '!@#szr-RegExp'
+    ],
+    { '3': 0, '4': 1, '8': 2, '9': 3, '10': 4, '12': 5, '13': 6 },
     {}
   ],
   {
@@ -467,23 +475,34 @@ Here is the input and output for the example object shown at the start of this d
     number: 1,
     nonJsonNumber: 'Infinity',
     string: '2',
+    alsoString: '2',
+    undefined: '-',
     null: null,
-    map: '3',
-    set: '4',
-    array: '5',
-    date: '6',
-    regexp: '7',
-    ref1: '8',
-    ref2: '8'
+    bigint: 'B1000000000000000000000000',
+    binary: '3',
+    error: '4',
+    nullProtoObject: '8',
+    map: '9',
+    set: '10',
+    array: '11',
+    date: '12',
+    regexp: '13',
+    ref1: '14',
+    ref2: '14'
   },
   'hello',
+  'AQIDBA==',
+  { stack: '5', name: '6', message: '7' },
+  'Error: (stack trace)',
+  'Error',
+  '',
+  { value: 5 },
   [ [ 1, 1 ] ],
   [ 5 ],
   [ 1 ],
-  1625162360073,
+  1625164936110,
   [ 'abc', 'gi' ],
   {}
 ]
-
 ```
 
