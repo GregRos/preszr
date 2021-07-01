@@ -35,12 +35,37 @@ export function createSparseArray<T>(arrayLikeObj: Record<any, T>): T[] {
 
 export function embedSzrVersion(encoded) {
     encoded = cloneDeep(encoded);
-    encoded[0].unshift(version);
+    const encodingSpec = encoded[0].shift();
+    encoded[0].unshift(version, ...getEncodingComponent(encodingSpec));
     return encoded;
 }
 
-export function createSzrRep([encodings, meta], ...arr): SzrFormat {
-    const header = [version, encodings, meta] as SzrHeader;
+export function getEncodingComponent(encodingSpec) {
+    const encodingKeys = [] as string[];
+    for (const [key, value] of Object.entries(encodingSpec) as any[]) {
+        if (!encodingKeys.includes(value)) {
+            encodingKeys.push(value);
+        }
+    }
+    for (const [key, value] of Object.entries(encodingSpec) as any[]) {
+        encodingSpec[key] = encodingKeys.indexOf(value);
+    }
+
+    return [encodingKeys, encodingSpec];
+}
+
+export function simplifyEncoding(encoding: SzrFormat) {
+    const clone = cloneDeep(encoding);
+    const [[vr, keys, info, meta]] = clone;
+    for (const [k, v] of Object.entries(info)) {
+        info[k] = keys[v];
+    }
+    clone[0].splice(1, 1);
+    return clone;
+}
+
+export function createSzrRep([encodingSpec, meta], ...arr): SzrFormat {
+    const header = [version, ...getEncodingComponent(encodingSpec), meta] as SzrHeader;
     return [header, ...arr];
 }
 
@@ -58,7 +83,7 @@ const defaultSzr = new Szr();
 
 export const testEncodeMacro: any = (t: ExecutionContext, decoded: any, encoded: any, szr = defaultSzr) => {
     const rEncoded = szr.encode(decoded) as any;
-    t.deepEqual(rEncoded, encoded);
+    t.deepEqual(simplifyEncoding(rEncoded), simplifyEncoding(encoded));
 };
 
 export const testDecodeMacro: any = (t: ExecutionContext, decoded: any, encoded: any, szr = defaultSzr) => {

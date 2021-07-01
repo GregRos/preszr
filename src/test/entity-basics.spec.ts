@@ -6,12 +6,13 @@ test("encoding - entity is array", t => {
     t.true(Array.isArray(encode({})));
 });
 
-test("decoding - first element is header", t => {
+test("decoding - header structure", t => {
     const [header, ...rest] = encode({}) as any[];
-    const [version, types, custom] = header;
+    const [version, encodingKeys, encodingSpec, metadata] = header;
     t.is(version, pkgVersion);
-    t.deepEqual(types, {});
-    t.deepEqual(custom, {});
+    t.deepEqual(encodingKeys, [])
+    t.deepEqual(encodingSpec, {});
+    t.deepEqual(metadata, {});
 });
 
 function isBadPayloadError(err: Error) {
@@ -28,11 +29,11 @@ test("decoding - error when trying to decode anomalous object", t => {
         [], // no header
         [1], // invalid header
         [[]], // no version
-        [[pkgVersion, {}, {}]], // no data
+        [[pkgVersion, [], {}, {}]], // no data
         [["g", {}, {}], 1], // non-numeric version
         [[1, {}, {}], 1], // non-string version
-        [["1"], 1], // no encoding info
-        [["1", {}], 1] // no metadata,
+        [["0"], 1], // no encoding info
+        [["0", {}], 1] // no metadata,
     ] as any[];
 
     for (const payload of badPayloads) {
@@ -57,13 +58,13 @@ test("decoding - error when trying to decode anomalous object", t => {
 });
 
 test("decoding - error when trying to decode wrong version", t => {
-    const encoded = [[pkgVersion + 1, {}, {}], {}];
+    const encoded = [[pkgVersion + 1, [], {}, {}], {}];
     const err = t.throws(() => decode(encoded));
     t.true(isBadVersionError(err));
 });
 
 test("decoding error - unknown encoding", t => {
-    const encoded = [[pkgVersion, {1: "test"}, {}], 0];
+    const encoded = [[pkgVersion, ["test"], {1: 0}, {}], 0];
     const err = t.throws(() => decode(encoded));
     t.regex(err.message, /not found/);
 });

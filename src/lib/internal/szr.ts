@@ -18,14 +18,14 @@ import {
     SzrHeader,
     SzrOutput,
     SzrFormat,
-    SzrEncodingInformation,
+    SzrEncodingSpec,
     SzrMetadata,
     SzrEntity,
     SzrPrimitive,
     tryEncodeScalar,
     tryDecodeScalar,
     undefinedEncoding,
-    noResultPlaceholder, unrecognizedSymbolKey, SzrEncodedEntity
+    noResultPlaceholder, unrecognizedSymbolKey, SzrEncodedEntity, SzrEncodingKeys
 } from "./szr-representation";
 import {
     ArrayEncoding, getUnsupportedEncoding, nullPlaceholder,
@@ -141,10 +141,7 @@ export class Szr {
 
     private _findEncodingByKeyValue(input: any, encodingKey: string) {
         if (encodingKey != null) {
-            const encoding = this._keyToEncoding.get(encodingKey);
-            if (!encoding) {
-                throw new SzrError(`Encoding with key '${encodingKey}' not found. Szr wasn't configured correctly.`);
-            }
+            const encoding = this._keyToEncoding.get(encodingKey)!;
             return encoding;
         }
         if (Array.isArray(input)) {
@@ -173,9 +170,13 @@ export class Szr {
                     reason = "version is not string";
                 } else if (+versionInfo !== parseInt(versionInfo)) {
                     reason = "version is not numeric";
-                } else if (typeof header[1] !== "object" || !header[1]) {
+                } else if (versionInfo !== version) {
+                    throw new SzrError(`Input was encoded using version ${versionInfo}, but szr is version ${version}. Set skipValidateVersion to allow this.`);
+                } else if (!Array.isArray(header[1])) {
+                    reason = "no encoding keys or encoding keys not an array";
+                } else if (typeof header[2] !== "object" || !header[1]) {
                     reason = "no encoding data or encoding data is not an object";
-                } else if (typeof header[2] !== "object" || !header[2]) {
+                } else if (typeof header[3] !== "object" || !header[2]) {
                     reason = "no custom metadata or custom metadata is not an object";
                 } else if (input.length === 1) {
                     reason = "input must have at least 2 elements";
@@ -185,20 +186,18 @@ export class Szr {
         if (reason) {
             throw new SzrError(`Input is not szr-encoded: ${reason}`);
         }
-        if (versionInfo !== version && !this._config.options.skipValidateVersion) {
-            throw new SzrError(`Input was encoded using version ${versionInfo}, but szr is version ${version}. Set skipValidateVersion to allow this.`);
-        }
+
     }
 
     decode(input: SzrOutput): any {
         const tryScalar = tryDecodeScalar(input);
         if (tryScalar !== noResultPlaceholder) return tryScalar;
         input = input as SzrFormat;
-        const header = input?.[0];
         const {options} = this._config;
         this._checkInputValid(input);
-        const encodingInfo = header[1] as SzrEncodingInformation;
-        const metadata = header[2] as SzrMetadata;
+        const header = input?.[0];
+
+        const [v, encodingKeys, encodingSpec, metadata] = header;
         const targetArray = Array(input.length - 1);
         const needToInit = new Map<number, SzrPrototypeEncoding>();
         const ctx: DecodeInitContext = {
@@ -207,8 +206,16 @@ export class Szr {
             options
         };
 
+        for (const encodingKey of encodingKeys) {
+            if (!this._keyToEncoding.has(encodingKey) && encodingKey !== unrecognizedSymbolKey) {
+                throw new SzrError(`Encoding with key '${encodingKey}' not found. Szr wasn't configured correctly.`);
+
+            }
+        }
+
         for (let i = 1; i < input.length; i++) {
-            const encodingKey = encodingInfo[i];
+            const encodingIndex = encodingSpec[i];
+            const encodingKey = encodingKeys[encodingIndex];
             let cur = input[i] as SzrEncodedEntity;
             if (encodingKey === unrecognizedSymbolKey) {
                 targetArray[i] = getUnrecognizedSymbol(metadata[i] as string);
@@ -248,24 +255,27 @@ export class Szr {
         try {
             const tryScalar = tryEncodeScalar(root);
             if (tryScalar !== noResultPlaceholder) return tryScalar;
-            let encodingInfo = {} as SzrEncodingInformation;
-            let metadata = {} as SzrMetadata;
+            const encodingSpec = {} as SzrEncodingSpec;
+            const metadata = {} as SzrMetadata;
+            const encodingKeys = new Map<string, number>();
             const options = this._config.options;
-            const header = [
-                version,
-                encodingInfo,
-                metadata
-            ] as SzrHeader;
+            const header = [] as unknown as SzrHeader;
 
             const szrRep = [header] as SzrFormat;
-            const objectToRef = new Map<object | symbol, Reference>();
+            const objectToRef = new Map<object | symbol | string, Reference>();
+
+            const cacheEncodingIndex = (key: string) => {
+                let encodingIndex = encodingKeys.get(key);
+                if (encodingIndex == null) {
+                    encodingIndex = encodingKeys.size;
+                    encodingKeys.set(key, encodingIndex);
+                }
+                return encodingIndex;
+            };
             const ctx: EncodeContext = {
                 options,
                 metadata: undefined,
                 encode(value: any): SzrLeaf {
-                    if (typeof value === "string") {
-                        return createNewRef(value);
-                    }
                     const tryScalar = tryEncodeScalar(value);
                     if (tryScalar !== noResultPlaceholder) return tryScalar;
                     let existingRef = objectToRef.get(value);
@@ -278,26 +288,25 @@ export class Szr {
             const createNewRef = <T>(value: SzrEntity): Reference => {
                 const index = szrRep.length;
                 const ref = `${index}`;
+                objectToRef.set(value, ref);
                 if (typeof value === "string") {
                     szrRep.push(value);
                     return ref;
                 }
-
                 szrRep.push(0);
-                objectToRef.set(value, ref);
                 if (typeof value === "symbol") {
                     const encoding = this._findEncodingForSymbol(value);
-                    encodingInfo[index] = encoding.key;
+                    encodingSpec[index] = cacheEncodingIndex(encoding.key);
                     if (encoding.metadata) {
                         metadata[index] = encoding.metadata;
                     }
                     return ref;
                 }
-                const handler = this._findEncodingForObject(value);
+                const encoding = this._findEncodingForObject(value);
                 const oldMetadata = ctx.metadata;
-                const szed = handler.encode(value, ctx);
+                const szed = encoding.encode(value, ctx);
                 if (!(ctx as any)._isImplicit) {
-                    encodingInfo[index] = handler.key;
+                    encodingSpec[index] = cacheEncodingIndex(encoding.key);
                 }
                 (ctx as any)._isImplicit = false;
                 if (ctx.metadata !== undefined) {
@@ -308,6 +317,7 @@ export class Szr {
                 return ref;
             };
             ctx.encode(root);
+            header.push(version, [...encodingKeys.keys()], encodingSpec, metadata);
             return szrRep;
         } finally {
             this._tempSymbEncoding.clear();
@@ -319,7 +329,6 @@ export class Szr {
 export const defaultConfig: SzrConfig = {
     options: {
         alsoNonEnumerable: false,
-        skipValidateVersion: false,
         custom: {}
     },
     encodings: [],

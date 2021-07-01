@@ -2,8 +2,8 @@ import {getLibraryString} from "./utils";
 
 export type Version = string;
 
-export interface SzrEncodingInformation {
-    [key: number]: string;
+export interface SzrEncodingSpec {
+    [key: number]: number;
 }
 
 export type SzrEncodedEntity = SzrPrimitive | string | SzrDataObject | SzrEncodedEntity[];
@@ -17,7 +17,9 @@ export interface SzrMetadata {
     [key: number]: SzrEncodedEntity;
 }
 
-export type SzrHeader = [Version, SzrEncodingInformation, SzrMetadata];
+export type SzrEncodingKeys = string[];
+
+export type SzrHeader = [Version, SzrEncodingKeys, SzrEncodingSpec, SzrMetadata];
 
 export type Reference = string;
 

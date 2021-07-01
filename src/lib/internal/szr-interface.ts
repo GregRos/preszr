@@ -46,7 +46,6 @@ export type SzrEncoding = SzrPrototypeEncoding | SzrSymbolEncoding;
 export type SzrEncodingSpecifier = symbol | Function | SzrPrototypeSpecifier | SzrPrototypeEncoding | SzrSymbolEncoding;
 
 export interface SzrOptions {
-    skipValidateVersion: boolean;
     alsoNonEnumerable: boolean;
     custom: Record<string, any>;
 }

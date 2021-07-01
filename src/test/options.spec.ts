@@ -5,19 +5,6 @@ import {decode} from "../lib";
 import {szrDefaultHeader} from "./utils";
 import {SzrFormat} from "../lib/internal/szr-representation";
 
-test("version check disable", t => {
-    const szr = new Szr({
-        options: {
-            skipValidateVersion: true
-        }
-    });
-    const fakeVersion = `${version}1`;
-    const badEncoded = [[fakeVersion, {}, {}], {}] as SzrFormat;
-    t.throws(() => decode(badEncoded));
-    const result = szr.decode(badEncoded);
-    t.deepEqual(result, {});
-});
-
 test("non-enumerable properties", t => {
     const szr = new Szr({
         options: {

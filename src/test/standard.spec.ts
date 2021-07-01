@@ -8,7 +8,18 @@ test("simple object", t => {
         number: 1,
         nonJsonNumber: Infinity,
         string: "hello",
+        alsoString: "hello",
+        undefined,
         null: null,
+        bigint: BigInt("1000000000000000000000000"),
+        binary: new Uint8Array([1, 2, 3, 4]),
+        error: new Error(),
+        nullProtoObject: Object.create(null, {
+            value: {
+                value: 5,
+                enumerable: true
+            }
+        }),
         map: new Map([[
             1, 1
         ]]),

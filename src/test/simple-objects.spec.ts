@@ -28,6 +28,7 @@ test(simpleObjectTest, {value: undefined},
 );
 test(simpleObjectTest, {value: BigInt(4)}, [{value: "B4"}]);
 test(simpleObjectTest, {value: "string"}, [{value: "2"}, "string"]);
+test("strings are interned", simpleObjectTest, {value: "string", value2: "string"}, [{value: "2", value2: "2"}, "string"]);
 test(simpleObjectTest, {value: []}, [{value: "2"}, []]);
 
 test("string", simpleObjectTest, "abc", ["abc"]);

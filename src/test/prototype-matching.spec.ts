@@ -107,7 +107,7 @@ test("override prototype", t => {
     });
 
     const encoded = szr.encode(new TestClass());
-    t.deepEqual(encoded, [[version, {1: "override"}, {}], 5]);
+    t.deepEqual(encoded, [[version, ["override"], {1: 0}, {}], 5]);
     const decoded = szr.decode(encoded);
     t.is(decoded, 5);
 });
@@ -127,6 +127,6 @@ test("override built-in prototype", t => {
     });
 
     const encoded = szr.encode(new Date());
-    t.deepEqual(encoded, [[version, {1: "new-date"}, {}], 5]);
+    t.deepEqual(encoded, [[version, ["new-date"], {1: 0}, {}], 5]);
     t.is(szr.decode(encoded), 5);
 });

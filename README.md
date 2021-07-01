@@ -5,7 +5,7 @@
 
 `szr` is a lightweight library for encoding complex objects so they can be serialized. 
 
-The encoding `szr` uses creates a simple JSON output that describes objects, references between those objects, their prototypes, and so on. You can send this output over the network and use `szr` to reconstruct the original object at the destination, attaching the correct prototype if it has been configured.
+The encoding `szr` uses creates a simple JSON output that describes objects, references between those objects, their prototypes, and so on. You can send this output over the network and use `szr` to reconstruct the original object at the destination, attaching the correct prototype if it has been configured. `szr` also handles circular references.
 
 For more information about how `szr`represents objects, see about the *szr format* below.
 
@@ -40,7 +40,18 @@ test("simple object", t => {
         number: 1,
         nonJsonNumber: Infinity,
         string: "hello",
+        alsoString: "hello",
+        undefined,
         null: null,
+        bigint: BigInt("1000000000000000000000000"),
+        binary: new Uint8Array([1, 2, 3, 4]),
+        error: new Error(),
+        nullProtoObject: Object.create(null, {
+            value: {
+                value: 5,
+                enumerable: true
+            }
+        }),
         map: new Map([[
             1, 1
         ]]),
@@ -51,7 +62,7 @@ test("simple object", t => {
         ref1: obj2,
         ref2: obj2
     };
-
+    
     const decoded = decode(
         JSON.parse(JSON.stringify(encode(obj)))
     );
@@ -59,6 +70,8 @@ test("simple object", t => {
     t.is(decoded.ref1, decoded.ref2);
 });
 ```
+
+See more examples [here](https://github.com/GregRos/szr/blob/master/src/test/standard.spec.ts).
 
 ## Supported Types
 
@@ -148,7 +161,7 @@ const encoded = szr.encode(someObject);
 const decoded = szr.decode(encoded);
 ```
 
-You need to make sure `szr` is configured in the same way in the source and the destination.
+You need to make sure `szr` is configured with the same `encodings` in both the source and the destination. The order doesn't matter though.
 
 ## Custom types
 
@@ -368,7 +381,7 @@ Splitting up the decoding process like this lets us avoid that problem.
 
 ## Szr Output
 
-The *szr output* is the result of encoding a value using `szr`. If used to encode primitives other than strings and symbols, it will return a single value:
+The *szr output* is the result of encoding a value using `szr`. If used to encode primitives other than strings, symbols, and functions, it will return a single value:
 
 1. For JSON-legal primitives, it will return the value unchanged.
 2. For other primitives it will return an encoded value, usually a string of some sort.
@@ -394,29 +407,38 @@ The exact format of an szr encoded entity varies depending on the encoding:
 1. **An object** - An object with all its property values encoded using `ctx.encode`. Non-entity values remain as-is. Objects with symbol properties have a more complex encoding.
 2. **An array** - An array with its elements encoded using `ctx.encode`. Sparse arrays and arrays with string object keys are encoded like objects.
 3. **A string** - No special representation. Strings are treated as entities because otherwise it would be harder to implement references, encoded values, and so on. This also reduces the payload size since identical strings only need to appear once in the output.
-4. **A symbol** - 0. The identity of the symbol is the encoding itself, which is part of the header.=
+4. **A symbol** - 0. The identity of the symbol is the encoding itself, which is part of the header.
 
 ### Header Structure
 
 The header contains information about how the data was encoded. Its format is as follows:
 
 ```javascript
-[majorVersion, encodingInformation, metadata]
+[majorVersion, encodingKeys, encodingInformation, metadata]
 ```
 
-#### Encoding Information
+#### Major Version
 
-The encoding information is an object where the keys are szr references and the values are encoding keys. For example:
+The major version of the package, as a string. You can only decode *szr format* messages encoded by the same major version.
+
+#### Encoding Keys
+
+An array of the keys of all the encodings used by this message. For example:
+
+```typescript
+["Type1", "Type2", "Symbol1"]
+```
+
+#### Encoding Specification
+
+Each key is an *szr reference* of an encoded entity and its value is the encoding it uses - as an index into the *encoding keys* array above. For example:
 
 ```typescript
 {
-    1: "Type1",
-    2: "Type2",
-    3: "symbol1"
+    "1": 0,
+    "2": 1
 }
 ```
-
-Some built-in encodings have a special mode where they don't output encoding information. In this case, the library will infer the right encoding to use.
 
 #### Metadata
 
@@ -431,16 +453,40 @@ Metadata is used to store extra information about an encoded entity. Its format 
 
 Metadata doesn't do anything unless an encoding explicitly uses it.
 
-### Encoding non-entities
+### Example
 
-You can also encode non-entities using `szr` directly:
+Here is the input and output for the example object shown at the start of this document.
 
-1. numbers
-2. booleans
-3. `null`
-4. `undefined`
+```javascript
+[
+  [
+    '0',
+    [ '!@#szr-Map', '!@#szr-Set', '!@#szr-Date', '!@#szr-RegExp' ],
+    { '3': 0, '4': 1, '6': 2, '7': 3 },
+    {}
+  ],
+  {
+    boolean: true,
+    number: 1,
+    nonJsonNumber: 'Infinity',
+    string: '2',
+    null: null,
+    map: '3',
+    set: '4',
+    array: '5',
+    date: '6',
+    regexp: '7',
+    ref1: '8',
+    ref2: '8'
+  },
+  'hello',
+  [ [ 1, 1 ] ],
+  [ 5 ],
+  [ 1 ],
+  1625162360073,
+  [ 'abc', 'gi' ],
+  {}
+]
 
-This won't have the same output as encoding entities. Instead, a single value is generally returned. If the input is JSON-legal, it will be returned. If it needs to be encoded, the encoded version is returned. There is no data array and no header.
-
-Encoding and then decoding these values will give you the original value.
+```
 
