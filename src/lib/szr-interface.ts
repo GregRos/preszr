@@ -17,8 +17,8 @@ export interface DecodeInitContext extends DecodeCreateContext {
 }
 
 export interface Decoder {
-    create(encodedValue: any, ctx: DecodeCreateContext): any;
-    init?(target: any, encoded: any, ctx: DecodeInitContext): void;
+    create(encoded: SzrData, ctx: DecodeCreateContext): any;
+    init?(target: any, encoded: SzrData, ctx: DecodeInitContext): void;
 }
 
 export interface SzrSymbolEncoding {

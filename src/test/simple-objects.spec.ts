@@ -9,7 +9,7 @@ import {
     undefinedEncoding
 } from "../lib/szr-representation";
 import {combAttachHeader, createSparseArray, createSzrRep, stringify, szrDefaultHeader, testEncodeMacro} from "./utils";
-import {arrayEncoding, unsupportedEncodingKey} from "../lib/encodings/basic";
+import {ArrayEncoding, unsupportedEncodingKey} from "../lib/encodings/basic";
 import {encode} from "../lib";
 
 const simpleObjectTest = combAttachHeader(input => `{value: ${stringify(input.value)}}`);

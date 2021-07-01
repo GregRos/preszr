@@ -5,9 +5,9 @@
 
 `szr` is a lightweight library for encoding complex objects so they can be serialized. 
 
-The encoding `szr` uses creates a simple JSON output that describes objects, references between those objects, their prototypes, and so on. You can send this output over the network and use `szr` to reconstruct the original object at the destination, possibly attaching the correct prototype.
+The encoding `szr` uses creates a simple JSON output that describes objects, references between those objects, their prototypes, and so on. You can send this output over the network and use `szr` to reconstruct the original object at the destination, attaching the correct prototype if it has been configured.
 
-For more information about how `szr`represents objects, see *szr output* below.
+For more information about how `szr`represents objects, see about the *szr format* below.
 
 `szr` supports almost all platform-independent objects out of the box and can be easily configured to support your own. It's highly customizable.
 
@@ -60,7 +60,7 @@ test("simple object", t => {
 });
 ```
 
-## Supported Inputs
+## Supported Types
 
 Szr has support for almost all JavaScript primitives.
 
@@ -89,26 +89,22 @@ And many built-in objects:
   * TypedArrays
 * The object versions of primitives: Number, String, etc.
 
-\* Using symbols requires configuration. By default they are ignored.
-
-The following are explicitly unsupported:
+The following are explicitly unsupported and handled gracefully:
 
 * Functions.
-* `WeakMap` and `WeakSet`. It's impossible to support them.
+* `WeakMap` and `WeakSet`.
 
-The following information is generally discarded:
+Other limitations:
 
-1. Additional object properties you add to known objects such as `Map`.
-2. Property descriptors.
-3. The state of sticky regular expressions.
+* Right now, `szr` doesn't encode control characters in strings. These are characters like `\x00` NUL that can appear in JavaScript strings but not JSON strings. This is unlikely to come up.
+* No support for `BigInt64Array` and its counterpart.
+* No special treatment of iterators.
 
 ## Usage
 
 The `szr` package exposes three main members.
 
-By default, an object encoded using a major version of the package can't be decoded by a different version. This behavior can be turned off.
-
-### `encode` 
+### `encode`
 
 Encodes an object using default settings. Uses only built-in encodings.
 
@@ -117,6 +113,8 @@ import {encode} from "szr";
 
 const result = encode(someObject);
 ```
+
+Note that objects encoded with a specific major version of the package can't be decoded by any other version.
 
 ### `decode`
 
@@ -131,7 +129,7 @@ const result = decode(serialized);
 
 ### `Szr`
 
-A encoder and decoder class. Use this to encode and decode objects with user-defined prototypes, symbols, and advanced encodings.
+A encoder and decoder class. Use this to encode and decode objects with user-defined prototypes, symbols, and advanced encodings. 
 
 ```typescript
 import {Szr} from "szr";
@@ -174,7 +172,7 @@ Note that if your constructor is nameless, or if some of them have the same name
 
 ### Symbols
 
-`szr` recognizes symbols in general and knows about most of the built-in symbols. If you want it to recognize your own symbols, you'll need to supply them to `encodings` in the same way.
+`szr` recognizes symbols in general and knows about most of the built-in symbols. If you want it to recognize your own symbols, you'll need to supply them to `encodings`, similarly to prototypes.
 
 ```typescript
 const symbol = Symbol("test")
@@ -196,7 +194,7 @@ Just like with prototypes, if your symbol doesn't have a description or if you h
 1. Symbol encodings.
 2. Prototype encodings.
 
-Every encoding has a unique `key` that identifies it.
+Every encoding has a unique `key` that identifies it. In addition to any encodings you provide, every instance of `szr` already includes built-in encodings for all supported prototypes. These have special keys that are unlikely to be duplicated.
 
 ### Symbol encodings
 
@@ -218,7 +216,25 @@ The `metadata` property is generally only used internally.
 
 A prototype encoding lets `szr` know how to encode and decode objects with specific prototypes. This only applies to proper objects - strings and the like are handled separately.
 
-If you pass a constructor as an encoding, `szr` will generate a complete prototype encoding under the hood as best it can. In general, it will work properly, but in some cases you will need more configuration. For example, if the prototype is nameless or if there are several prototypes with the same name, you will need to at least supply a `key`.
+If you pass a constructor as an encoding, `szr` will generate a complete prototype encoding under the hood. This encoding will:
+
+1. When encoding, use the standard object encoder.
+2. When decoding, it will use the standard object decoder and attach the correct prototype. No constructor will be executed.
+
+In general, it will work properly, but in some cases you will need more configuration. The simplest case is if the prototype is nameless or if there are several prototypes with the same name. In that case, you will need to supply an object with `key` and `prototype`:
+
+```typescript
+const szr = new Szr({
+    encodings: [
+        { 
+            key: "Event", 
+            prototype: Event.prototype
+        }
+    ]
+});
+```
+
+However, prototype encodings are quite versatile and can do a lot more than this. They are how most of the supported types are implemented, after all. Let's take a look at the interface of the prototype encoding specifier:
 
 ```typescript
 export interface SzrPrototypeSpecifier {
@@ -229,38 +245,11 @@ export interface SzrPrototypeSpecifier {
 }
 ```
 
-You can write the same code in the previous section as follows:
+The actual logic of encoding and decoding is in the `decoder` object and the `encode` function.
 
-```typescript
-class A {}
+Note that instead of the `prototype` property, you can supply `prototypes` instead - an array of multiple prototypes that will use the same encoding. If you do this, you will need to specify *all* the properties of the encoding as none will be filled in for you. There is generally little reason to do this. It's mainly used internally.
 
-class B {}
-
-const szr = new Szr({
-    encodings: [
-        {
-            key:"A", 
-            prototype: A.prototype
-        },
-        {
-            key: "B", 
-            prototype: B.prototype
-        }
-    ]
-});
-```
-
-You might notice that the encoding lets you specify `encode `and `decoder`. The default `encode` function uses the default object encoding. 
-
-The default `decoder` will attach the prototype during decoding. It doesn't call the constructor, if any. 
-
-If you need the constructor to be called or want to do something special during encoding or decoding, see the next section.
-
-## Advanced encodings
-
-Encodings are incredibly versatile and can be used to handle objects, arrays, collections such as `Map`, binary data, regular expressions, and so on. It's all about how `encode` and `decoder` work.
-
-### Encode
+#### Encode
 
 The signature of this function is as follows:
 
@@ -277,14 +266,14 @@ This function should return simple data that can be represented in JSON. So that
 
 `encode` takes two parameters:
 
-1. The value being encoded.
+1. The value being encoded, `input`.
 2. `ctx`, the encoding context. This is an object that lets you communicate with the encoding process.
 
-For simple objects, there is no need to use `ctx` at all. Just return an encoding of your object. However, `ctx` is important when your object contains other data or references to objects that themselves need to be encoded. To deal with these values, use the function `ctx.encode`.
+For simple objects, there is no need to use `ctx` at all - all you need to generate an encoding of your object is to use `input`. However, `ctx` is important when your object contains other data or references to objects that themselves need to be encoded. To deal with these values, use the function `ctx.encode`.
 
-`ctx.encode` is a kind of recursive call that encodes nested data. Note that it doesn't actually return the output of `szr.encode`. Unlike for example JSON, the `szr` format is not recursive. 
+`ctx.encode` is a kind of recursive call that encodes nested data. Note that it doesn't actually return the output of `szr.encode`.
 
-1. For entities that need to be referenced, such as most objects and symbols, it will encode them, add them to the final output, and return a reference you can plug in the correct location. Note that during this process, encoders will be used - including the one you're writing. Thus this function can end up calling your own `encode` implementation.
+1. For entities that need to be referenced, such as most objects and symbols, it will encode them, add them to the final output as a side-effect, and return a reference you can plug in the correct location. Note that during this process, encoders will be used - including the one you're writing. Thus this function can end up calling your own `encode` implementation on a different input.
 2. For JSON-legal scalars, it will just return the value back.
 3. For scalars that aren't JSON-legal, it will return an encoded value.
 
@@ -294,36 +283,60 @@ You shouldn't care what `ctx.encode` returns. Just know that it's a JSON-legal v
 
 You can also set `ctx.metadata`. This is a kind of additional return value that will be stored in the szr output. You can use this value later during decoding.
 
-### Decoder
+#### Decoder
 
 Unlike encoding, decoding is a two-step process. Here is the type of the decoder:
 
 ```typescript
-export interface Decoder {
-    create(encoded: any, ctx: DecodeCreateContext): any;
-    init?(target: any, encoded: any, ctx: DecodeInitContext): void;
+interface Decoder {
+    create(encoded: SzrData, ctx: DecodeCreateContext): any;
+    init?(target: any, encoded: SzrData, ctx: DecodeInitContext): void;
 }
 ```
 
-#### Create
+##### Create
 
-The first step is to create the decoded object. During this part of the process, you can only use the `encoded` and `ctx.metadata`. Unlike with encoding, you can't perform a call to look up another object - most of them don't exist yet.
+The first step is to create the decoded object. During this part of the process, you can only use the `encoded` and `ctx.metadata`. For some objects, those that don't reference other objects, this is enough.
 
-The return value should be the base form of the object, usually without any internal data that needs to be decoded. In many cases, the objects will be "broken", such as objects having a particular prototype but lacking the data necessary to actually function.
+The return value of the function should be the base form of the object, without any data that needs to be decoded. In many cases, the object will be "broken", such as having a particular prototype but lacking the data necessary to actually function.
 
-#### Init
+##### Init
 
-The second step is to initialize the object you created in the previous step, which is available through the `target` parameter. For simple objects like dates, regular expressions, and binary data this step isn't used at all - all the information that contain is unencoded. However, regular objects arrays need this extra step.
+The second step is to initialize the object you created in the previous step, which is available through the `target` parameter. For simple objects like dates, regular expressions, and binary data this step isn't used at all - all the information they contain is unencoded. However, regular objects arrays need this extra step.
 
 Note that the `init` method shouldn't return anything.
 
-Here `ctx` exposes the member `ctx.decode` which is the reverse of `ctx.encode`. It will resolve references, decode unencoded scalars, and so on. However, there is a caveat.
+Here `ctx` exposes the member `ctx.decode` which is the reverse of `ctx.encode`. It will resolve references, decode unencoded scalars, and so on. However, there is a caveat - most objects during this stage aren't initialized. That means you shouldn't try to perform operations with objects you get from `ctx.decode`.
 
-**Most objects during this stage aren't initialized**
+#### Example
 
-That means you shouldn't try to perform operations with decoded objects.
+Take a look at how the `SetEncoding` is implemented in the library.
 
-### Caveats
+```typescript
+export const setEncoding: SzrPrototypeEncoding = {
+    prototypes: [Set.prototype],
+    key: getLibraryString("Set"),
+    encode(input: Set<any>, ctx: EncodeContext): any {
+        const outArray = [] as SzrLeaf[];
+        for (const item of input) {
+            outArray.push(ctx.encode(item));
+        }
+        return outArray;
+    },
+    decoder: {
+        create(encoded: any, ctx: DecodeCreateContext): any {
+            return new Set();
+        },
+        init(target: Set<any>, encoded: SzrLeaf[], ctx: DecodeInitContext) {
+            for (const item of encoded) {
+                target.add(ctx.decode(item));
+            }
+        }
+    }
+};
+```
+
+#### Caveats
 
 While this system is flexible enough to encode all sorts of objects, there are things it can't encode. For example, take the following object, which uses [JS private fields](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_class_fields):
 
@@ -350,16 +363,16 @@ This could be solved by adding another member so it can be initialized separatel
 
 ## Szr Output
 
-This section deals with how `szr` output looks when encoding *entities*. Entities are one of the following:
+### Entities
+
+An entity is one of the following:
 
 1. An object.
 2. An array.
 3. A string.
 4. A symbol
 
-`szr` can be used to encode numbers, booleans, and other scalar values, but in that case the output looks different.
-
-The *szr output* is a single array:
+When encoded, it will result in an array:
 
 ```typescript
 [header, szrData1, szrData2, szrData3, ...]
@@ -367,7 +380,9 @@ The *szr output* is a single array:
 
 The first element of the array is always the *header*, which contains version and encoding information. The next element is the *szr representation* for the entity being encoded.
 
-When encoding an entity, `szr` will recursively traverse it, adding the entities it references to the output and replacing them with *szr references* to those entities. An *szr reference* is simply `"${i}"` which `i` is the index of the entity in the array, e.g. `"1"`, `"2"` and so forth. Note that because the first element is always the header, `"0"` doesn't correspond to anything.
+When encoding an entity, `szr` will recursively traverse it, applying different encodings, replacing entities with references to some entities, and encoding special scalars. 
+
+adding the entities it references to the output and replacing them with *szr references* to those entities. An *szr reference* is simply `"${i}"` which `i` is the index of the entity in the array, e.g. `"1"`, `"2"` and so forth. Note that because the first element is always the header, `"0"` doesn't correspond to anything.
 
 The exact *szr representation* of an entity depends on the encoding used. Here are representations for common entities.
 

@@ -1,6 +1,6 @@
 import {DecodeCreateContext, DecodeInitContext, EncodeContext, SzrPrototypeEncoding} from "../szr-interface";
 import {getLibraryString} from "../utils";
-import {decodeObject, encodeObject, getPrototypeDecoder, objectEncoding} from "./basic";
+import {decodeObject, encodeObject, getPrototypeDecoder, ObjectEncoding} from "./basic";
 
 const errorProperties = ["stack", "name", "message"];
 const nonEnumerableProperties = ["stack", "name"];

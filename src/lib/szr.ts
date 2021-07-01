@@ -28,31 +28,31 @@ import {
     noResultPlaceholder, unrecognizedSymbolKey
 } from "./szr-representation";
 import {
-    arrayEncoding, getUnsupportedEncoding, nullPlaceholder,
-    nullPrototypeEncoding,
-    objectEncoding, unsupportedEncodingKey
+    ArrayEncoding, getUnsupportedEncoding, nullPlaceholder,
+    NullPrototypeEncoding,
+    ObjectEncoding, unsupportedEncodingKey
 } from "./encodings/basic";
 import {createFundamentalObjectEncoding, dateEncoding, regexpEncoding} from "./encodings/scalar";
 import {SzrError} from "./errors";
-import {arrayBufferEncoding, typedArrayEncodings} from "./encodings/binary";
-import {mapEncoding, setEncoding} from "./encodings/collections";
+import {ArrayBufferEncoding, typedArrayEncodings} from "./encodings/binary";
+import {MapEncoding, SetEncoding} from "./encodings/collections";
 import {errorEncodings} from "./encodings/built-in";
 import {getFullEncoding} from "./encoding-constructors";
 
 
 const builtinEncodings = [
-    objectEncoding,
-    arrayEncoding,
-    nullPrototypeEncoding,
+    ObjectEncoding,
+    ArrayEncoding,
+    NullPrototypeEncoding,
     createFundamentalObjectEncoding(Number),
     createFundamentalObjectEncoding(Boolean),
     createFundamentalObjectEncoding(String),
     dateEncoding,
     regexpEncoding,
     ...typedArrayEncodings,
-    arrayBufferEncoding,
-    mapEncoding,
-    setEncoding,
+    ArrayBufferEncoding,
+    MapEncoding,
+    SetEncoding,
     ...errorEncodings
 ] as SzrEncodingSpecifier[];
 
@@ -106,7 +106,7 @@ export class Szr {
 
     private _findEncodingForObject(obj: object) {
         if (Array.isArray(obj)) {
-            return arrayEncoding;
+            return ArrayEncoding;
         }
         let foundEncoding: SzrPrototypeEncoding;
         for (let proto = obj;; proto = Object.getPrototypeOf(proto) ?? nullPlaceholder) {
@@ -119,7 +119,7 @@ export class Szr {
                 throw new SzrError("FindEncodingForObject got stuck. Internal Error.");
             }
         }
-        foundEncoding ??= objectEncoding;
+        foundEncoding ??= ObjectEncoding;
         if (!this._protoEncodingCache.has(obj)) {
             this._protoEncodingCache.set(obj, foundEncoding);
         }
@@ -148,9 +148,9 @@ export class Szr {
             return encoding;
         }
         if (Array.isArray(input)) {
-            return arrayEncoding;
+            return ArrayEncoding;
         }
-        return objectEncoding;
+        return ObjectEncoding;
     }
 
     private _checkInputValid(input) {

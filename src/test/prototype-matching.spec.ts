@@ -4,7 +4,7 @@ import {encodeDecodeMacro, testDecodeMacroBindSzr, testEncodeMacro, testEncodeMa
 import {decode} from "../lib";
 import {Szr} from "../lib/szr";
 import {getImplicitClassEncodingName, version} from "../lib/utils";
-import {nullPrototypeEncoding} from "../lib/encodings/basic";
+import {NullPrototypeEncoding} from "../lib/encodings/basic";
 
 class TestClass {
     constructor(obj = {}) {
@@ -89,7 +89,7 @@ test("null prototype object", encodeDecodeMacro({
         t.is(Object.getPrototypeOf(rDecoded), null);
         t.deepEqual(rDecoded, {});
     }
-}), Object.create(null), [[{1: nullPrototypeEncoding.key}, {}], {}]);
+}), Object.create(null), [[{1: NullPrototypeEncoding.key}, {}], {}]);
 
 test("override prototype", t => {
     const szr = new Szr({

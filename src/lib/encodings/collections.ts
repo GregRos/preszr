@@ -6,7 +6,7 @@ import {
 import {getLibraryString} from "../utils";
 import {SzrLeaf} from "../szr-representation";
 
-export const mapEncoding: SzrPrototypeEncoding = {
+export const MapEncoding: SzrPrototypeEncoding = {
     prototypes: [Map.prototype],
     key: getLibraryString("Map"),
     encode(input: Map<any, any>, ctx: EncodeContext): any {
@@ -29,7 +29,7 @@ export const mapEncoding: SzrPrototypeEncoding = {
     }
 };
 
-export const setEncoding: SzrPrototypeEncoding = {
+export const SetEncoding: SzrPrototypeEncoding = {
     prototypes: [Set.prototype],
     key: getLibraryString("Set"),
     encode(input: Set<any>, ctx: EncodeContext): any {
@@ -40,7 +40,7 @@ export const setEncoding: SzrPrototypeEncoding = {
         return outArray;
     },
     decoder: {
-        create(encodedValue: any, ctx: DecodeCreateContext): any {
+        create(encoded: any, ctx: DecodeCreateContext): any {
             return new Set();
         },
         init(target: Set<any>, encoded: SzrLeaf[], ctx: DecodeInitContext) {

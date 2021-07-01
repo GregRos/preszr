@@ -17,7 +17,7 @@ export type TypedArrayConstructor =
     | Float64ArrayConstructor
     | DataViewConstructor;
 
-export const arrayBufferEncoding: SzrPrototypeEncoding = {
+export const ArrayBufferEncoding: SzrPrototypeEncoding = {
     key: getLibraryString("ArrayBuffer"),
     prototypes: [ArrayBuffer.prototype],
     encode(input: ArrayBuffer, ctx: EncodeContext): any {
@@ -37,11 +37,11 @@ export function createTypedArrayEncoding(ctor: TypedArrayConstructor): SzrProtot
         key: getLibraryString(ctor.name),
         prototypes: [ctor.prototype],
         encode(input: InstanceType<TypedArrayConstructor>, ctx: EncodeContext): any {
-            return arrayBufferEncoding.encode(input.buffer, ctx);
+            return ArrayBufferEncoding.encode(input.buffer, ctx);
         },
         decoder: {
             create(encodedValue: any, ctx: DecodeCreateContext): any {
-                const buffer = arrayBufferEncoding.decoder.create(encodedValue, ctx);
+                const buffer = ArrayBufferEncoding.decoder.create(encodedValue, ctx);
                 return new ctor(buffer);
             }
         }

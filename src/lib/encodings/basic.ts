@@ -58,7 +58,7 @@ export function encodeObject(input, ctx: EncodeContext, alsoNonEnumerable: boole
     return strKeyObject;
 }
 
-export const objectEncoding: SzrPrototypeEncoding = {
+export const ObjectEncoding: SzrPrototypeEncoding = {
     prototypes: [Object.prototype],
     key: getLibraryString("object"),
     encode(input: any, ctx: EncodeContext): any {
@@ -81,7 +81,7 @@ function encodeAsSparseArray(input: any, ctx: EncodeContext) {
     return result;
 }
 
-export const arrayEncoding: SzrPrototypeEncoding = {
+export const ArrayEncoding: SzrPrototypeEncoding = {
     key: getLibraryString("array"),
     prototypes: [Array.prototype],
     encode(input: any, ctx: EncodeContext): any {
@@ -117,7 +117,7 @@ export const arrayEncoding: SzrPrototypeEncoding = {
         }
     }
 };
-export const nullPrototypeEncoding: SzrPrototypeEncoding = {
+export const NullPrototypeEncoding: SzrPrototypeEncoding = {
     key: getLibraryString("null"),
     encode: getPrototypeEncoder(null),
     decoder: getPrototypeDecoder(null),
@@ -126,7 +126,7 @@ export const nullPrototypeEncoding: SzrPrototypeEncoding = {
 
 export function getPrototypeDecoder(proto: object | null) {
     return {
-        init: objectEncoding.decoder.init,
+        init: ObjectEncoding.decoder.init,
         create(encodedValue: any, ctx: DecodeCreateContext): any {
             return Object.create(proto);
         }

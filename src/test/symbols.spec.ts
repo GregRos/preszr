@@ -1,7 +1,7 @@
 import test, {Implementation, UntitledMacro} from "ava";
 import {decode, encode} from "../lib";
 import {createSzrRep, createWithTitle, embedSzrVersion, testDecodeMacro, testEncodeMacro} from "./utils";
-import {objectEncoding, unsupportedEncodingKey} from "../lib/encodings/basic";
+import {ObjectEncoding, unsupportedEncodingKey} from "../lib/encodings/basic";
 import {unrecognizedSymbolKey} from "../lib/szr-representation";
 import {getImplicitSymbolEncodingName, getLibraryString, getSymbolName, getUnrecognizedSymbol, getUnrecognizedSymbolName} from "../lib/utils";
 import {Szr} from "../lib/szr";
@@ -54,7 +54,7 @@ test("unrecognized symbol key", unrecognizedSymbolMacro((t, encoded) => {
     t.is(typeof key, "symbol");
     t.is((key as any).description, getUnrecognizedSymbolName("test"));
     t.is(decoded[key], 1);
-}), {[testSymbol]: 1}, [[{1: objectEncoding.key, 2: unrecognizedSymbolKey}, {2: "test"}], [{}, {2: 1}], 0]);
+}), {[testSymbol]: 1}, [[{1: ObjectEncoding.key, 2: unrecognizedSymbolKey}, {2: "test"}], [{}, {2: 1}], 0]);
 
 
 test("two different unrecognized symbol properties", unrecognizedSymbolMacro((t, encoded) => {
@@ -66,7 +66,7 @@ test("two different unrecognized symbol properties", unrecognizedSymbolMacro((t,
     t.is(getSymbolName(key1 as any), getUnrecognizedSymbolName("test"));
     t.is(getSymbolName(key2 as any), getUnrecognizedSymbolName("test"));
 }), {[testSymbol]: 1, [testSymbol2]: 2}, [
-    [{1: objectEncoding.key, 2: unrecognizedSymbolKey, 3: unrecognizedSymbolKey}, {2: "test", 3: "test"}],
+    [{1: ObjectEncoding.key, 2: unrecognizedSymbolKey, 3: unrecognizedSymbolKey}, {2: "test", 3: "test"}],
     [{}, {2: 1, 3: 2}], 0, 0
 ]);
 
