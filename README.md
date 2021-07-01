@@ -3,7 +3,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/GregRos/szr/badge.svg?branch=master)](https://coveralls.io/github/GregRos/szr?branch=master)
 [![npm](https://img.shields.io/npm/v/szr)](https://www.npmjs.com/package/szr)
 
-`szr` is a lightweight library for encoding complex objects so they can be serialized. 
+`szr` is a lightweight library for encoding complex objects so they can be serialized. Written in TypeScript.
 
 The encoding `szr` uses creates a simple JSON output that describes objects, references between those objects, their prototypes, and so on. You can send this output over the network and use `szr` to reconstruct the original object at the destination, attaching the correct prototype if it has been configured. `szr` also handles circular references.
 
@@ -151,10 +151,7 @@ import {Szr} from "szr";
 const szr = new Szr({
     encodings: [
         //... optional
-    ],
-    options: {
-        //... optional
-    }
+    ]
 });
 
 const encoded = szr.encode(someObject);

@@ -10,7 +10,7 @@ test("decoding - header structure", t => {
     const [header, ...rest] = encode({}) as any[];
     const [version, encodingKeys, encodingSpec, metadata] = header;
     t.is(version, pkgVersion);
-    t.deepEqual(encodingKeys, [])
+    t.deepEqual(encodingKeys, []);
     t.deepEqual(encodingSpec, {});
     t.deepEqual(metadata, {});
 });
@@ -32,39 +32,24 @@ test("decoding - error when trying to decode anomalous object", t => {
         [[pkgVersion, [], {}, {}]], // no data
         [["g", {}, {}], 1], // non-numeric version
         [[1, {}, {}], 1], // non-string version
-        [["0"], 1], // no encoding info
-        [["0", {}], 1] // no metadata,
+        [[pkgVersion], 1], // no encoding info
+        [[pkgVersion, {}], 1] // no metadata,
     ] as any[];
 
     for (const payload of badPayloads) {
         const err = t.throws(() => decode(payload));
         t.true(isBadPayloadError(err));
     }
-
-    let err = t.throws(() => decode({}));
-    t.true(isBadPayloadError(err));
-    err = t.throws(() => decode([]));
-    t.true(isBadPayloadError(err));
-    err = t.throws(() => decode([1]));
-    t.true(isBadPayloadError(err));
-    err = t.throws(() => decode([pkgVersion, {}, {}]));
-    t.true(isBadPayloadError(err));
-    const nonNumericVersion = [["g", {}, {}], 1];
-    err = t.throws(() => decode(nonNumericVersion));
-    const nonStringVersion = [[1, {}, {}], 1];
-    err = t.throws(() => decode(nonStringVersion));
-    const noEncodingData = [["1"], 1];
-    err = t.throws(() => decode(noEncodingData));
 });
 
 test("decoding - error when trying to decode wrong version", t => {
-    const encoded = [[pkgVersion + 1, [], {}, {}], {}];
+    const encoded = [[pkgVersion + 1, [], {}, {}], {}] as any;
     const err = t.throws(() => decode(encoded));
     t.true(isBadVersionError(err));
 });
 
 test("decoding error - unknown encoding", t => {
-    const encoded = [[pkgVersion, ["test"], {1: 0}, {}], 0];
+    const encoded = [[pkgVersion, ["test"], {1: 0}, {}], 0] as any;
     const err = t.throws(() => decode(encoded));
     t.regex(err.message, /not found/);
 });

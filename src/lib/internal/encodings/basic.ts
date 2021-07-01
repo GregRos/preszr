@@ -1,7 +1,6 @@
 import {
     EncodeContext,
     SzrPrototypeEncoding,
-    SzrOptions,
     DecodeCreateContext,
     DecodeInitContext,
     Decoder
@@ -62,7 +61,7 @@ export const ObjectEncoding: SzrPrototypeEncoding = {
     prototypes: [Object.prototype],
     key: getLibraryString("object"),
     encode(input: any, ctx: EncodeContext): any {
-        return encodeObject(input, ctx, ctx.options.alsoNonEnumerable);
+        return encodeObject(input, ctx, false);
     },
     decoder: {
         create(encodedValue: any, ctx: DecodeCreateContext): any {
@@ -135,7 +134,7 @@ export function getPrototypeDecoder(proto: object | null) {
 
 export function getPrototypeEncoder(proto: object | null) {
     return (input, ctx: EncodeContext) => {
-        const result = encodeObject(input, ctx, ctx.options.alsoNonEnumerable);
+        const result = encodeObject(input, ctx, false);
         (ctx as any)._isImplicit = false;
         return result;
     };

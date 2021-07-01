@@ -62,6 +62,9 @@ const builtinUnsupportedTypes = [
     Function.prototype
 ];
 
+/**
+ * The class used to encode and decode things in the szr format.
+ */
 export class Szr {
     private _config = defaultConfig;
     private _keyToEncoding = new Map<string, SzrEncoding>();
@@ -193,7 +196,6 @@ export class Szr {
         const tryScalar = tryDecodeScalar(input);
         if (tryScalar !== noResultPlaceholder) return tryScalar;
         input = input as SzrFormat;
-        const {options} = this._config;
         this._checkInputValid(input);
         const header = input?.[0];
 
@@ -202,8 +204,7 @@ export class Szr {
         const needToInit = new Map<number, SzrPrototypeEncoding>();
         const ctx: DecodeInitContext = {
             decode: null!,
-            metadata: undefined,
-            options
+            metadata: undefined
         };
 
         for (const encodingKey of encodingKeys) {
@@ -258,7 +259,6 @@ export class Szr {
             const encodingSpec = {} as SzrEncodingSpec;
             const metadata = {} as SzrMetadata;
             const encodingKeys = new Map<string, number>();
-            const options = this._config.options;
             const header = [] as unknown as SzrHeader;
 
             const szrRep = [header] as SzrFormat;
@@ -273,7 +273,6 @@ export class Szr {
                 return encodingIndex;
             };
             const ctx: EncodeContext = {
-                options,
                 metadata: undefined,
                 encode(value: any): SzrLeaf {
                     const tryScalar = tryEncodeScalar(value);
@@ -327,10 +326,6 @@ export class Szr {
 }
 
 export const defaultConfig: SzrConfig = {
-    options: {
-        alsoNonEnumerable: false,
-        custom: {}
-    },
     encodings: [],
     unsupported: []
 };

@@ -1,6 +1,6 @@
 {
   "name": "szr",
-  "version": "0.1.2",
+  "version": "1.0.0",
   "description": "A lightweight library for encoding complex objects so they can be serialized.",
   "main": "index.js",
   "repository": "https://www.github.com/GregRos/szr",

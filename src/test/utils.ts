@@ -116,7 +116,6 @@ export const combAttachHeader = titleFunc => {
 export function getDummyCtx() {
     return {
         encode: x => x,
-        options: defaultConfig.options,
         decode: x => x
     } as EncodeContext & DecodeInitContext;
 }

@@ -5,7 +5,7 @@ import {szrDefaultHeader} from "./utils";
 test("object references same object twice", t => {
     const o = {};
     const b = {o1: o, o2: o};
-    const encoded = encode(b) as any[];
+    const encoded = encode(b);
     t.deepEqual(encoded, szrDefaultHeader({o1: "2", o2: "2"}, {}));
     const B = decode(encoded);
     t.deepEqual(B, b);
