@@ -16,7 +16,7 @@ class TestClass2 {
 
 // This is so deepEqual won't just treat the classes as {}
 TestClass.prototype.field = 5;
-TestClass.prototype.field = 10;
+TestClass2.prototype.field = 10;
 
 test("implicit class encoding name", t => {
     t.is(getImplicitSymbolEncodingName("test"), getLibraryString("symbol-test"));

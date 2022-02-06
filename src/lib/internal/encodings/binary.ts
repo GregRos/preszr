@@ -41,7 +41,7 @@ export function createTypedArrayEncoding(ctor: TypedArrayConstructor): SzrProtot
         },
         decoder: {
             create(encodedValue: any, ctx: DecodeCreateContext): any {
-                const buffer = ArrayBufferEncoding.decoder.create(encodedValue, ctx);
+                const buffer = ArrayBufferEncoding.decoder.create(encodedValue, ctx) as ArrayBuffer;
                 return new ctor(buffer);
             }
         }

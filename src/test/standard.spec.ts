@@ -31,7 +31,7 @@ test("simple object", t => {
         ref2: obj2
     };
 
-    const decoded = decode(
+    const decoded = decode<any>(
         JSON.parse(JSON.stringify(encode(obj)))
     );
     t.deepEqual(decoded, obj);
@@ -43,7 +43,7 @@ test("circular references", t => {
         circular: null as any
     };
     obj.circular = obj;
-    const decoded = decode(
+    const decoded = decode<any>(
         JSON.parse(JSON.stringify(encode(obj)))
     );
     t.is(decoded, decoded.circular);
@@ -55,7 +55,7 @@ test("custom class", t => {
             return 10;
         }
     }
-    const szr = new Szr({
+    const szr = Szr({
         encodings: [MyCustomClass]
     });
     const instance = new MyCustomClass();

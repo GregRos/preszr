@@ -7,7 +7,7 @@ import {SzrEncodedEntity, SzrLeaf} from "./szr-representation";
 export interface EncodeContext {
     /**
      * Encodes the given input. For entities, it will recursively encode them, add
-     * them to the final output as a side-effect, and return a reference. For other
+     * them to the final output as a side effect, and return a reference. For other
      * values, it will return them as-is or encode them, usually as a string.
      * @param value
      */
@@ -34,7 +34,7 @@ export interface DecodeCreateContext {
  */
 export interface DecodeInitContext extends DecodeCreateContext {
     // Resolves references and decodes encoded scalars. This isn't a recursive call.
-    decode(value: SzrLeaf): any;
+    decode(value: SzrLeaf): unknown;
 }
 
 /**
@@ -42,9 +42,9 @@ export interface DecodeInitContext extends DecodeCreateContext {
  */
 export interface Decoder {
     // Creates an instance of the entity without referencing any other encoded entities.
-    create(encoded: SzrEncodedEntity, ctx: DecodeCreateContext): any;
+    create(encoded: SzrEncodedEntity, ctx: DecodeCreateContext): unknown;
     // Fills in additional data by resolving references to other entities.
-    init?(target: any, encoded: SzrEncodedEntity, ctx: DecodeInitContext): void;
+    init?(target: unknown, encoded: SzrEncodedEntity, ctx: DecodeInitContext): void;
 }
 
 /**
@@ -95,6 +95,9 @@ export type SzrEncoding = SzrPrototypeEncoding | SzrSymbolEncoding;
  */
 export type SzrEncodingSpecifier = symbol | Function | SzrPrototypeSpecifier | SzrPrototypeEncoding | SzrSymbolEncoding;
 
+/**
+ * Configuration
+ */
 export interface SzrConfig {
     /**
      * An array of encoding specifiers. If you put your constructors and symbols here,
@@ -104,6 +107,9 @@ export interface SzrConfig {
     unsupported: Function[];
 }
 
+/**
+ * Similar to Partial<T>, but recursively applied.
+ */
 export type DeepPartial<T> = {
     [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K]
 };

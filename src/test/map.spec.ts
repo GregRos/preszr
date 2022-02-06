@@ -35,7 +35,7 @@ const o = {};
 test("same ref", encodeDecodeMacro({
     encode: testEncodeMacro,
     decode(t, decoded, encoded) {
-        const rDecoded = decode(encoded);
+        const rDecoded = decode<any>(encoded);
         for (const [key, value] of rDecoded) {
             t.is(key, value);
         }

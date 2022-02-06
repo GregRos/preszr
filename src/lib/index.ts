@@ -1,19 +1,61 @@
-import {Szr} from "./internal/szr";
-import {SzrOutput} from "./internal/szr-representation";
+import { Szr as SzrClass } from "./internal/szr";
+import { SzrOutput } from "./internal/szr-representation";
+import { DeepPartial, SzrConfig } from "./internal/szr-interface";
 
-const defaultSzr = new Szr();
+export {
+    SzrEncoding,
+    SzrEncodingSpecifier,
+    SzrPrototypeEncoding,
+    SzrPrototypeSpecifier,
+    Decoder,
+    SzrSymbolEncoding,
+    DecodeCreateContext,
+    DecodeInitContext,
+    DeepPartial,
+    SzrConfig,
+    EncodeContext
+} from "./internal/szr-interface";
+const defaultSzr = new SzrClass();
 
 /**
- * Encodes a value using szr with default settings.
- * @param x
+ * Encodes a value using szr with the default settings.
+ * @param value A value to encode.
  */
-export const encode = x => defaultSzr.encode(x);
+export const encode = (value: unknown): SzrOutput => defaultSzr.encode(value);
 
 /**
- * Decodes an Szr
- * @param x
+ * Decodes a value using szr with the default settings.
+ * @param encoded The default
  */
-export const decode = (x: SzrOutput) => defaultSzr.decode(x);
+export const decode = <T = unknown>(encoded: SzrOutput): T => defaultSzr.decode(encoded) as T;
 
-export {Szr};
+/**
+ * Creates a new `Szr` instance. Can be called with or without `new`.
+ * @param config The configuration. Should be the same in the source and destination.
+ * @constructor
+ */
+export const Szr = function Szr(config?: DeepPartial<SzrConfig>) {
+    return new SzrClass(config);
+} as unknown as {
+    /**
+     * Creates a new `Szr` instance. Can be called with or without `new`.
+     * @param config The configuration. Should be the same in the source and destination.
+     * @constructor
+     */
+    new(config?: DeepPartial<SzrConfig>): Szr;
+
+    /**
+     * Creates a new `Szr` instance. Can be called with or without `new`.
+     * @param config The configuration. Should be the same in the source and destination.
+     * @constructor
+     */
+    (config?: DeepPartial<SzrConfig>): Szr;
+
+};
+
+/**
+ * A configured Szr instance used for encoding and decoding.
+ */
+export type Szr = SzrClass;
+Szr.prototype = SzrClass.prototype;
 

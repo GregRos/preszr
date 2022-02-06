@@ -11,7 +11,7 @@ function errorsEqualWithTrace(err1: Error, err2: Error) {
 }
 
 export const errorDecodeMacro: any = (t: ExecutionContext, decoded: any, encoded: any) => {
-    const rDecoded = decode(encoded);
+    const rDecoded = decode<any>(encoded);
     t.is(rDecoded.name, decoded.name);
     t.is(rDecoded.stack, decoded.stack);
     t.is(rDecoded.message, decoded.message);
@@ -66,7 +66,7 @@ const err3 = new SubError("test");
 test("Unknown error subclass", encodeDecodeMacro({
     encode: testEncodeMacro,
     decode(t: ExecutionContext, decoded, encoded) {
-        const rDecoded = decode(encoded);
+        const rDecoded = decode<any>(encoded);
         t.is(rDecoded.name, decoded.name);
         t.is(rDecoded.stack, decoded.stack);
         t.is(rDecoded.message, decoded.message);

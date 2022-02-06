@@ -1,8 +1,8 @@
 {
   "name": "szr",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "A lightweight library for encoding complex objects so they can be serialized.",
-  "main": "index.js",
+  "main": "dist/index.js",
   "repository": "https://www.github.com/GregRos/szr",
   "author": "GregRos",
   "license": "MIT",
@@ -14,7 +14,7 @@
   "scripts": {
     "clean": "shx rm -rf dist/",
     "build": "tsc",
-    "build:clean": "npm-run-all clean build",
+    "build+clean": "npm-run-all clean build",
     "test": "nyc ava",
     "test:no-cover": "node node_modules/ava/cli.js",
     "docs": "node dist/generate-docs/run.js",

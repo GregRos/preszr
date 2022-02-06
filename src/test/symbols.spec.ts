@@ -25,31 +25,31 @@ test("unrecognized symbol name generator", t => {
 });
 
 test("unrecognized symbol input", unrecognizedSymbolMacro((t, encoded) => {
-    const decoded = decode(encoded);
+    const decoded = decode<symbol>(encoded);
     t.is(typeof decoded, "symbol");
     t.is(decoded.description, getUnrecognizedSymbolName("test"));
 }), testSymbol, [[{1: unrecognizedSymbolKey}, {1: "test"}], 0]);
 
 test("unrecognized symbol no name", unrecognizedSymbolMacro((t, encoded) => {
-    const decoded = decode(encoded);
+    const decoded = decode<symbol>(encoded);
     t.is(typeof decoded, "symbol");
     t.is(getSymbolName(decoded), getUnrecognizedSymbolName("#1"));
 }), Symbol(), [[{1: unrecognizedSymbolKey}, {1: "#1"}], 0]);
 
 test("unrecognized symbol property value", unrecognizedSymbolMacro((t, encoded) => {
-    const decoded = decode(encoded);
+    const decoded = decode<any>(encoded);
     t.is(typeof decoded.a, "symbol");
     t.is(decoded.a.description, getUnrecognizedSymbolName("test"));
 }), {a: testSymbol}, [[{2: unrecognizedSymbolKey}, {2: "test"}], {a: "2"}, 0]);
 
 test("two unrecognized symbol values", unrecognizedSymbolMacro((t, encoded) => {
-    const decoded = decode(encoded);
+    const decoded = decode<any>(encoded);
     t.is(typeof decoded.a, "symbol");
     t.is(decoded.a.description, getUnrecognizedSymbolName("test"));
 }), {a: testSymbol, b: testSymbol2}, [[{2: unrecognizedSymbolKey, 3: unrecognizedSymbolKey}, {2: "test", 3: "test"}], {a: "2", b: "3"}, 0, 0]);
 
 test("unrecognized symbol key", unrecognizedSymbolMacro((t, encoded) => {
-    const decoded = decode(encoded);
+    const decoded = decode<any>(encoded);
     const [key] = Reflect.ownKeys(decoded);
     t.is(typeof key, "symbol");
     t.is((key as any).description, getUnrecognizedSymbolName("test"));
@@ -59,7 +59,7 @@ test("unrecognized symbol key", unrecognizedSymbolMacro((t, encoded) => {
 
 test("two different unrecognized symbol properties", unrecognizedSymbolMacro((t, encoded) => {
     const decoded = decode(encoded);
-    const [key1, key2] = Reflect.ownKeys(decoded);
+    const [key1, key2] = Reflect.ownKeys(decoded as object);
     t.is(typeof key1, "symbol");
     t.is(typeof key2, "symbol");
     t.not(key1, key2);
