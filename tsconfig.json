@@ -7,7 +7,7 @@
     "allowUnreachableCode": true,
     "experimentalDecorators": true,
     "lib": [
-      "es2019"
+      "es6"
     ],
     "declaration": true,
     "outDir": "dist",

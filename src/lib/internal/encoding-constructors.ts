@@ -32,7 +32,7 @@ export function getEncodingFromPrototypeSpecifier(specifier: SzrPrototypeSpecifi
         throw new SzrError("Encoding must specify prototype.");
     }
     if (typeof specifier.prototype === "function") {
-        throw new SzrError("Prototype cannot be a function. Did you supply a constructor instead?");
+        throw new SzrError("Prototype cannot be a function. Did you mean to supply a constructor instead?");
     }
     const proto = specifier.prototype ?? nullPlaceholder;
     encoding.prototypes = [proto];

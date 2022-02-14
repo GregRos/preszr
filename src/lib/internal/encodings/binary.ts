@@ -5,6 +5,10 @@ import {
 } from "../szr-interface";
 import {getLibraryString} from "../utils";
 import {fromByteArray, toByteArray} from "base64-js";
+
+/**
+ * A union of all typed array constructors.
+ */
 export type TypedArrayConstructor =
     Int8ArrayConstructor
     | Int16ArrayConstructor

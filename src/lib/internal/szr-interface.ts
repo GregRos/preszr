@@ -64,7 +64,7 @@ export interface SzrPrototypeSpecifier {
 }
 
 /**
- * A full symbol encoding. Mainly for internal use.
+ * A full symbol encoding.
  */
 export interface SzrSymbolEncoding {
     key: string;
@@ -74,17 +74,17 @@ export interface SzrSymbolEncoding {
 
 
 /**
- * A full prototype encoding. Mainly for internal use.
+ * A full prototype encoding.
  */
 export interface SzrPrototypeEncoding {
     key: string;
     prototypes: object[];
     decoder: Decoder;
-    encode(input: any, ctx: EncodeContext): any;
+    encode(input: any, ctx: EncodeContext): SzrEncodedEntity;
 }
 
 /**
- * A full szr encoding. Mainly for internal use.
+ * A full szr encoding of any type.
  */
 export type SzrEncoding = SzrPrototypeEncoding | SzrSymbolEncoding;
 
@@ -104,6 +104,10 @@ export interface SzrConfig {
      * the Szr will recognize them.
      */
     encodings: SzrEncodingSpecifier[];
+    /**
+     * An array of constructors that will be marked as unsupported.
+     * Objects with these constructors will not be encoded.
+     */
     unsupported: Function[];
 }
 

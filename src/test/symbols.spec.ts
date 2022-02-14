@@ -27,7 +27,7 @@ test("unrecognized symbol name generator", t => {
 test("unrecognized symbol input", unrecognizedSymbolMacro((t, encoded) => {
     const decoded = decode<symbol>(encoded);
     t.is(typeof decoded, "symbol");
-    t.is(decoded.description, getUnrecognizedSymbolName("test"));
+    t.is(getSymbolName(decoded), getUnrecognizedSymbolName("test"));
 }), testSymbol, [[{1: unrecognizedSymbolKey}, {1: "test"}], 0]);
 
 test("unrecognized symbol no name", unrecognizedSymbolMacro((t, encoded) => {

@@ -39,34 +39,11 @@ import {MapEncoding, SetEncoding} from "./encodings/collections";
 import {errorEncodings} from "./encodings/built-in";
 import {getFullEncoding} from "./encoding-constructors";
 
-
-const builtinEncodings = [
-    ObjectEncoding,
-    ArrayEncoding,
-    NullPrototypeEncoding,
-    createFundamentalObjectEncoding(Number),
-    createFundamentalObjectEncoding(Boolean),
-    createFundamentalObjectEncoding(String),
-    dateEncoding,
-    regexpEncoding,
-    ...typedArrayEncodings,
-    ArrayBufferEncoding,
-    MapEncoding,
-    SetEncoding,
-    ...errorEncodings
-] as SzrEncodingSpecifier[];
-
-const builtinUnsupportedTypes = [
-    WeakMap.prototype,
-    WeakSet.prototype,
-    Function.prototype
-];
-
 /**
  * The class used to encode and decode things in the szr format.
  */
 export class Szr {
-    private _config = defaultConfig;
+    readonly config = defaultConfig;
     private _keyToEncoding = new Map<string, SzrEncoding>();
     private _symbToEncoding = new Map<symbol, SzrSymbolEncoding>();
     private _tempSymbEncoding = new Map<symbol, SzrSymbolEncoding>();
@@ -74,12 +51,12 @@ export class Szr {
     private _protoEncodings = [] as SzrPrototypeEncoding[];
 
     constructor(config?: DeepPartial<SzrConfig>) {
-        this._config = defaultsDeep({}, config, this._config);
+        this.config = defaultsDeep({}, config, defaultConfig);
         const unsupportedEncoding = getUnsupportedEncoding(
             ...builtinUnsupportedTypes,
-            ...this._config.unsupported,
+            ...this.config.unsupported,
         );
-        this.addEncoding(...builtinEncodings, unsupportedEncoding, ...this._config.encodings);
+        this._addEncoding(...builtinEncodings, unsupportedEncoding, ...this.config.encodings);
     }
 
     private _buildEncodingCache() {
@@ -91,7 +68,7 @@ export class Szr {
         }
     }
 
-    addEncoding(...encoders: SzrEncodingSpecifier[]) {
+    private _addEncoding(...encoders: SzrEncodingSpecifier[]) {
         for (const encSpecifier of encoders) {
             const encoding = getFullEncoding(encSpecifier);
             if (this._keyToEncoding.get(encoding.key)) {
@@ -330,3 +307,24 @@ export const defaultConfig: SzrConfig = {
     unsupported: []
 };
 
+const builtinEncodings = [
+    ObjectEncoding,
+    ArrayEncoding,
+    NullPrototypeEncoding,
+    createFundamentalObjectEncoding(Number),
+    createFundamentalObjectEncoding(Boolean),
+    createFundamentalObjectEncoding(String),
+    dateEncoding,
+    regexpEncoding,
+    ...typedArrayEncodings,
+    ArrayBufferEncoding,
+    MapEncoding,
+    SetEncoding,
+    ...errorEncodings
+] as SzrEncodingSpecifier[];
+
+const builtinUnsupportedTypes = [
+    WeakMap.prototype,
+    WeakSet.prototype,
+    Function.prototype
+];

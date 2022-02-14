@@ -4,11 +4,11 @@
 [![Coverage Status](https://coveralls.io/repos/github/GregRos/szr/badge.svg?branch=master)](https://coveralls.io/github/GregRos/szr?branch=master)
 [![npm](https://img.shields.io/npm/v/szr)](https://www.npmjs.com/package/szr)
 
-`szr` takes complex objects with meaningful references and prototypes and encodes them into a simple format so that they can be serialized (using e.g. `JSON.stringify`).
+`szr` takes complex objects with meaningful references and prototypes and transforms them into simple objects that can be serialized (using e.g. `JSON.stringify`). 
 
 Features:
 
-* Preserves references, including circular references.
+* Encodes references, including circular references.
 * Can preserve prototype information.
 * Encodes almost all primitives and built-in, platform-independent types.
 
@@ -48,6 +48,7 @@ import {Szr} from "szr";
 class Example {}
 class Exmaple2 {}
 
+// 'new' is optional
 const mySzr = Szr({
     encodings: [
         Example,
@@ -58,13 +59,11 @@ const mySzr = Szr({
 
 That's it. That's all you need to do for `szr` to recognize your prototypes and preserve them.
 
-You need to configure Szr with the same prototype encodings in both the source and the destination, though the order doesn't matter. One way to solve this problem while avoiding code duplication 
-
- is to distribute a set of custom types together with an `Szr` instance that can serialize them.
+You need to configure Szr with the same prototype encodings in both the source and the destination, though the order doesn't matter. One way to solve this problem while avoiding code duplication is to distribute a set of custom types together with an `Szr` instance that can serialize them.
 
 ## Installing
 
-```typescript
+```
 npm install szr
 ```
 
@@ -74,14 +73,22 @@ Or:
 yarn add szr
 ```
 
-## Unsupported Types
+## Supported Types
 
-`szr` supports all built-in primitives and objects, except:
+`szr` supports all built-in, platform-independent primitives and objects, except:
 
-1. functions
+1. `function` - outside the scope of this library.
+
+Those are ignored. `szr` also explicitly *unsupports* a few different types
+
+1. `Promise` - Promises are explicitly unsupported 
 2. `WeakMap`, `WeakSet`, which can't be serialized.
 
-## Custom types
+For example, the following are explicitly supported:
+
+1. `Map`, `Set` collections.
+
+## Custom Prototypes
 
 By default, `szr` is only familiar with the built-in prototypes and symbols. If you want it to correctly attach your own prototypes, you'll need to supply them. To do that, you can pass the constructors to the `encodings` property during creation:
 
