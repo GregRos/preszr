@@ -1,9 +1,9 @@
 import {SzrError} from "./errors";
 import {getPrototypeDecoder, getPrototypeEncoder, nullPlaceholder} from "./encodings/basic";
 import {getClassName, getImplicitClassEncodingName, getImplicitSymbolEncodingName, getSymbolName} from "./utils";
-import {SzrEncoding, SzrEncodingSpecifier, SzrPrototypeEncoding, SzrPrototypeSpecifier, SzrSymbolEncoding} from "./szr-interface";
+import {SzrEncoding, SzrEncodingSpecifier, SzrPrototypeEncoding, SzrPrototypeSpecifier, SzrSymbolEncoding} from "./interface";
 
-export function getSymbolEncoding(x: SzrSymbolEncoding | symbol): SzrSymbolEncoding {
+export function makeSymbolEncoding(x: SzrSymbolEncoding | symbol): SzrSymbolEncoding {
     if (typeof x !== "symbol") {
         return x as any;
     }
@@ -17,19 +17,19 @@ export function getSymbolEncoding(x: SzrSymbolEncoding | symbol): SzrSymbolEncod
     } as any;
 }
 
-export function getEncodingFromConstructor(ctor: Function) {
+export function makeEncodingFromCtor(ctor: Function) {
     if (!ctor.prototype) {
         throw new SzrError("Failed to detect prototype from constructor.");
     }
-    return getEncodingFromPrototypeSpecifier({
+    return makeEncodingFromSpecifier({
         prototype: ctor.prototype
     });
 }
 
-export function getEncodingFromPrototypeSpecifier(specifier: SzrPrototypeSpecifier) {
+export function makeEncodingFromSpecifier(specifier: SzrPrototypeSpecifier) {
     const encoding = {} as SzrPrototypeEncoding;
     if (specifier.prototype === undefined) {
-        throw new SzrError("Encoding must specify prototype.");
+        throw new SzrError("Encoding must specify a prototype.");
     }
     if (typeof specifier.prototype === "function") {
         throw new SzrError("Prototype cannot be a function. Did you mean to supply a constructor instead?");
@@ -46,10 +46,10 @@ export function getEncodingFromPrototypeSpecifier(specifier: SzrPrototypeSpecifi
     return encoding;
 }
 
-export function getFullEncoding(specifier: SzrEncodingSpecifier): SzrEncoding {
-    if (typeof specifier === "symbol" || "symbol" in specifier) return getSymbolEncoding(specifier);
-    if (typeof specifier === "function") return getEncodingFromConstructor(specifier);
-    if ("prototype" in specifier) return getEncodingFromPrototypeSpecifier(specifier);
+export function makeFullEncoding(specifier: SzrEncodingSpecifier): SzrEncoding {
+    if (typeof specifier === "symbol" || "symbol" in specifier) return makeSymbolEncoding(specifier);
+    if (typeof specifier === "function") return makeEncodingFromCtor(specifier);
+    if ("prototype" in specifier) return makeEncodingFromSpecifier(specifier);
     if (!specifier.prototypes || specifier.prototypes.length === 0) {
         throw new SzrError("Encoding must specify prototypes.");
     }

@@ -1,7 +1,7 @@
 import test, {ExecutionContext} from "ava";
 import {decode, encode} from "../lib";
 import {encodeDecodeMacro, testEncodeMacro} from "./utils";
-import {getLibraryString} from "../lib/internal/utils";
+import {getLibraryString} from "../lib/utils";
 
 function errorsEqualWithTrace(err1: Error, err2: Error) {
     return Object.getPrototypeOf(err1) === Object.getPrototypeOf(err2) &&

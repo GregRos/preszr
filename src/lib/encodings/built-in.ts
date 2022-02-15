@@ -1,4 +1,4 @@
-import {DecodeCreateContext, DecodeInitContext, EncodeContext, SzrPrototypeEncoding} from "../szr-interface";
+import {DecodeCreateContext, DecodeInitContext, EncodeContext, SzrPrototypeEncoding} from "../interface";
 import {getLibraryString} from "../utils";
 import {decodeObject, encodeObject, getPrototypeDecoder, ObjectEncoding} from "./basic";
 

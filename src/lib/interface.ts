@@ -1,4 +1,4 @@
-import {SzrEncodedEntity, SzrLeaf} from "./szr-representation";
+import {SzrEncodedEntity, SzrLeaf} from "./data-types";
 
 
 /**
@@ -96,7 +96,7 @@ export type SzrEncoding = SzrPrototypeEncoding | SzrSymbolEncoding;
 export type SzrEncodingSpecifier = symbol | Function | SzrPrototypeSpecifier | SzrPrototypeEncoding | SzrSymbolEncoding;
 
 /**
- * Configuration
+ * Configuration for an Szr instance.
  */
 export interface SzrConfig {
     /**

@@ -4,9 +4,9 @@ import {
     DecodeCreateContext,
     DecodeInitContext,
     Decoder
-} from "../szr-interface";
+} from "../interface";
 import {getClassName, getLibraryString} from "../utils";
-import {SzrLeaf, Reference} from "../szr-representation";
+import {SzrLeaf, Reference} from "../data-types";
 import {SzrError} from "../errors";
 
 export const nullPlaceholder = {};

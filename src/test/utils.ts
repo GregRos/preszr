@@ -1,9 +1,9 @@
-import {SzrHeader, SzrFormat} from "../lib/internal/szr-representation";
-import {version} from "../lib/internal/utils";
+import {SzrHeader, SzrFormat} from "../lib/data-types";
+import {version} from "../lib/utils";
 import {ExecutionContext, Macro} from "ava";
 import {cloneDeep} from "lodash";
-import {defaultConfig, Szr} from "../lib/internal/szr";
-import {DecodeInitContext, EncodeContext} from "../lib/internal/szr-interface";
+import {defaultConfig, Szr} from "../lib/core";
+import {DecodeInitContext, EncodeContext} from "../lib/interface";
 
 export function stringify(value: any) {
     if (typeof value === "object") {

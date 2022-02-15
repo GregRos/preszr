@@ -1,12 +1,13 @@
 // @ts-ignore
 
-let pkgJson;
+let packageObj;
 try {
-    pkgJson = require("../../../package.json");
+    packageObj = require("../../package.json");
 } catch (err) {
-    pkgJson = require("./package.json");
+    packageObj = require("./package.json");
 }
 
+// Based on lodash's implementation: https://github.com/lodash/lodash
 export function _defaultsDeep(target: any, source: any) {
     target = Object(target);
     if (!source) return target;
@@ -58,4 +59,4 @@ export function getUnrecognizedSymbol(name: string) {
     return Symbol(getUnrecognizedSymbolName(name));
 }
 
-export const version = pkgJson.version.split(".")[0];
+export const version = packageObj.version.split(".")[0];

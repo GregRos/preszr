@@ -1,9 +1,9 @@
 import test from "ava";
-import {Szr} from "../lib/internal/szr";
-import {version} from "../lib/internal/utils";
+import {Szr} from "../lib/core";
+import {version} from "../lib/utils";
 import {decode} from "../lib";
 import {szrDefaultHeader} from "./utils";
-import {SzrFormat} from "../lib/internal/szr-representation";
+import {SzrFormat} from "../lib/data-types";
 
 class TestClass {}
 

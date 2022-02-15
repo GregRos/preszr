@@ -7,7 +7,6 @@
 .idea/
 .publish/
 # temporary
-docs/
 
 # Gradle:
 .idea/gradle.xml

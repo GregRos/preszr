@@ -1,7 +1,7 @@
 /* tslint:disable:no-construct */
 import test from "ava";
 import {createWithTitle, embedSzrVersion, encodeDecodeMacro, testDecodeMacro, testEncodeMacro} from "./utils";
-import {getLibraryString} from "../lib/internal/utils";
+import {getLibraryString} from "../lib/utils";
 
 const scalarMacros = encodeDecodeMacro({
     encode: testEncodeMacro,

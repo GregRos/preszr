@@ -1,6 +1,6 @@
-import { Szr as SzrClass } from "./internal/szr";
-import { SzrOutput } from "./internal/szr-representation";
-import { DeepPartial, SzrConfig } from "./internal/szr-interface";
+import { Szr as SzrClass } from "./core";
+import { SzrOutput } from "./data-types";
+import { DeepPartial, SzrConfig } from "./interface";
 
 export {
     SzrEncoding,
@@ -14,7 +14,7 @@ export {
     DeepPartial,
     SzrConfig,
     EncodeContext
-} from "./internal/szr-interface";
+} from "./interface";
 const defaultSzr = new SzrClass();
 
 /**

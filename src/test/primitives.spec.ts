@@ -2,7 +2,7 @@ import {
     infinityEncoding, nanEncoding,
     negInfinityEncoding, negZeroEncoding,
     SzrOutput, undefinedEncoding
-} from "../lib/internal/szr-representation";
+} from "../lib/data-types";
 import test, {ExecutionContext, Macro} from "ava";
 import {decode, encode} from "../lib";
 import {stringify} from "./utils";

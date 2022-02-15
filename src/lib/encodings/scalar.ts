@@ -3,7 +3,7 @@ import {
     DecodeInitContext,
     EncodeContext,
     SzrPrototypeEncoding
-} from "../szr-interface";
+} from "../interface";
 import {getLibraryString} from "../utils";
 
 export const regexpEncoding: SzrPrototypeEncoding = {

@@ -2,9 +2,9 @@ import {
     DecodeCreateContext, DecodeInitContext,
     EncodeContext,
     SzrPrototypeEncoding
-} from "../szr-interface";
+} from "../interface";
 import {getLibraryString} from "../utils";
-import {SzrEncodedEntity, SzrLeaf} from "../szr-representation";
+import {SzrEncodedEntity, SzrLeaf} from "../data-types";
 
 export const MapEncoding: SzrPrototypeEncoding = {
     prototypes: [Map.prototype],

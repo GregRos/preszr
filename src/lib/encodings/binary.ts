@@ -2,7 +2,7 @@ import {
     DecodeCreateContext,
     EncodeContext,
     SzrPrototypeEncoding
-} from "../szr-interface";
+} from "../interface";
 import {getLibraryString} from "../utils";
 import {fromByteArray, toByteArray} from "base64-js";
 

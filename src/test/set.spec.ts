@@ -1,8 +1,8 @@
 import {encodeDecodeMacro, testDecodeMacro, testEncodeMacro} from "./utils";
 import test from "ava";
-import {getLibraryString} from "../lib/internal/utils";
+import {getLibraryString} from "../lib/utils";
 import {decode} from "../lib";
-import {unsupportedEncodingKey} from "../lib/internal/encodings/basic";
+import {unsupportedEncodingKey} from "../lib/encodings/basic";
 
 const macro = encodeDecodeMacro({
     encode: testEncodeMacro,

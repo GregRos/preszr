@@ -7,7 +7,7 @@ import {
     SzrEncoding,
     SzrSymbolEncoding,
     DecodeInitContext
-} from "./szr-interface";
+} from "./interface";
 import {
     defaultsDeep, getLibraryString, getSymbolName, getUnrecognizedSymbol,
     version
@@ -26,7 +26,7 @@ import {
     tryDecodeScalar,
     undefinedEncoding,
     noResultPlaceholder, unrecognizedSymbolKey, SzrEncodedEntity, SzrEncodingKeys
-} from "./szr-representation";
+} from "./data-types";
 import {
     ArrayEncoding, getUnsupportedEncoding, nullPlaceholder,
     NullPrototypeEncoding,
@@ -37,7 +37,7 @@ import {SzrError} from "./errors";
 import {ArrayBufferEncoding, typedArrayEncodings} from "./encodings/binary";
 import {MapEncoding, SetEncoding} from "./encodings/collections";
 import {errorEncodings} from "./encodings/built-in";
-import {getFullEncoding} from "./encoding-constructors";
+import {makeFullEncoding} from "./encoding-utils";
 
 /**
  * The class used to encode and decode things in the szr format.
@@ -70,7 +70,7 @@ export class Szr {
 
     private _addEncoding(...encoders: SzrEncodingSpecifier[]) {
         for (const encSpecifier of encoders) {
-            const encoding = getFullEncoding(encSpecifier);
+            const encoding = makeFullEncoding(encSpecifier);
             if (this._keyToEncoding.get(encoding.key)) {
                 throw new SzrError(`Encoding with the key '${encoding.key}' already exists.`);
             }
