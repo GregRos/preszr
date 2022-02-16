@@ -1,13 +1,13 @@
-import test, { Implementation, UntitledMacro } from "ava";
-import { decode, encode } from "../lib";
+/* eslint-disable symbol-description */
+import test, { UntitledMacro } from "ava";
+import { decode } from "../lib";
 import {
-    createSzrRep,
     createWithTitle,
     embedSzrVersion,
     testDecodeMacro,
     testEncodeMacro,
 } from "./utils";
-import { ObjectEncoding, unsupportedEncodingKey } from "../lib/encodings/basic";
+import { objectEncoding } from "../lib/encodings/basic";
 import { unrecognizedSymbolKey } from "../lib/data-types";
 import {
     getImplicitSymbolEncodingName,
@@ -107,7 +107,7 @@ test(
     }),
     { [testSymbol]: 1 },
     [
-        [{ 1: ObjectEncoding.key, 2: unrecognizedSymbolKey }, { 2: "test" }],
+        [{ 1: objectEncoding.key, 2: unrecognizedSymbolKey }, { 2: "test" }],
         [{}, { 2: 1 }],
         0,
     ]
@@ -128,7 +128,7 @@ test(
     [
         [
             {
-                1: ObjectEncoding.key,
+                1: objectEncoding.key,
                 2: unrecognizedSymbolKey,
                 3: unrecognizedSymbolKey,
             },

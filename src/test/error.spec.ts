@@ -1,16 +1,7 @@
 import test, { ExecutionContext } from "ava";
-import { decode, encode } from "../lib";
+import { decode } from "../lib";
 import { encodeDecodeMacro, testEncodeMacro } from "./utils";
 import { getLibraryString } from "../lib/utils";
-
-function errorsEqualWithTrace(err1: Error, err2: Error) {
-    return (
-        Object.getPrototypeOf(err1) === Object.getPrototypeOf(err2) &&
-        err1.name === err2.name &&
-        err1.message === err2.message &&
-        err1.stack === err2.stack
-    );
-}
 
 export const errorDecodeMacro: any = (
     t: ExecutionContext,

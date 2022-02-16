@@ -1,10 +1,9 @@
+/* eslint-disable no-new-wrappers */
 /* tslint:disable:no-construct */
+// noinspection JSPrimitiveTypeWrapperUsage
+
 import test from "ava";
-import {
-    encodeDecodeMacro,
-    testDecodeMacro,
-    testEncodeMacro,
-} from "./utils";
+import { encodeDecodeMacro, testDecodeMacro, testEncodeMacro } from "./utils";
 import { getLibraryString } from "../lib/utils";
 
 const scalarMacros = encodeDecodeMacro({

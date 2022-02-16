@@ -6,7 +6,7 @@ import {
     Decoder,
 } from "../interface";
 import { getClassName, getLibraryString } from "../utils";
-import { SzrLeaf} from "../data-types";
+import { SzrLeaf } from "../data-types";
 
 export const nullPlaceholder = {};
 function getAllOwnKeys(obj: object, onlyEnumerable: boolean): PropertyKey[] {
@@ -63,7 +63,7 @@ export function encodeObject(
     return strKeyObject;
 }
 
-export const ObjectEncoding: SzrPrototypeEncoding = {
+export const objectEncoding: SzrPrototypeEncoding = {
     prototypes: [Object.prototype],
     key: getLibraryString("object"),
     encode(input: any, ctx: EncodeContext): any {
@@ -86,7 +86,7 @@ function encodeAsSparseArray(input: any, ctx: EncodeContext) {
     return result;
 }
 
-export const ArrayEncoding: SzrPrototypeEncoding = {
+export const arrayEncoding: SzrPrototypeEncoding = {
     key: getLibraryString("array"),
     prototypes: [Array.prototype],
     encode(input: any, ctx: EncodeContext): any {
@@ -122,7 +122,7 @@ export const ArrayEncoding: SzrPrototypeEncoding = {
         },
     },
 };
-export const NullPrototypeEncoding: SzrPrototypeEncoding = {
+export const nullPrototypeEncoding: SzrPrototypeEncoding = {
     key: getLibraryString("null"),
     encode: getPrototypeEncoder(null),
     decoder: getPrototypeDecoder(null),
@@ -131,7 +131,7 @@ export const NullPrototypeEncoding: SzrPrototypeEncoding = {
 
 export function getPrototypeDecoder(proto: object | null) {
     return {
-        init: ObjectEncoding.decoder.init,
+        init: objectEncoding.decoder.init,
         create(encodedValue: any, ctx: DecodeCreateContext): any {
             return Object.create(proto);
         },

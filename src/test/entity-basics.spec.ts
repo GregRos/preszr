@@ -1,13 +1,13 @@
 import test from "ava";
 import { decode, encode } from "../lib";
-import { version as pkgVersion, version } from "../lib/utils";
+import { version as pkgVersion } from "../lib/utils";
 
 test("encoding - entity is array", (t) => {
     t.true(Array.isArray(encode({})));
 });
 
 test("decoding - header structure", (t) => {
-    const [header, ...rest] = encode({}) as any[];
+    const [header] = encode({}) as any[];
     const [version, encodingKeys, encodingSpec, metadata] = header;
     t.is(version, pkgVersion);
     t.deepEqual(encodingKeys, []);

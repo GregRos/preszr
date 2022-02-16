@@ -9,7 +9,7 @@ import {
 import { decode } from "../lib";
 import { Szr } from "../lib/core";
 import { getImplicitClassEncodingName, version } from "../lib/utils";
-import { NullPrototypeEncoding } from "../lib/encodings/basic";
+import { nullPrototypeEncoding } from "../lib/encodings/basic";
 
 class TestClass {
     constructor(obj = {}) {
@@ -118,7 +118,7 @@ test(
         },
     }),
     Object.create(null),
-    [[{ 1: NullPrototypeEncoding.key }, {}], {}]
+    [[{ 1: nullPrototypeEncoding.key }, {}], {}]
 );
 
 test("override prototype", (t) => {

@@ -14,7 +14,7 @@ import {
     negZeroEncoding,
     undefinedEncoding,
 } from "../lib/data-types";
-import { ArrayEncoding } from "../lib/encodings/basic";
+import { arrayEncoding } from "../lib/encodings/basic";
 
 {
     const simpleArrayTest = combAttachHeader(
@@ -51,7 +51,7 @@ test("deepEqual assertions work for sparse arrays", (t) => {
     });
 
     test("sparse array", testSparseArrays, createSparseArray({ 1: 5, 2: 6 }), [
-        [{ 1: ArrayEncoding.key }, {}],
+        [{ 1: arrayEncoding.key }, {}],
         { 1: 5, 2: 6 },
     ]);
 
@@ -59,13 +59,13 @@ test("deepEqual assertions work for sparse arrays", (t) => {
         "sparse array with reference",
         testSparseArrays,
         createSparseArray({ 1: {}, 2: {} }),
-        [[{ 1: ArrayEncoding.key }, {}], { 1: "2", 2: "3" }, {}, {}]
+        [[{ 1: arrayEncoding.key }, {}], { 1: "2", 2: "3" }, {}, {}]
     );
 
     test(
         "array with string keys",
         testSparseArrays,
         createSparseArray({ 1: 1, a: 2 }),
-        [[{ 1: ArrayEncoding.key }, {}], { 1: 1, a: 2 }]
+        [[{ 1: arrayEncoding.key }, {}], { 1: 1, a: 2 }]
     );
 }

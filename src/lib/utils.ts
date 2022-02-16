@@ -1,5 +1,3 @@
-// @ts-ignore
-
 let packageObj;
 try {
     packageObj = require("../../package.json");

@@ -51,7 +51,3 @@ export function createFundamentalObjectEncoding(ctor: {
         },
     };
 }
-
-export const fundamentalObjectEncodings = [Number, String, Boolean].map(
-    createFundamentalObjectEncoding
-);

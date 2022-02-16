@@ -1,21 +1,24 @@
-# Szr
+# Preszr
 
 [![Node.js CI](https://github.com/GregRos/szr/actions/workflows/main.yaml/badge.svg)](https://github.com/GregRos/szr/actions/workflows/main.yaml)
 [![Coverage Status](https://coveralls.io/repos/github/GregRos/szr/badge.svg?branch=master)](https://coveralls.io/github/GregRos/szr?branch=master)
 [![npm](https://img.shields.io/npm/v/szr)](https://www.npmjs.com/package/szr)
 
-`szr` takes complex objects with meaningful references and prototypes and transforms them into simple objects that can be serialized (using e.g. `JSON.stringify`). 
+`szr` takes complex objects with meaningful references and prototypes and transforms them into simple objects that can be serialized (using e.g. `JSON.stringify`).
 
 Features:
 
 * Encodes references, including circular references.
 * Can preserve prototype information.
-* Encodes almost all primitives and built-in, platform-independent types.
+* Encodes almost all primitives and built-in, platform-independent object types.
 
 Here is how `szr` is different from some other libraries that do the same thing:
 
 - No schemas or decorators.
 - Can be easily configured to encode custom objects in arbitrary ways.
+- Doesn't modify the encoded objects.
+- Doesn't generate JS code that might be a security risk.
+- It's a pre-serializer
 
 If you're curious about how `szr` works, refer to the *Szr Output* section below.
 
@@ -75,7 +78,7 @@ yarn add szr
 
 ## Unsupported Types
 
-`szr` will intelligently encode almost all **platform-independent** objects, with the exception of a few that are outside its scope.
+`szr` will intelligently encode almost all **platform-independent** objects, except for a few that are outside its scope.
 
 1. `function`.
 2. `Iterator`, `Generator`, `GeneratorFunction`, and so on.
@@ -101,7 +104,7 @@ const szr = new Szr({
 });
 ```
 
-When `szr` encounters a prototype it doesn't know, it will use the closest prototype it *does* know, possibly descending down to `Object.prototype`. 
+When `szr` encounters a prototype it doesn't know, it will use the closest prototype it *does* know, possibly descending to `Object.prototype`. 
 
 Note that if your constructor is nameless, or some of the constructors you use have the same names, you might have to do some more configuration. See the *encodings* section below.
 

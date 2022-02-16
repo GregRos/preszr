@@ -10,7 +10,6 @@ import {
 } from "./interface";
 import {
     defaultsDeep,
-    getLibraryString,
     getSymbolName,
     getUnrecognizedSymbol,
     version,
@@ -24,22 +23,18 @@ import {
     SzrEncodingSpec,
     SzrMetadata,
     SzrEntity,
-    SzrPrimitive,
     tryEncodeScalar,
     tryDecodeScalar,
-    undefinedEncoding,
     noResultPlaceholder,
     unrecognizedSymbolKey,
     SzrEncodedEntity,
-    SzrEncodingKeys,
 } from "./data-types";
 import {
-    ArrayEncoding,
+    arrayEncoding,
     getUnsupportedEncoding,
     nullPlaceholder,
-    NullPrototypeEncoding,
-    ObjectEncoding,
-    unsupportedEncodingKey,
+    nullPrototypeEncoding,
+    objectEncoding,
 } from "./encodings/basic";
 import {
     createFundamentalObjectEncoding,
@@ -48,7 +43,7 @@ import {
 } from "./encodings/scalar";
 import { SzrError } from "./errors";
 import { arrayBufferEncoding, typedArrayEncodings } from "./encodings/binary";
-import { MapEncoding, SetEncoding } from "./encodings/collections";
+import { mapEncoding, setEncoding } from "./encodings/collections";
 import { errorEncodings } from "./encodings/built-in";
 import { makeFullEncoding } from "./encoding-utils";
 
@@ -105,7 +100,7 @@ export class Szr {
 
     private _findEncodingForObject(obj: object) {
         if (Array.isArray(obj)) {
-            return ArrayEncoding;
+            return arrayEncoding;
         }
         let foundEncoding: SzrPrototypeEncoding;
         for (
@@ -124,7 +119,7 @@ export class Szr {
                 );
             }
         }
-        foundEncoding ??= ObjectEncoding;
+        foundEncoding ??= objectEncoding;
         if (!this._protoEncodingCache.has(obj)) {
             this._protoEncodingCache.set(obj, foundEncoding);
         }
@@ -152,9 +147,9 @@ export class Szr {
             return encoding;
         }
         if (Array.isArray(input)) {
-            return ArrayEncoding;
+            return arrayEncoding;
         }
-        return ObjectEncoding;
+        return objectEncoding;
     }
 
     private _checkInputValid(input) {
@@ -206,7 +201,7 @@ export class Szr {
         this._checkInputValid(input);
         const header = input?.[0];
 
-        const [v, encodingKeys, encodingSpec, metadata] = header;
+        const [, encodingKeys, encodingSpec, metadata] = header;
         const targetArray = Array(input.length - 1);
         const needToInit = new Map<number, SzrPrototypeEncoding>();
         const ctx: DecodeInitContext = {
@@ -299,7 +294,7 @@ export class Szr {
                     return existingRef;
                 },
             };
-            const createNewRef = <T>(value: SzrEntity): Reference => {
+            const createNewRef = (value: SzrEntity): Reference => {
                 const index = szrRep.length;
                 const ref = `${index}`;
                 objectToRef.set(value, ref);
@@ -350,9 +345,9 @@ export const defaultConfig: SzrConfig = {
 };
 
 const builtinEncodings = [
-    ObjectEncoding,
-    ArrayEncoding,
-    NullPrototypeEncoding,
+    objectEncoding,
+    arrayEncoding,
+    nullPrototypeEncoding,
     createFundamentalObjectEncoding(Number),
     createFundamentalObjectEncoding(Boolean),
     createFundamentalObjectEncoding(String),
@@ -360,8 +355,8 @@ const builtinEncodings = [
     regexpEncoding,
     ...typedArrayEncodings,
     arrayBufferEncoding,
-    MapEncoding,
-    SetEncoding,
+    mapEncoding,
+    setEncoding,
     ...errorEncodings,
 ] as SzrEncodingSpecifier[];
 

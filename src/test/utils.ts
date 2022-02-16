@@ -2,8 +2,8 @@ import { SzrHeader, SzrFormat } from "../lib/data-types";
 import { version } from "../lib/utils";
 import { ExecutionContext, Macro } from "ava";
 import { cloneDeep } from "lodash";
-import { defaultConfig, Szr } from "../lib/core";
-import { DecodeInitContext, EncodeContext } from "../lib/interface";
+import { Szr } from "../lib/core";
+import { DecodeInitContext, EncodeContext } from "../lib";
 
 export function stringify(value: any) {
     if (typeof value === "object") {
@@ -13,15 +13,9 @@ export function stringify(value: any) {
         return `${value}n`;
     }
     if (Object.is(value, -0)) {
+        return "-0";
     }
     return `${value}`;
-}
-
-export function getSpecialObject(obj?) {
-    obj ??= {};
-    Object.defineProperty(obj, "idProperty", {
-        get() {},
-    });
 }
 
 export function createSparseArray<T>(arrayLikeObj: Record<any, T>): T[] {
@@ -41,7 +35,7 @@ export function embedSzrVersion(encoded) {
 
 export function getEncodingComponent(encodingSpec) {
     const encodingKeys = [] as string[];
-    for (const [key, value] of Object.entries(encodingSpec) as any[]) {
+    for (const [, value] of Object.entries(encodingSpec) as any[]) {
         if (!encodingKeys.includes(value)) {
             encodingKeys.push(value);
         }
@@ -55,7 +49,7 @@ export function getEncodingComponent(encodingSpec) {
 
 export function simplifyEncoding(encoding: SzrFormat) {
     const clone = cloneDeep(encoding);
-    const [[vr, keys, info, meta]] = clone;
+    const [[, keys, info]] = clone;
     for (const [k, v] of Object.entries(info)) {
         info[k] = keys[v];
     }
@@ -159,8 +153,4 @@ export const encodeDecodeMacro = (args: EncodeDecodeMacros) => {
 
 export function toBase64(buf: ArrayBuffer) {
     return Buffer.from(buf).toString("base64");
-}
-
-export function fromBase64(b64: string) {
-    return Buffer.from(b64, "base64").buffer;
 }

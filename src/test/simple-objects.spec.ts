@@ -1,22 +1,12 @@
 import test from "ava";
-import { version } from "../lib/utils";
 import {
     infinityEncoding,
     nanEncoding,
     negInfinityEncoding,
     negZeroEncoding,
-    SzrHeader,
     undefinedEncoding,
 } from "../lib/data-types";
-import {
-    combAttachHeader,
-    createSparseArray,
-    createSzrRep,
-    stringify,
-    szrDefaultHeader,
-    testEncodeMacro,
-} from "./utils";
-import { ArrayEncoding, unsupportedEncodingKey } from "../lib/encodings/basic";
+import { combAttachHeader, stringify, szrDefaultHeader } from "./utils";
 import { encode } from "../lib";
 
 const simpleObjectTest = combAttachHeader(

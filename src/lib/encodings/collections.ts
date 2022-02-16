@@ -7,7 +7,7 @@ import {
 import { getLibraryString } from "../utils";
 import { SzrEncodedEntity, SzrLeaf } from "../data-types";
 
-export const MapEncoding: SzrPrototypeEncoding = {
+export const mapEncoding: SzrPrototypeEncoding = {
     prototypes: [Map.prototype],
     key: getLibraryString("Map"),
     encode(input: Map<any, any>, ctx: EncodeContext): any {
@@ -34,7 +34,7 @@ export const MapEncoding: SzrPrototypeEncoding = {
     },
 };
 
-export const SetEncoding: SzrPrototypeEncoding = {
+export const setEncoding: SzrPrototypeEncoding = {
     prototypes: [Set.prototype],
     key: getLibraryString("Set"),
     encode(input: Set<any>, ctx: EncodeContext): SzrEncodedEntity {
