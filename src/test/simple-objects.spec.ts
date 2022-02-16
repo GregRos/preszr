@@ -6,7 +6,7 @@ import {
     negZeroEncoding,
     undefinedEncoding,
 } from "../lib/data-types";
-import { combAttachHeader, stringify, szrDefaultHeader } from "./utils";
+import { combAttachHeader, stringify, preszrDefaultHeader } from "./utils";
 import { encode } from "../lib";
 
 const simpleObjectTest = combAttachHeader(
@@ -47,5 +47,5 @@ test("skips non-enumerable", (t) => {
         value: "test",
     });
     const encoded = encode(x);
-    t.deepEqual(encoded, szrDefaultHeader({}));
+    t.deepEqual(encoded, preszrDefaultHeader({}));
 });

@@ -1,4 +1,4 @@
-import { SzrError } from "./errors";
+import { PreszrError } from "./errors";
 import {
     getPrototypeDecoder,
     getPrototypeEncoder,
@@ -11,22 +11,22 @@ import {
     getSymbolName,
 } from "./utils";
 import {
-    SzrEncoding,
-    SzrEncodingSpecifier,
-    SzrPrototypeEncoding,
-    SzrPrototypeSpecifier,
-    SzrSymbolEncoding,
+    PreszrEncoding,
+    PreszrEncodingSpecifier,
+    PreszrPrototypeEncoding,
+    PreszrPrototypeSpecifier,
+    PreszrSymbolEncoding,
 } from "./interface";
 
 export function makeSymbolEncoding(
-    x: SzrSymbolEncoding | symbol
-): SzrSymbolEncoding {
+    x: PreszrSymbolEncoding | symbol
+): PreszrSymbolEncoding {
     if (typeof x !== "symbol") {
         return x as any;
     }
     const key = getSymbolName(x);
     if (!key) {
-        throw new SzrError(`Failed to detect symbol name for ${String(x)}`);
+        throw new PreszrError(`Failed to detect symbol name for ${String(x)}`);
     }
     return {
         key: getImplicitSymbolEncodingName(key),
@@ -36,20 +36,20 @@ export function makeSymbolEncoding(
 
 export function makeEncodingFromCtor(ctor: Function) {
     if (!ctor.prototype) {
-        throw new SzrError("Failed to detect prototype from constructor.");
+        throw new PreszrError("Failed to detect prototype from constructor.");
     }
     return makeEncodingFromSpecifier({
         prototype: ctor.prototype,
     });
 }
 
-export function makeEncodingFromSpecifier(specifier: SzrPrototypeSpecifier) {
-    const encoding = {} as SzrPrototypeEncoding;
+export function makeEncodingFromSpecifier(specifier: PreszrPrototypeSpecifier) {
+    const encoding = {} as PreszrPrototypeEncoding;
     if (specifier.prototype === undefined) {
-        throw new SzrError("Encoding must specify a prototype.");
+        throw new PreszrError("Encoding must specify a prototype.");
     }
     if (typeof specifier.prototype === "function") {
-        throw new SzrError(
+        throw new PreszrError(
             "Prototype cannot be a function. Did you mean to supply a constructor instead?"
         );
     }
@@ -57,7 +57,7 @@ export function makeEncodingFromSpecifier(specifier: SzrPrototypeSpecifier) {
     encoding.prototypes = [proto];
     const className = getClassName(proto);
     if (!className && !specifier.key) {
-        throw new SzrError(
+        throw new PreszrError(
             `No key has been provided, and the prototype has no name.`
         );
     }
@@ -67,21 +67,21 @@ export function makeEncodingFromSpecifier(specifier: SzrPrototypeSpecifier) {
     return encoding;
 }
 
-export function makeFullEncoding(specifier: SzrEncodingSpecifier): SzrEncoding {
+export function makeFullEncoding(specifier: PreszrEncodingSpecifier): PreszrEncoding {
     if (typeof specifier === "symbol" || "symbol" in specifier)
         return makeSymbolEncoding(specifier);
     if (typeof specifier === "function") return makeEncodingFromCtor(specifier);
     if ("prototype" in specifier) return makeEncodingFromSpecifier(specifier);
     if (!specifier.prototypes || specifier.prototypes.length === 0) {
-        throw new SzrError("Encoding must specify prototypes.");
+        throw new PreszrError("Encoding must specify prototypes.");
     }
     if (!("decoder" in specifier && "encode" in specifier)) {
-        throw new SzrError(
+        throw new PreszrError(
             "Multi-prototype specifier must have both decoder and encode."
         );
     }
     if (!specifier.key) {
-        throw new SzrError("Multi-prototype specifier must provide a key.");
+        throw new PreszrError("Multi-prototype specifier must provide a key.");
     }
     return specifier;
 }

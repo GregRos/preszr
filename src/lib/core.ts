@@ -1,11 +1,11 @@
 import {
     DeepPartial,
     EncodeContext,
-    SzrConfig,
-    SzrPrototypeEncoding,
-    SzrEncodingSpecifier,
-    SzrEncoding,
-    SzrSymbolEncoding,
+    PreszrConfig,
+    PreszrPrototypeEncoding,
+    PreszrEncodingSpecifier,
+    PreszrEncoding,
+    PreszrSymbolEncoding,
     DecodeInitContext,
 } from "./interface";
 import {
@@ -15,19 +15,19 @@ import {
     version,
 } from "./utils";
 import {
-    SzrLeaf,
+    PreszrLeaf,
     Reference,
-    SzrHeader,
-    SzrOutput,
-    SzrFormat,
-    SzrEncodingSpec,
-    SzrMetadata,
-    SzrEntity,
+    PreszrHeader,
+    PreszrOutput,
+    PreszrFormat,
+    PreszrEncodingSpec,
+    PreszrMetadata,
+    PreszrEntity,
     tryEncodeScalar,
     tryDecodeScalar,
     noResultPlaceholder,
     unrecognizedSymbolKey,
-    SzrEncodedEntity,
+    PreszrEncodedEntity,
 } from "./data-types";
 import {
     arrayEncoding,
@@ -41,24 +41,24 @@ import {
     dateEncoding,
     regexpEncoding,
 } from "./encodings/scalar";
-import { SzrError } from "./errors";
+import { PreszrError } from "./errors";
 import { arrayBufferEncoding, typedArrayEncodings } from "./encodings/binary";
 import { mapEncoding, setEncoding } from "./encodings/collections";
 import { errorEncodings } from "./encodings/built-in";
 import { makeFullEncoding } from "./encoding-utils";
 
 /**
- * The class used to encode and decode things in the szr format.
+ * The class used to encode and decode things in the preszr format.
  */
-export class Szr {
+export class Preszr {
     readonly config = defaultConfig;
-    private _keyToEncoding = new Map<string, SzrEncoding>();
-    private _symbToEncoding = new Map<symbol, SzrSymbolEncoding>();
-    private _tempSymbEncoding = new Map<symbol, SzrSymbolEncoding>();
-    private _protoEncodingCache = new WeakMap<object, SzrPrototypeEncoding>();
-    private _protoEncodings = [] as SzrPrototypeEncoding[];
+    private _keyToEncoding = new Map<string, PreszrEncoding>();
+    private _symbToEncoding = new Map<symbol, PreszrSymbolEncoding>();
+    private _tempSymbEncoding = new Map<symbol, PreszrSymbolEncoding>();
+    private _protoEncodingCache = new WeakMap<object, PreszrPrototypeEncoding>();
+    private _protoEncodings = [] as PreszrPrototypeEncoding[];
 
-    constructor(config?: DeepPartial<SzrConfig>) {
+    constructor(config?: DeepPartial<PreszrConfig>) {
         this.config = defaultsDeep({}, config, defaultConfig);
         const unsupportedEncoding = getUnsupportedEncoding(
             ...builtinUnsupportedTypes,
@@ -72,7 +72,7 @@ export class Szr {
     }
 
     private _buildEncodingCache() {
-        this._protoEncodingCache = new WeakMap<object, SzrPrototypeEncoding>();
+        this._protoEncodingCache = new WeakMap<object, PreszrPrototypeEncoding>();
         for (const encoding of this._protoEncodings) {
             for (const proto of encoding.prototypes) {
                 this._protoEncodingCache.set(proto, encoding);
@@ -80,11 +80,11 @@ export class Szr {
         }
     }
 
-    private _addEncoding(...encoders: SzrEncodingSpecifier[]) {
+    private _addEncoding(...encoders: PreszrEncodingSpecifier[]) {
         for (const encSpecifier of encoders) {
             const encoding = makeFullEncoding(encSpecifier);
             if (this._keyToEncoding.get(encoding.key)) {
-                throw new SzrError(
+                throw new PreszrError(
                     `Encoding with the key '${encoding.key}' already exists.`
                 );
             }
@@ -102,7 +102,7 @@ export class Szr {
         if (Array.isArray(obj)) {
             return arrayEncoding;
         }
-        let foundEncoding: SzrPrototypeEncoding;
+        let foundEncoding: PreszrPrototypeEncoding;
         for (
             let proto = obj;
             ;
@@ -114,7 +114,7 @@ export class Szr {
                 break;
             }
             if (proto === nullPlaceholder) {
-                throw new SzrError(
+                throw new PreszrError(
                     "FindEncodingForObject got stuck. Internal Error."
                 );
             }
@@ -126,7 +126,7 @@ export class Szr {
         return foundEncoding;
     }
 
-    private _findEncodingForSymbol(symb: symbol): SzrSymbolEncoding {
+    private _findEncodingForSymbol(symb: symbol): PreszrSymbolEncoding {
         let encoding =
             this._symbToEncoding.get(symb) ?? this._tempSymbEncoding.get(symb);
         if (encoding == null) {
@@ -173,8 +173,8 @@ export class Szr {
                 } else if (+versionInfo !== parseInt(versionInfo)) {
                     reason = "version is not numeric";
                 } else if (versionInfo !== version) {
-                    throw new SzrError(
-                        `Input was encoded using version ${versionInfo}, but szr is version ${version}. Set skipValidateVersion to allow this.`
+                    throw new PreszrError(
+                        `Input was encoded using version ${versionInfo}, but preszr is version ${version}. Set skipValidateVersion to allow this.`
                     );
                 } else if (!Array.isArray(header[1])) {
                     reason = "no encoding keys or encoding keys not an array";
@@ -190,20 +190,20 @@ export class Szr {
             }
         }
         if (reason) {
-            throw new SzrError(`Input is not szr-encoded: ${reason}`);
+            throw new PreszrError(`Input is not preszr-encoded: ${reason}`);
         }
     }
 
-    decode(input: SzrOutput): any {
+    decode(input: PreszrOutput): any {
         const tryScalar = tryDecodeScalar(input);
         if (tryScalar !== noResultPlaceholder) return tryScalar;
-        input = input as SzrFormat;
+        input = input as PreszrFormat;
         this._checkInputValid(input);
         const header = input?.[0];
 
         const [, encodingKeys, encodingSpec, metadata] = header;
         const targetArray = Array(input.length - 1);
-        const needToInit = new Map<number, SzrPrototypeEncoding>();
+        const needToInit = new Map<number, PreszrPrototypeEncoding>();
         const ctx: DecodeInitContext = {
             decode: null!,
             metadata: undefined,
@@ -214,8 +214,8 @@ export class Szr {
                 !this._keyToEncoding.has(encodingKey) &&
                 encodingKey !== unrecognizedSymbolKey
             ) {
-                throw new SzrError(
-                    `Encoding with key '${encodingKey}' not found. Szr wasn't configured correctly.`
+                throw new PreszrError(
+                    `Encoding with key '${encodingKey}' not found. Preszr wasn't configured correctly.`
                 );
             }
         }
@@ -223,7 +223,7 @@ export class Szr {
         for (let i = 1; i < input.length; i++) {
             const encodingIndex = encodingSpec[i];
             const encodingKey = encodingKeys[encodingIndex];
-            const cur = input[i] as SzrEncodedEntity;
+            const cur = input[i] as PreszrEncodedEntity;
             if (encodingKey === unrecognizedSymbolKey) {
                 targetArray[i] = getUnrecognizedSymbol(metadata[i] as string);
                 continue;
@@ -255,23 +255,23 @@ export class Szr {
             ctx.metadata = metadata[key];
             encoding.decoder.init!(
                 targetArray[key],
-                input[key] as SzrEncodedEntity,
+                input[key] as PreszrEncodedEntity,
                 ctx
             );
         }
         return targetArray[1];
     }
 
-    encode(root: any): SzrOutput {
+    encode(root: any): PreszrOutput {
         try {
             const tryScalar = tryEncodeScalar(root);
             if (tryScalar !== noResultPlaceholder) return tryScalar;
-            const encodingSpec = {} as SzrEncodingSpec;
-            const metadata = {} as SzrMetadata;
+            const encodingSpec = {} as PreszrEncodingSpec;
+            const metadata = {} as PreszrMetadata;
             const encodingKeys = new Map<string, number>();
-            const header = [] as unknown as SzrHeader;
+            const header = [] as unknown as PreszrHeader;
 
-            const szrRep = [header] as SzrFormat;
+            const preszrRep = [header] as PreszrFormat;
             const objectToRef = new Map<object | symbol | string, Reference>();
 
             const cacheEncodingIndex = (key: string) => {
@@ -284,7 +284,7 @@ export class Szr {
             };
             const ctx: EncodeContext = {
                 metadata: undefined,
-                encode(value: any): SzrLeaf {
+                encode(value: any): PreszrLeaf {
                     const tryScalar = tryEncodeScalar(value);
                     if (tryScalar !== noResultPlaceholder) return tryScalar;
                     let existingRef = objectToRef.get(value);
@@ -294,15 +294,15 @@ export class Szr {
                     return existingRef;
                 },
             };
-            const createNewRef = (value: SzrEntity): Reference => {
-                const index = szrRep.length;
+            const createNewRef = (value: PreszrEntity): Reference => {
+                const index = preszrRep.length;
                 const ref = `${index}`;
                 objectToRef.set(value, ref);
                 if (typeof value === "string") {
-                    szrRep.push(value);
+                    preszrRep.push(value);
                     return ref;
                 }
-                szrRep.push(0);
+                preszrRep.push(0);
                 if (typeof value === "symbol") {
                     const encoding = this._findEncodingForSymbol(value);
                     encodingSpec[index] = cacheEncodingIndex(encoding.key);
@@ -322,7 +322,7 @@ export class Szr {
                     metadata[index] = ctx.metadata;
                 }
                 ctx.metadata = oldMetadata;
-                szrRep[index] = szed;
+                preszrRep[index] = szed;
                 return ref;
             };
             ctx.encode(root);
@@ -332,14 +332,14 @@ export class Szr {
                 encodingSpec,
                 metadata
             );
-            return szrRep;
+            return preszrRep;
         } finally {
             this._tempSymbEncoding.clear();
         }
     }
 }
 
-export const defaultConfig: SzrConfig = {
+export const defaultConfig: PreszrConfig = {
     encodings: [],
     unsupported: [],
 };
@@ -358,7 +358,7 @@ const builtinEncodings = [
     mapEncoding,
     setEncoding,
     ...errorEncodings,
-] as SzrEncodingSpecifier[];
+] as PreszrEncodingSpecifier[];
 
 const builtinUnsupportedTypes = [
     WeakMap.prototype,

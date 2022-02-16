@@ -1,10 +1,10 @@
-import { createSzrRep, testEncodeMacro } from "./utils";
+import { createPreszrRep, testEncodeMacro } from "./utils";
 import { unsupportedEncodingKey } from "../lib/encodings/basic";
 import test from "ava";
 import { decode } from "../lib";
 
 const unsupportedObjectProperty = (name) =>
-    createSzrRep([{ 2: unsupportedEncodingKey }, { 2: name }], { a: "2" }, 0);
+    createPreszrRep([{ 2: unsupportedEncodingKey }, { 2: name }], { a: "2" }, 0);
 
 test(
     "unsupported - {a: function}",
@@ -26,7 +26,7 @@ test(
 );
 
 const unsupported = (name) =>
-    createSzrRep([{ 1: unsupportedEncodingKey }, { 1: name }], 0);
+    createPreszrRep([{ 1: unsupportedEncodingKey }, { 1: name }], 0);
 
 test(
     "unsupported - function",

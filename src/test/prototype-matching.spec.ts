@@ -2,12 +2,12 @@
 import test from "ava";
 import {
     encodeDecodeMacro,
-    testDecodeMacroBindSzr,
+    testDecodeMacroBindPreszr,
     testEncodeMacro,
-    testEncodeMacroBindSzr,
+    testEncodeMacroBindPreszr,
 } from "./utils";
 import { decode } from "../lib";
-import { Szr } from "../lib/core";
+import { Preszr } from "../lib/core";
 import { getImplicitClassEncodingName, version } from "../lib/utils";
 import { nullPrototypeEncoding } from "../lib/encodings/basic";
 
@@ -38,14 +38,14 @@ test(
     [[{}, {}], {}]
 );
 
-const szrWithTestClass = new Szr({
+const preszrWithTestClass = new Preszr({
     encodings: [TestClass],
 });
 test(
     "known prototype",
     encodeDecodeMacro({
-        encode: testEncodeMacroBindSzr(szrWithTestClass),
-        decode: testEncodeMacroBindSzr(szrWithTestClass),
+        encode: testEncodeMacroBindPreszr(preszrWithTestClass),
+        decode: testEncodeMacroBindPreszr(preszrWithTestClass),
     }),
     new TestClass({ a: 1 }),
     [[{ 1: getImplicitClassEncodingName("TestClass") }, {}], { a: 1 }]
@@ -54,9 +54,9 @@ test(
 test(
     "subclass of known prototype",
     encodeDecodeMacro({
-        encode: testEncodeMacroBindSzr(szrWithTestClass),
+        encode: testEncodeMacroBindPreszr(preszrWithTestClass),
         decode(t, decoded, encoded) {
-            const rDecoded = szrWithTestClass.decode(encoded);
+            const rDecoded = preszrWithTestClass.decode(encoded);
             t.deepEqual(rDecoded, new TestClass({ a: 1 }));
             t.is(Object.getPrototypeOf(rDecoded), TestClass.prototype);
         },
@@ -65,7 +65,7 @@ test(
     [[{ 1: getImplicitClassEncodingName("TestClass") }, {}], { a: 1 }]
 );
 
-const szrWithSubclass = new Szr({
+const preszrWithSubclass = new Preszr({
     encodings: [TestClass, TestSubclass],
 });
 
@@ -74,9 +74,9 @@ class TestSubSubclass extends TestSubclass {}
 test(
     "unknown class matches nearest subclass",
     encodeDecodeMacro({
-        encode: testEncodeMacroBindSzr(szrWithSubclass),
+        encode: testEncodeMacroBindPreszr(preszrWithSubclass),
         decode(t, decoded, encoded) {
-            const rDecoded = szrWithSubclass.decode(encoded);
+            const rDecoded = preszrWithSubclass.decode(encoded);
             t.deepEqual(rDecoded, new TestSubclass());
         },
     }),
@@ -87,8 +87,8 @@ test(
 test(
     "two different classes",
     encodeDecodeMacro({
-        encode: testEncodeMacroBindSzr(szrWithSubclass),
-        decode: testDecodeMacroBindSzr(szrWithSubclass),
+        encode: testEncodeMacroBindPreszr(preszrWithSubclass),
+        decode: testDecodeMacroBindPreszr(preszrWithSubclass),
     }),
     {
         a: new TestClass({ b: new TestSubclass() }),
@@ -122,7 +122,7 @@ test(
 );
 
 test("override prototype", (t) => {
-    const szr = new Szr({
+    const preszr = new Preszr({
         encodings: [
             TestClass,
             {
@@ -136,14 +136,14 @@ test("override prototype", (t) => {
         ],
     });
 
-    const encoded = szr.encode(new TestClass());
+    const encoded = preszr.encode(new TestClass());
     t.deepEqual(encoded, [[version, ["override"], { 1: 0 }, {}], 5]);
-    const decoded = szr.decode(encoded);
+    const decoded = preszr.decode(encoded);
     t.is(decoded, 5);
 });
 
 test("override built-in prototype", (t) => {
-    const szr = new Szr({
+    const preszr = new Preszr({
         encodings: [
             {
                 prototype: Date.prototype,
@@ -156,7 +156,7 @@ test("override built-in prototype", (t) => {
         ],
     });
 
-    const encoded = szr.encode(new Date());
+    const encoded = preszr.encode(new Date());
     t.deepEqual(encoded, [[version, ["new-date"], { 1: 0 }, {}], 5]);
-    t.is(szr.decode(encoded), 5);
+    t.is(preszr.decode(encoded), 5);
 });

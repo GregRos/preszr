@@ -16,7 +16,7 @@ test("decoding - header structure", (t) => {
 });
 
 function isBadPayloadError(err: Error) {
-    return err.message.includes("not szr-encoded");
+    return err.message.includes("not preszr-encoded");
 }
 
 function isBadVersionError(err: Error) {

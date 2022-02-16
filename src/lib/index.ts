@@ -1,60 +1,60 @@
-import { Szr as SzrClass } from "./core";
-import { SzrOutput } from "./data-types";
-import { DeepPartial, SzrConfig } from "./interface";
+import { Preszr as PreszrClass } from "./core";
+import { PreszrOutput } from "./data-types";
+import { DeepPartial, PreszrConfig } from "./interface";
 
 export {
-    SzrEncoding,
-    SzrEncodingSpecifier,
-    SzrPrototypeEncoding,
-    SzrPrototypeSpecifier,
+    PreszrEncoding,
+    PreszrEncodingSpecifier,
+    PreszrPrototypeEncoding,
+    PreszrPrototypeSpecifier,
     Decoder,
-    SzrSymbolEncoding,
+    PreszrSymbolEncoding,
     DecodeCreateContext,
     DecodeInitContext,
     DeepPartial,
-    SzrConfig,
+    PreszrConfig,
     EncodeContext,
 } from "./interface";
-const defaultSzr = new SzrClass();
+const defaultPreszr = new PreszrClass();
 
 /**
- * Encodes a value using szr with the default settings.
+ * Encodes a value using preszr with the default settings.
  * @param value A value to encode.
  */
-export const encode = (value: unknown): SzrOutput => defaultSzr.encode(value);
+export const encode = (value: unknown): PreszrOutput => defaultPreszr.encode(value);
 
 /**
- * Decodes a value using szr with the default settings.
+ * Decodes a value using preszr with the default settings.
  * @param encoded The default
  */
-export const decode = <T = unknown>(encoded: SzrOutput): T =>
-    defaultSzr.decode(encoded) as T;
+export const decode = <T = unknown>(encoded: PreszrOutput): T =>
+    defaultPreszr.decode(encoded) as T;
 
 /**
- * Creates a new `Szr` instance. Can be called with or without `new`.
+ * Creates a new `Preszr` instance. Can be called with or without `new`.
  * @param config The configuration. Should be the same in the source and destination.
  * @constructor
  */
-export const Szr = function Szr(config?: DeepPartial<SzrConfig>) {
-    return new SzrClass(config);
+export const Preszr = function Preszr(config?: DeepPartial<PreszrConfig>) {
+    return new PreszrClass(config);
 } as unknown as {
     /**
-     * Creates a new `Szr` instance. Can be called with or without `new`.
+     * Creates a new `Preszr` instance. Can be called with or without `new`.
      * @param config The configuration. Should be the same in the source and destination.
      * @constructor
      */
-    new (config?: DeepPartial<SzrConfig>): Szr;
+    new (config?: DeepPartial<PreszrConfig>): Preszr;
 
     /**
-     * Creates a new `Szr` instance. Can be called with or without `new`.
+     * Creates a new `Preszr` instance. Can be called with or without `new`.
      * @param config The configuration. Should be the same in the source and destination.
      * @constructor
      */
-    (config?: DeepPartial<SzrConfig>): Szr;
+    (config?: DeepPartial<PreszrConfig>): Preszr;
 };
 
 /**
- * A configured Szr instance used for encoding and decoding.
+ * A configured Preszr instance used for encoding and decoding.
  */
-export type Szr = SzrClass;
-Szr.prototype = SzrClass.prototype;
+export type Preszr = PreszrClass;
+Preszr.prototype = PreszrClass.prototype;

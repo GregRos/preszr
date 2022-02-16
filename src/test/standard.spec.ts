@@ -1,5 +1,5 @@
 import test from "ava";
-import { decode, encode, Szr } from "../lib";
+import { decode, encode, Preszr } from "../lib";
 
 test("simple object", (t) => {
     const obj2 = {};
@@ -49,12 +49,12 @@ test("custom class", (t) => {
             return 10;
         }
     }
-    const szr = Szr({
+    const preszr = Preszr({
         encodings: [MyCustomClass],
     });
     const instance = new MyCustomClass();
-    const decoded = szr.decode(
-        JSON.parse(JSON.stringify(szr.encode(instance)))
+    const decoded = preszr.decode(
+        JSON.parse(JSON.stringify(preszr.encode(instance)))
     );
     t.deepEqual(decoded, instance);
     t.is(instance.myMethod(), 10);

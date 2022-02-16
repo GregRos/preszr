@@ -1,12 +1,12 @@
 import {
     EncodeContext,
-    SzrPrototypeEncoding,
+    PreszrPrototypeEncoding,
     DecodeCreateContext,
     DecodeInitContext,
     Decoder,
 } from "../interface";
 import { getClassName, getLibraryString } from "../utils";
-import { SzrLeaf } from "../data-types";
+import { PreszrLeaf } from "../data-types";
 
 export const nullPlaceholder = {};
 function getAllOwnKeys(obj: object, onlyEnumerable: boolean): PropertyKey[] {
@@ -25,11 +25,11 @@ export function decodeObject(target, input, ctx: DecodeInitContext) {
         let symbolKeys;
         [stringKeys, symbolKeys] = input;
         for (const [key, value] of Object.entries(symbolKeys)) {
-            target[ctx.decode(key) as symbol] = ctx.decode(value as SzrLeaf);
+            target[ctx.decode(key) as symbol] = ctx.decode(value as PreszrLeaf);
         }
     }
     for (const [key, value] of Object.entries(stringKeys)) {
-        target[key] = ctx.decode(value as SzrLeaf);
+        target[key] = ctx.decode(value as PreszrLeaf);
     }
     return target;
 }
@@ -41,7 +41,7 @@ export function encodeObject(
     explicitlyInclude = [] as string[]
 ) {
     const strKeyObject = {};
-    let symbKeyObject: Record<string, SzrLeaf> | undefined;
+    let symbKeyObject: Record<string, PreszrLeaf> | undefined;
     for (const key of getAllOwnKeys(input, !alsoNonEnumerable)) {
         const value = input[key];
         if (typeof key === "symbol") {
@@ -63,7 +63,7 @@ export function encodeObject(
     return strKeyObject;
 }
 
-export const objectEncoding: SzrPrototypeEncoding = {
+export const objectEncoding: PreszrPrototypeEncoding = {
     prototypes: [Object.prototype],
     key: getLibraryString("object"),
     encode(input: any, ctx: EncodeContext): any {
@@ -86,7 +86,7 @@ function encodeAsSparseArray(input: any, ctx: EncodeContext) {
     return result;
 }
 
-export const arrayEncoding: SzrPrototypeEncoding = {
+export const arrayEncoding: PreszrPrototypeEncoding = {
     key: getLibraryString("array"),
     prototypes: [Array.prototype],
     encode(input: any, ctx: EncodeContext): any {
@@ -122,7 +122,7 @@ export const arrayEncoding: SzrPrototypeEncoding = {
         },
     },
 };
-export const nullPrototypeEncoding: SzrPrototypeEncoding = {
+export const nullPrototypeEncoding: PreszrPrototypeEncoding = {
     key: getLibraryString("null"),
     encode: getPrototypeEncoder(null),
     decoder: getPrototypeDecoder(null),
@@ -150,7 +150,7 @@ export const unsupportedEncodingKey = getLibraryString("unsupported");
 
 export function getUnsupportedEncoding(
     ...protos: object[]
-): SzrPrototypeEncoding {
+): PreszrPrototypeEncoding {
     return {
         key: unsupportedEncodingKey,
         prototypes: protos,

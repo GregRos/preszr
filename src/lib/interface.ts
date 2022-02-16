@@ -1,4 +1,4 @@
-import { SzrEncodedEntity, SzrLeaf } from "./data-types";
+import { PreszrEncodedEntity, PreszrLeaf } from "./data-types";
 
 /**
  * The context used by the encoding process.
@@ -10,7 +10,7 @@ export interface EncodeContext {
      * values, it will return them as-is or encode them, usually as a string.
      * @param value
      */
-    encode(value: any): SzrLeaf;
+    encode(value: any): PreszrLeaf;
     /**
      * Sets the metadata for this entity. The metadata can be any JSON-legal value,
      * including an object. It doesn't do anything, but can be accessed while decoding.
@@ -33,7 +33,7 @@ export interface DecodeCreateContext {
  */
 export interface DecodeInitContext extends DecodeCreateContext {
     // Resolves references and decodes encoded scalars. This isn't a recursive call.
-    decode(value: SzrLeaf): unknown;
+    decode(value: PreszrLeaf): unknown;
 }
 
 /**
@@ -41,11 +41,11 @@ export interface DecodeInitContext extends DecodeCreateContext {
  */
 export interface Decoder {
     // Creates an instance of the entity without referencing any other encoded entities.
-    create(encoded: SzrEncodedEntity, ctx: DecodeCreateContext): unknown;
+    create(encoded: PreszrEncodedEntity, ctx: DecodeCreateContext): unknown;
     // Fills in additional data by resolving references to other entities.
     init?(
         target: unknown,
-        encoded: SzrEncodedEntity,
+        encoded: PreszrEncodedEntity,
         ctx: DecodeInitContext
     ): void;
 }
@@ -53,7 +53,7 @@ export interface Decoder {
 /**
  * Specifies a prototype encoding. Missing fields will be filled in automatically.
  */
-export interface SzrPrototypeSpecifier {
+export interface PreszrPrototypeSpecifier {
     // The key of the encoding. Must be unique. Will be inferred from the prototype if missing.
     key?: string;
     // The prototype. Required.
@@ -63,13 +63,13 @@ export interface SzrPrototypeSpecifier {
     decoder?: Decoder;
     // The encoding logic. If missing, the default encode function will be used, which
     // will iterate over the object's own enumerable properties and recursively encode them.
-    encode?(input: any, ctx: EncodeContext): SzrEncodedEntity;
+    encode?(input: any, ctx: EncodeContext): PreszrEncodedEntity;
 }
 
 /**
  * A full symbol encoding.
  */
-export interface SzrSymbolEncoding {
+export interface PreszrSymbolEncoding {
     key: string;
     symbol: symbol;
     metadata?: any;
@@ -78,39 +78,39 @@ export interface SzrSymbolEncoding {
 /**
  * A full prototype encoding.
  */
-export interface SzrPrototypeEncoding {
+export interface PreszrPrototypeEncoding {
     key: string;
     prototypes: object[];
     decoder: Decoder;
-    encode(input: any, ctx: EncodeContext): SzrEncodedEntity;
+    encode(input: any, ctx: EncodeContext): PreszrEncodedEntity;
 }
 
 /**
- * A full szr encoding of any type.
+ * A full preszr encoding of any type.
  */
-export type SzrEncoding = SzrPrototypeEncoding | SzrSymbolEncoding;
+export type PreszrEncoding = PreszrPrototypeEncoding | PreszrSymbolEncoding;
 
 /**
  * An encoding specifier. Can be a symbol or constructor for a shorthand
  * symbol or prototype encoding. You can also give symbol or prototype encoding specifier
  * if you want to be more explicit.
  */
-export type SzrEncodingSpecifier =
+export type PreszrEncodingSpecifier =
     | symbol
     | Function
-    | SzrPrototypeSpecifier
-    | SzrPrototypeEncoding
-    | SzrSymbolEncoding;
+    | PreszrPrototypeSpecifier
+    | PreszrPrototypeEncoding
+    | PreszrSymbolEncoding;
 
 /**
- * Configuration for an Szr instance.
+ * Configuration for an Preszr instance.
  */
-export interface SzrConfig {
+export interface PreszrConfig {
     /**
      * An array of encoding specifiers. If you put your constructors and symbols here,
-     * the Szr will recognize them.
+     * the Preszr will recognize them.
      */
-    encodings: SzrEncodingSpecifier[];
+    encodings: PreszrEncodingSpecifier[];
     /**
      * An array of constructors that will be marked as unsupported.
      * Objects with these constructors will not be encoded.

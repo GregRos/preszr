@@ -2,7 +2,7 @@ import {
     DecodeCreateContext,
     DecodeInitContext,
     EncodeContext,
-    SzrPrototypeEncoding,
+    PreszrPrototypeEncoding,
 } from "../interface";
 import { getLibraryString } from "../utils";
 import { decodeObject, encodeObject } from "./basic";
@@ -30,7 +30,7 @@ export function createErrorEncoding(errorCtor: { new (): Error }) {
                 decodeObject(target, encoded, ctx);
             },
         },
-    } as SzrPrototypeEncoding;
+    } as PreszrPrototypeEncoding;
 }
 
 export const errorEncodings = [

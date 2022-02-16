@@ -1,8 +1,8 @@
-import { SzrHeader, SzrFormat } from "../lib/data-types";
+import { PreszrHeader, PreszrFormat } from "../lib/data-types";
 import { version } from "../lib/utils";
 import { ExecutionContext, Macro } from "ava";
 import { cloneDeep } from "lodash";
-import { Szr } from "../lib/core";
+import { Preszr } from "../lib/core";
 import { DecodeInitContext, EncodeContext } from "../lib";
 
 export function stringify(value: any) {
@@ -26,7 +26,7 @@ export function createSparseArray<T>(arrayLikeObj: Record<any, T>): T[] {
     return arr;
 }
 
-export function embedSzrVersion(encoded) {
+export function embedPreszrVersion(encoded) {
     encoded = cloneDeep(encoded);
     const encodingSpec = encoded[0].shift();
     encoded[0].unshift(version, ...getEncodingComponent(encodingSpec));
@@ -47,7 +47,7 @@ export function getEncodingComponent(encodingSpec) {
     return [encodingKeys, encodingSpec];
 }
 
-export function simplifyEncoding(encoding: SzrFormat) {
+export function simplifyEncoding(encoding: PreszrFormat) {
     const clone = cloneDeep(encoding);
     const [[, keys, info]] = clone;
     for (const [k, v] of Object.entries(info)) {
@@ -57,17 +57,17 @@ export function simplifyEncoding(encoding: SzrFormat) {
     return clone;
 }
 
-export function createSzrRep([encodingSpec, meta], ...arr): SzrFormat {
+export function createPreszrRep([encodingSpec, meta], ...arr): PreszrFormat {
     const header = [
         version,
         ...getEncodingComponent(encodingSpec),
         meta,
-    ] as SzrHeader;
+    ] as PreszrHeader;
     return [header, ...arr];
 }
 
-export function szrDefaultHeader(...arr): SzrFormat {
-    return createSzrRep([{}, {}], ...arr);
+export function preszrDefaultHeader(...arr): PreszrFormat {
+    return createPreszrRep([{}, {}], ...arr);
 }
 
 export function createWithTitle(macro, argsFunc, titleFunc) {
@@ -76,15 +76,15 @@ export function createWithTitle(macro, argsFunc, titleFunc) {
     return newMacro;
 }
 
-const defaultSzr = new Szr();
+const defaultPreszr = new Preszr();
 
 export const testEncodeMacro: any = (
     t: ExecutionContext,
     decoded: any,
     encoded: any,
-    szr = defaultSzr
+    preszr = defaultPreszr
 ) => {
-    const rEncoded = szr.encode(decoded) as any;
+    const rEncoded = preszr.encode(decoded) as any;
     t.deepEqual(simplifyEncoding(rEncoded), simplifyEncoding(encoded));
 };
 
@@ -92,22 +92,22 @@ export const testDecodeMacro: any = (
     t: ExecutionContext,
     decoded: any,
     encoded: any,
-    szr = defaultSzr
+    preszr = defaultPreszr
 ) => {
-    const rDecoded = szr.decode(encoded);
+    const rDecoded = preszr.decode(encoded);
     t.deepEqual(rDecoded, decoded);
 };
 
-export const testEncodeMacroBindSzr = (szr) => (a, b, c) =>
-    testEncodeMacro(a, b, c, szr);
+export const testEncodeMacroBindPreszr = (preszr) => (a, b, c) =>
+    testEncodeMacro(a, b, c, preszr);
 
-export const testDecodeMacroBindSzr = (szr) => (a, b, c) =>
-    testDecodeMacro(a, b, c, szr);
+export const testDecodeMacroBindPreszr = (preszr) => (a, b, c) =>
+    testDecodeMacro(a, b, c, preszr);
 
 export const combAttachHeader = (titleFunc) => {
     const attachHeader = (decoded, encoded) => [
         decoded,
-        szrDefaultHeader(...encoded),
+        preszrDefaultHeader(...encoded),
     ];
     return [
         createWithTitle(
@@ -140,12 +140,12 @@ export const encodeDecodeMacro = (args: EncodeDecodeMacros) => {
     return [
         createWithTitle(
             args.encode,
-            (decoded, encoded, szr) => [decoded, embedSzrVersion(encoded), szr],
+            (decoded, encoded, preszr) => [decoded, embedPreszrVersion(encoded), preszr],
             (title) => `encode :: ${title}`
         ),
         createWithTitle(
             args.decode,
-            (decoded, encoded, szr) => [decoded, embedSzrVersion(encoded), szr],
+            (decoded, encoded, preszr) => [decoded, embedPreszrVersion(encoded), preszr],
             (title) => `decode :: ${title}`
         ),
     ] as [any, any];

@@ -1,5 +1,5 @@
 import test from "ava";
-import { SzrPrototypeEncoding, SzrSymbolEncoding } from "../lib";
+import { PreszrPrototypeEncoding, PreszrSymbolEncoding } from "../lib";
 import {
     getImplicitClassEncodingName,
     getImplicitSymbolEncodingName,
@@ -48,7 +48,7 @@ test("error when trying with symbol without name", (t) => {
 });
 
 test("symbol encoding with explicit name unchanged", (t) => {
-    const encoding: SzrSymbolEncoding = {
+    const encoding: PreszrSymbolEncoding = {
         key: "a",
         symbol: testSymbol,
     };
@@ -56,7 +56,7 @@ test("symbol encoding with explicit name unchanged", (t) => {
 });
 
 test("encoding from class", (t) => {
-    const encoding = makeFullEncoding(TestClass) as SzrPrototypeEncoding;
+    const encoding = makeFullEncoding(TestClass) as PreszrPrototypeEncoding;
     t.is(encoding.key, getImplicitClassEncodingName("TestClass"));
     t.is(encoding.prototypes.length, 1);
     t.is(encoding.prototypes[0], TestClass.prototype);
@@ -68,7 +68,7 @@ test("encoding from class", (t) => {
 test("encoding from prototype", (t) => {
     const encoding = makeFullEncoding({
         prototype: TestClass.prototype,
-    }) as SzrPrototypeEncoding;
+    }) as PreszrPrototypeEncoding;
     t.is(encoding.key, getImplicitClassEncodingName("TestClass"));
     t.is(encoding.prototypes.length, 1);
     const [p1] = encoding.prototypes;
@@ -87,7 +87,7 @@ test("encoding with multiple prototypes", (t) => {
         decoder: {
             create: f,
         },
-    }) as SzrPrototypeEncoding;
+    }) as PreszrPrototypeEncoding;
 
     t.is(encoding.key, "blah");
     t.is(encoding.decoder.create, f);
@@ -97,7 +97,7 @@ test("encoding with multiple prototypes", (t) => {
 test("encoding prototype field", (t) => {
     const encoding = makeFullEncoding({
         prototype: TestClass.prototype,
-    }) as SzrPrototypeEncoding;
+    }) as PreszrPrototypeEncoding;
     t.is(encoding.key, getImplicitClassEncodingName("TestClass"));
     t.deepEqual(
         encoding.decoder.create({}, {} as any),

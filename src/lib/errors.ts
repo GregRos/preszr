@@ -1,1 +1,1 @@
-export class SzrError extends Error {}
+export class PreszrError extends Error {}

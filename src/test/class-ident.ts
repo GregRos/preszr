@@ -1,14 +1,14 @@
 import test from "ava";
-import { Szr } from "../lib";
+import { Preszr } from "../lib";
 
-test("Szr as constructor", (t) => {
-    const szr = new Szr();
-    t.true(szr instanceof Szr);
-    t.is(Object.getPrototypeOf(szr), Szr.prototype);
+test("Preszr as constructor", (t) => {
+    const preszr = new Preszr();
+    t.true(preszr instanceof Preszr);
+    t.is(Object.getPrototypeOf(preszr), Preszr.prototype);
 });
 
-test("Szr as function", (t) => {
-    const szr = Szr();
-    t.true(szr instanceof Szr);
-    t.is(Object.getPrototypeOf(szr), Szr.prototype);
+test("Preszr as function", (t) => {
+    const preszr = Preszr();
+    t.true(preszr instanceof Preszr);
+    t.is(Object.getPrototypeOf(preszr), Preszr.prototype);
 });

@@ -2,47 +2,47 @@ import { getLibraryString } from "./utils";
 
 export type Version = string;
 
-export interface SzrEncodingSpec {
+export interface PreszrEncodingSpec {
     [key: number]: number;
 }
 
-export type SzrEncodedEntity =
-    | SzrPrimitive
+export type PreszrEncodedEntity =
+    | PreszrPrimitive
     | string
-    | SzrDataObject
-    | SzrEncodedEntity[];
+    | PreszrDataObject
+    | PreszrEncodedEntity[];
 
-export interface SzrDataObject {
-    [key: string]: SzrEncodedEntity;
-    [key: number]: SzrEncodedEntity;
+export interface PreszrDataObject {
+    [key: string]: PreszrEncodedEntity;
+    [key: number]: PreszrEncodedEntity;
 }
 
-export interface SzrMetadata {
-    [key: number]: SzrEncodedEntity;
+export interface PreszrMetadata {
+    [key: number]: PreszrEncodedEntity;
 }
 
-export type SzrEncodingKeys = string[];
+export type PreszrEncodingKeys = string[];
 
-export type SzrHeader = [
+export type PreszrHeader = [
     Version,
-    SzrEncodingKeys,
-    SzrEncodingSpec,
-    SzrMetadata
+    PreszrEncodingKeys,
+    PreszrEncodingSpec,
+    PreszrMetadata
 ];
 
 export type Reference = string;
 
-export type SzrEntity = string | object | any[] | symbol | Function;
+export type PreszrEntity = string | object | any[] | symbol | Function;
 
-export type SzrPrimitive = boolean | number | null;
+export type PreszrPrimitive = boolean | number | null;
 
-export type SzrEncodedScalar = string;
+export type PreszrEncodedScalar = string;
 
-export type SzrLeaf = SzrPrimitive | Reference | SzrEncodedScalar;
+export type PreszrLeaf = PreszrPrimitive | Reference | PreszrEncodedScalar;
 
-export type SzrFormat = [SzrHeader, ...SzrEncodedEntity[]];
+export type PreszrFormat = [PreszrHeader, ...PreszrEncodedEntity[]];
 
-export type SzrOutput = SzrFormat | SzrPrimitive | SzrEncodedScalar;
+export type PreszrOutput = PreszrFormat | PreszrPrimitive | PreszrEncodedScalar;
 
 export const undefinedEncoding = "-";
 export const infinityEncoding = "Infinity";
@@ -52,7 +52,7 @@ export const nanEncoding = "NaN";
 
 export const noResultPlaceholder = "";
 
-export function tryEncodeScalar(num: any): SzrEncodedScalar | SzrPrimitive {
+export function tryEncodeScalar(num: any): PreszrEncodedScalar | PreszrPrimitive {
     if (num === null || typeof num === "boolean") {
         return num;
     }

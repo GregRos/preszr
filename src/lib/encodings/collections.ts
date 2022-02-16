@@ -2,16 +2,16 @@ import {
     DecodeCreateContext,
     DecodeInitContext,
     EncodeContext,
-    SzrPrototypeEncoding,
+    PreszrPrototypeEncoding,
 } from "../interface";
 import { getLibraryString } from "../utils";
-import { SzrEncodedEntity, SzrLeaf } from "../data-types";
+import { PreszrEncodedEntity, PreszrLeaf } from "../data-types";
 
-export const mapEncoding: SzrPrototypeEncoding = {
+export const mapEncoding: PreszrPrototypeEncoding = {
     prototypes: [Map.prototype],
     key: getLibraryString("Map"),
     encode(input: Map<any, any>, ctx: EncodeContext): any {
-        const array = [] as [SzrLeaf, SzrLeaf][];
+        const array = [] as [PreszrLeaf, PreszrLeaf][];
         for (const key of input.keys()) {
             const value = input.get(key);
             array.push([ctx.encode(key), ctx.encode(value)]);
@@ -24,7 +24,7 @@ export const mapEncoding: SzrPrototypeEncoding = {
         },
         init(
             target: Map<any, any>,
-            encoded: [SzrLeaf, SzrLeaf][],
+            encoded: [PreszrLeaf, PreszrLeaf][],
             ctx: DecodeInitContext
         ) {
             for (const [key, value] of encoded) {
@@ -34,11 +34,11 @@ export const mapEncoding: SzrPrototypeEncoding = {
     },
 };
 
-export const setEncoding: SzrPrototypeEncoding = {
+export const setEncoding: PreszrPrototypeEncoding = {
     prototypes: [Set.prototype],
     key: getLibraryString("Set"),
-    encode(input: Set<any>, ctx: EncodeContext): SzrEncodedEntity {
-        const outArray = [] as SzrLeaf[];
+    encode(input: Set<any>, ctx: EncodeContext): PreszrEncodedEntity {
+        const outArray = [] as PreszrLeaf[];
         for (const item of input) {
             outArray.push(ctx.encode(item));
         }
@@ -48,7 +48,7 @@ export const setEncoding: SzrPrototypeEncoding = {
         create(): any {
             return new Set();
         },
-        init(target: Set<any>, encoded: SzrLeaf[], ctx: DecodeInitContext) {
+        init(target: Set<any>, encoded: PreszrLeaf[], ctx: DecodeInitContext) {
             for (const item of encoded) {
                 target.add(ctx.decode(item));
             }

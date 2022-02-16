@@ -30,7 +30,7 @@ export function defaultsDeep(target: any, ...sources: any[]) {
 }
 
 export function getLibraryString(str: string) {
-    return `!@#szr-${str}`;
+    return `!@#preszr-${str}`;
 }
 
 export function getImplicitSymbolEncodingName(str: string) {
@@ -50,7 +50,7 @@ export function getSymbolName(symb: symbol) {
 }
 
 export function getUnrecognizedSymbolName(name: string) {
-    return `szr unknown: ${name}`;
+    return `preszr unknown: ${name}`;
 }
 
 export function getUnrecognizedSymbol(name: string) {

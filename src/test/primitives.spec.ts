@@ -3,7 +3,7 @@ import {
     nanEncoding,
     negInfinityEncoding,
     negZeroEncoding,
-    SzrOutput,
+    PreszrOutput,
     undefinedEncoding,
 } from "../lib/data-types";
 import test, { ExecutionContext, Macro } from "ava";
@@ -13,7 +13,7 @@ import { stringify } from "./utils";
 const primtiveTests: Macro<any> = (
     t: ExecutionContext,
     decoded: any,
-    encoded: SzrOutput
+    encoded: PreszrOutput
 ) => {
     const rDecoded = decode(encoded);
     t.is(rDecoded, decoded);
