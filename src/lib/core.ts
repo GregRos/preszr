@@ -2,10 +2,10 @@ import {
     DeepPartial,
     EncodeContext,
     PreszrConfig,
-    PreszrPrototypeEncoding,
-    PreszrEncodingSpecifier,
-    PreszrEncoding,
-    PreszrSymbolEncoding,
+    PrototypeEncoding,
+    EncodingSpecifier,
+    Encoding,
+    SymbolEncoding,
     DecodeInitContext,
 } from "./interface";
 import {
@@ -15,19 +15,19 @@ import {
     version,
 } from "./utils";
 import {
-    PreszrLeaf,
+    ScalarValue,
     Reference,
-    PreszrHeader,
+    Header,
     PreszrOutput,
     PreszrFormat,
-    PreszrEncodingSpec,
-    PreszrMetadata,
-    PreszrEntity,
+    EncodingSpec,
+    Metadata,
+    Entity,
     tryEncodeScalar,
     tryDecodeScalar,
     noResultPlaceholder,
     unrecognizedSymbolKey,
-    PreszrEncodedEntity,
+    EncodedEntity,
 } from "./data-types";
 import {
     arrayEncoding,
@@ -52,11 +52,11 @@ import { makeFullEncoding } from "./encoding-utils";
  */
 export class Preszr {
     readonly config = defaultConfig;
-    private _keyToEncoding = new Map<string, PreszrEncoding>();
-    private _symbToEncoding = new Map<symbol, PreszrSymbolEncoding>();
-    private _tempSymbEncoding = new Map<symbol, PreszrSymbolEncoding>();
-    private _protoEncodingCache = new WeakMap<object, PreszrPrototypeEncoding>();
-    private _protoEncodings = [] as PreszrPrototypeEncoding[];
+    private _keyToEncoding = new Map<string, Encoding>();
+    private _symbToEncoding = new Map<symbol, SymbolEncoding>();
+    private _tempSymbEncoding = new Map<symbol, SymbolEncoding>();
+    private _protoEncodingCache = new WeakMap<object, PrototypeEncoding>();
+    private _protoEncodings = [] as PrototypeEncoding[];
 
     constructor(config?: DeepPartial<PreszrConfig>) {
         this.config = defaultsDeep({}, config, defaultConfig);
@@ -72,7 +72,7 @@ export class Preszr {
     }
 
     private _buildEncodingCache() {
-        this._protoEncodingCache = new WeakMap<object, PreszrPrototypeEncoding>();
+        this._protoEncodingCache = new WeakMap<object, PrototypeEncoding>();
         for (const encoding of this._protoEncodings) {
             for (const proto of encoding.prototypes) {
                 this._protoEncodingCache.set(proto, encoding);
@@ -80,7 +80,7 @@ export class Preszr {
         }
     }
 
-    private _addEncoding(...encoders: PreszrEncodingSpecifier[]) {
+    private _addEncoding(...encoders: EncodingSpecifier[]) {
         for (const encSpecifier of encoders) {
             const encoding = makeFullEncoding(encSpecifier);
             if (this._keyToEncoding.get(encoding.key)) {
@@ -102,7 +102,7 @@ export class Preszr {
         if (Array.isArray(obj)) {
             return arrayEncoding;
         }
-        let foundEncoding: PreszrPrototypeEncoding;
+        let foundEncoding: PrototypeEncoding;
         for (
             let proto = obj;
             ;
@@ -126,7 +126,7 @@ export class Preszr {
         return foundEncoding;
     }
 
-    private _findEncodingForSymbol(symb: symbol): PreszrSymbolEncoding {
+    private _findEncodingForSymbol(symb: symbol): SymbolEncoding {
         let encoding =
             this._symbToEncoding.get(symb) ?? this._tempSymbEncoding.get(symb);
         if (encoding == null) {
@@ -203,7 +203,7 @@ export class Preszr {
 
         const [, encodingKeys, encodingSpec, metadata] = header;
         const targetArray = Array(input.length - 1);
-        const needToInit = new Map<number, PreszrPrototypeEncoding>();
+        const needToInit = new Map<number, PrototypeEncoding>();
         const ctx: DecodeInitContext = {
             decode: null!,
             metadata: undefined,
@@ -223,7 +223,7 @@ export class Preszr {
         for (let i = 1; i < input.length; i++) {
             const encodingIndex = encodingSpec[i];
             const encodingKey = encodingKeys[encodingIndex];
-            const cur = input[i] as PreszrEncodedEntity;
+            const cur = input[i] as EncodedEntity;
             if (encodingKey === unrecognizedSymbolKey) {
                 targetArray[i] = getUnrecognizedSymbol(metadata[i] as string);
                 continue;
@@ -255,7 +255,7 @@ export class Preszr {
             ctx.metadata = metadata[key];
             encoding.decoder.init!(
                 targetArray[key],
-                input[key] as PreszrEncodedEntity,
+                input[key] as EncodedEntity,
                 ctx
             );
         }
@@ -266,10 +266,10 @@ export class Preszr {
         try {
             const tryScalar = tryEncodeScalar(root);
             if (tryScalar !== noResultPlaceholder) return tryScalar;
-            const encodingSpec = {} as PreszrEncodingSpec;
-            const metadata = {} as PreszrMetadata;
+            const encodingSpec = {} as EncodingSpec;
+            const metadata = {} as Metadata;
             const encodingKeys = new Map<string, number>();
-            const header = [] as unknown as PreszrHeader;
+            const header = [] as unknown as Header;
 
             const preszrRep = [header] as PreszrFormat;
             const objectToRef = new Map<object | symbol | string, Reference>();
@@ -284,7 +284,7 @@ export class Preszr {
             };
             const ctx: EncodeContext = {
                 metadata: undefined,
-                encode(value: any): PreszrLeaf {
+                encode(value: any): ScalarValue {
                     const tryScalar = tryEncodeScalar(value);
                     if (tryScalar !== noResultPlaceholder) return tryScalar;
                     let existingRef = objectToRef.get(value);
@@ -294,7 +294,7 @@ export class Preszr {
                     return existingRef;
                 },
             };
-            const createNewRef = (value: PreszrEntity): Reference => {
+            const createNewRef = (value: Entity): Reference => {
                 const index = preszrRep.length;
                 const ref = `${index}`;
                 objectToRef.set(value, ref);
@@ -358,7 +358,7 @@ const builtinEncodings = [
     mapEncoding,
     setEncoding,
     ...errorEncodings,
-] as PreszrEncodingSpecifier[];
+] as EncodingSpecifier[];
 
 const builtinUnsupportedTypes = [
     WeakMap.prototype,

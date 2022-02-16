@@ -1,9 +1,9 @@
 import {
     DecodeCreateContext,
     EncodeContext,
-    PreszrPrototypeEncoding,
+    PrototypeEncoding,
 } from "../interface";
-import { getLibraryString } from "../utils";
+import { getLibraryEncodingName } from "../utils";
 import { fromByteArray, toByteArray } from "base64-js";
 
 /**
@@ -21,8 +21,8 @@ export type TypedArrayConstructor =
     | Float64ArrayConstructor
     | DataViewConstructor;
 
-export const arrayBufferEncoding: PreszrPrototypeEncoding = {
-    key: getLibraryString("ArrayBuffer"),
+export const arrayBufferEncoding: PrototypeEncoding = {
+    key: getLibraryEncodingName("ArrayBuffer"),
     prototypes: [ArrayBuffer.prototype],
     encode(input: ArrayBuffer, ctx: EncodeContext): any {
         const b64 = fromByteArray(new Uint8Array(input));
@@ -38,9 +38,9 @@ export const arrayBufferEncoding: PreszrPrototypeEncoding = {
 
 export function createTypedArrayEncoding(
     ctor: TypedArrayConstructor
-): PreszrPrototypeEncoding {
+): PrototypeEncoding {
     return {
-        key: getLibraryString(ctor.name),
+        key: getLibraryEncodingName(ctor.name),
         prototypes: [ctor.prototype],
         encode(
             input: InstanceType<TypedArrayConstructor>,

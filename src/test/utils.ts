@@ -1,4 +1,4 @@
-import { PreszrHeader, PreszrFormat } from "../lib/data-types";
+import { Header, PreszrFormat } from "../lib/data-types";
 import { version } from "../lib/utils";
 import { ExecutionContext, Macro } from "ava";
 import { cloneDeep } from "lodash";
@@ -62,7 +62,7 @@ export function createPreszrRep([encodingSpec, meta], ...arr): PreszrFormat {
         version,
         ...getEncodingComponent(encodingSpec),
         meta,
-    ] as PreszrHeader;
+    ] as Header;
     return [header, ...arr];
 }
 

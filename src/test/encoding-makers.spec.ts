@@ -1,9 +1,9 @@
 import test from "ava";
-import { PreszrPrototypeEncoding, PreszrSymbolEncoding } from "../lib";
+import { PrototypeEncoding, SymbolEncoding } from "../lib";
 import {
     getImplicitClassEncodingName,
     getImplicitSymbolEncodingName,
-    getLibraryString,
+    getLibraryEncodingName,
 } from "../lib/utils";
 import { getDummyCtx } from "./utils";
 import { makeFullEncoding } from "../lib/encoding-utils";
@@ -25,12 +25,12 @@ TestClass2.prototype.field = 10;
 test("implicit class encoding name", (t) => {
     t.is(
         getImplicitSymbolEncodingName("test"),
-        getLibraryString("symbol-test")
+        getLibraryEncodingName("symbol-test")
     );
 });
 
 test("implicit symbol encoding name", (t) => {
-    t.is(getImplicitClassEncodingName("test"), getLibraryString("class-test"));
+    t.is(getImplicitClassEncodingName("test"), getLibraryEncodingName("class-test"));
 });
 
 test("from symbol with name", (t) => {
@@ -48,7 +48,7 @@ test("error when trying with symbol without name", (t) => {
 });
 
 test("symbol encoding with explicit name unchanged", (t) => {
-    const encoding: PreszrSymbolEncoding = {
+    const encoding: SymbolEncoding = {
         key: "a",
         symbol: testSymbol,
     };
@@ -56,7 +56,7 @@ test("symbol encoding with explicit name unchanged", (t) => {
 });
 
 test("encoding from class", (t) => {
-    const encoding = makeFullEncoding(TestClass) as PreszrPrototypeEncoding;
+    const encoding = makeFullEncoding(TestClass) as PrototypeEncoding;
     t.is(encoding.key, getImplicitClassEncodingName("TestClass"));
     t.is(encoding.prototypes.length, 1);
     t.is(encoding.prototypes[0], TestClass.prototype);
@@ -68,7 +68,7 @@ test("encoding from class", (t) => {
 test("encoding from prototype", (t) => {
     const encoding = makeFullEncoding({
         prototype: TestClass.prototype,
-    }) as PreszrPrototypeEncoding;
+    }) as PrototypeEncoding;
     t.is(encoding.key, getImplicitClassEncodingName("TestClass"));
     t.is(encoding.prototypes.length, 1);
     const [p1] = encoding.prototypes;
@@ -87,7 +87,7 @@ test("encoding with multiple prototypes", (t) => {
         decoder: {
             create: f,
         },
-    }) as PreszrPrototypeEncoding;
+    }) as PrototypeEncoding;
 
     t.is(encoding.key, "blah");
     t.is(encoding.decoder.create, f);
@@ -97,7 +97,7 @@ test("encoding with multiple prototypes", (t) => {
 test("encoding prototype field", (t) => {
     const encoding = makeFullEncoding({
         prototype: TestClass.prototype,
-    }) as PreszrPrototypeEncoding;
+    }) as PrototypeEncoding;
     t.is(encoding.key, getImplicitClassEncodingName("TestClass"));
     t.deepEqual(
         encoding.decoder.create({}, {} as any),

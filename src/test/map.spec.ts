@@ -1,6 +1,6 @@
 import { encodeDecodeMacro, testDecodeMacro, testEncodeMacro } from "./utils";
 import test from "ava";
-import { getLibraryString } from "../lib/utils";
+import { getLibraryEncodingName } from "../lib/utils";
 import { decode } from "../lib";
 import { unsupportedEncodingKey } from "../lib/encodings/basic";
 
@@ -9,21 +9,21 @@ const macro = encodeDecodeMacro({
     decode: testDecodeMacro,
 });
 
-test("empty", macro, new Map(), [[{ 1: getLibraryString("Map") }, {}], []]);
+test("empty", macro, new Map(), [[{ 1: getLibraryEncodingName("Map") }, {}], []]);
 
 test("one pair", macro, new Map([[1, 1]]), [
-    [{ 1: getLibraryString("Map") }, {}],
+    [{ 1: getLibraryEncodingName("Map") }, {}],
     [[1, 1]],
 ]);
 
 test("ref key", macro, new Map([[{}, 1]]), [
-    [{ 1: getLibraryString("Map") }, {}],
+    [{ 1: getLibraryEncodingName("Map") }, {}],
     [["2", 1]],
     {},
 ]);
 
 test("ref key-value", macro, new Map([[{}, {}]]), [
-    [{ 1: getLibraryString("Map") }, {}],
+    [{ 1: getLibraryEncodingName("Map") }, {}],
     [["2", "3"]],
     {},
     {},
@@ -41,7 +41,7 @@ test(
         },
     }),
     new Map([[o, o]]),
-    [[{ 1: getLibraryString("Map") }, {}], [["2", "2"]], {}]
+    [[{ 1: getLibraryEncodingName("Map") }, {}], [["2", "2"]], {}]
 );
 
 test(
@@ -52,7 +52,7 @@ test(
         [2, 2],
     ]),
     [
-        [{ 1: getLibraryString("Map") }, {}],
+        [{ 1: getLibraryEncodingName("Map") }, {}],
         [
             [1, 1],
             [2, 2],
@@ -72,7 +72,7 @@ test(
     new Map([[() => {}, 1]]),
     [
         [
-            { 1: getLibraryString("Map"), 2: unsupportedEncodingKey },
+            { 1: getLibraryEncodingName("Map"), 2: unsupportedEncodingKey },
             { 2: "Function" },
         ],
         [["2", 1]],
@@ -96,7 +96,7 @@ test(
     [
         [
             {
-                1: getLibraryString("Map"),
+                1: getLibraryEncodingName("Map"),
                 2: unsupportedEncodingKey,
                 3: unsupportedEncodingKey,
             },
@@ -112,13 +112,13 @@ test(
 );
 
 test("nested map", macro, new Map([[new Map(), 5]]), [
-    [{ 1: getLibraryString("Map"), 2: getLibraryString("Map") }, {}],
+    [{ 1: getLibraryEncodingName("Map"), 2: getLibraryEncodingName("Map") }, {}],
     [["2", 5]],
     [],
 ]);
 
 test("string key", macro, new Map([["a", 2]]), [
-    [{ 1: getLibraryString("Map") }, {}],
+    [{ 1: getLibraryEncodingName("Map") }, {}],
     [["2", 2]],
     "a",
 ]);

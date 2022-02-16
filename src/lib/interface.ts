@@ -1,4 +1,4 @@
-import { PreszrEncodedEntity, PreszrLeaf } from "./data-types";
+import { EncodedEntity, ScalarValue } from "./data-types";
 
 /**
  * The context used by the encoding process.
@@ -10,7 +10,7 @@ export interface EncodeContext {
      * values, it will return them as-is or encode them, usually as a string.
      * @param value
      */
-    encode(value: any): PreszrLeaf;
+    encode(value: any): ScalarValue;
     /**
      * Sets the metadata for this entity. The metadata can be any JSON-legal value,
      * including an object. It doesn't do anything, but can be accessed while decoding.
@@ -33,7 +33,7 @@ export interface DecodeCreateContext {
  */
 export interface DecodeInitContext extends DecodeCreateContext {
     // Resolves references and decodes encoded scalars. This isn't a recursive call.
-    decode(value: PreszrLeaf): unknown;
+    decode(value: ScalarValue): unknown;
 }
 
 /**
@@ -41,11 +41,11 @@ export interface DecodeInitContext extends DecodeCreateContext {
  */
 export interface Decoder {
     // Creates an instance of the entity without referencing any other encoded entities.
-    create(encoded: PreszrEncodedEntity, ctx: DecodeCreateContext): unknown;
+    create(encoded: EncodedEntity, ctx: DecodeCreateContext): unknown;
     // Fills in additional data by resolving references to other entities.
     init?(
         target: unknown,
-        encoded: PreszrEncodedEntity,
+        encoded: EncodedEntity,
         ctx: DecodeInitContext
     ): void;
 }
@@ -53,7 +53,7 @@ export interface Decoder {
 /**
  * Specifies a prototype encoding. Missing fields will be filled in automatically.
  */
-export interface PreszrPrototypeSpecifier {
+export interface PrototypeEncodingSpecifier {
     // The key of the encoding. Must be unique. Will be inferred from the prototype if missing.
     key?: string;
     // The prototype. Required.
@@ -63,13 +63,13 @@ export interface PreszrPrototypeSpecifier {
     decoder?: Decoder;
     // The encoding logic. If missing, the default encode function will be used, which
     // will iterate over the object's own enumerable properties and recursively encode them.
-    encode?(input: any, ctx: EncodeContext): PreszrEncodedEntity;
+    encode?(input: any, ctx: EncodeContext): EncodedEntity;
 }
 
 /**
  * A full symbol encoding.
  */
-export interface PreszrSymbolEncoding {
+export interface SymbolEncoding {
     key: string;
     symbol: symbol;
     metadata?: any;
@@ -78,29 +78,29 @@ export interface PreszrSymbolEncoding {
 /**
  * A full prototype encoding.
  */
-export interface PreszrPrototypeEncoding {
+export interface PrototypeEncoding {
     key: string;
     prototypes: object[];
     decoder: Decoder;
-    encode(input: any, ctx: EncodeContext): PreszrEncodedEntity;
+    encode(input: any, ctx: EncodeContext): EncodedEntity;
 }
 
 /**
  * A full preszr encoding of any type.
  */
-export type PreszrEncoding = PreszrPrototypeEncoding | PreszrSymbolEncoding;
+export type Encoding = PrototypeEncoding | SymbolEncoding;
 
 /**
  * An encoding specifier. Can be a symbol or constructor for a shorthand
  * symbol or prototype encoding. You can also give symbol or prototype encoding specifier
  * if you want to be more explicit.
  */
-export type PreszrEncodingSpecifier =
+export type EncodingSpecifier =
     | symbol
     | Function
-    | PreszrPrototypeSpecifier
-    | PreszrPrototypeEncoding
-    | PreszrSymbolEncoding;
+    | PrototypeEncodingSpecifier
+    | PrototypeEncoding
+    | SymbolEncoding;
 
 /**
  * Configuration for an Preszr instance.
@@ -110,7 +110,7 @@ export interface PreszrConfig {
      * An array of encoding specifiers. If you put your constructors and symbols here,
      * the Preszr will recognize them.
      */
-    encodings: PreszrEncodingSpecifier[];
+    encodings: EncodingSpecifier[];
     /**
      * An array of constructors that will be marked as unsupported.
      * Objects with these constructors will not be encoded.

@@ -1,48 +1,48 @@
-import { getLibraryString } from "./utils";
+import { getLibraryEncodingName } from "./utils";
 
 export type Version = string;
 
-export interface PreszrEncodingSpec {
+export interface EncodingSpec {
     [key: number]: number;
 }
 
-export type PreszrEncodedEntity =
-    | PreszrPrimitive
+export type EncodedEntity =
+    | Primitive
     | string
-    | PreszrDataObject
-    | PreszrEncodedEntity[];
+    | DataObject
+    | EncodedEntity[];
 
-export interface PreszrDataObject {
-    [key: string]: PreszrEncodedEntity;
-    [key: number]: PreszrEncodedEntity;
+export interface DataObject {
+    [key: string]: EncodedEntity;
+    [key: number]: EncodedEntity;
 }
 
-export interface PreszrMetadata {
-    [key: number]: PreszrEncodedEntity;
+export interface Metadata {
+    [key: number]: EncodedEntity;
 }
 
-export type PreszrEncodingKeys = string[];
+export type EncodingKeys = string[];
 
-export type PreszrHeader = [
+export type Header = [
     Version,
-    PreszrEncodingKeys,
-    PreszrEncodingSpec,
-    PreszrMetadata
+    EncodingKeys,
+    EncodingSpec,
+    Metadata
 ];
 
 export type Reference = string;
 
-export type PreszrEntity = string | object | any[] | symbol | Function;
+export type Entity = string | object | any[] | symbol | Function;
 
-export type PreszrPrimitive = boolean | number | null;
+export type Primitive = boolean | number | null;
 
-export type PreszrEncodedScalar = string;
+export type EncodedScalar = string;
 
-export type PreszrLeaf = PreszrPrimitive | Reference | PreszrEncodedScalar;
+export type ScalarValue = Primitive | Reference | EncodedScalar;
 
-export type PreszrFormat = [PreszrHeader, ...PreszrEncodedEntity[]];
+export type PreszrFormat = [Header, ...EncodedEntity[]];
 
-export type PreszrOutput = PreszrFormat | PreszrPrimitive | PreszrEncodedScalar;
+export type PreszrOutput = PreszrFormat | Primitive | EncodedScalar;
 
 export const undefinedEncoding = "-";
 export const infinityEncoding = "Infinity";
@@ -52,7 +52,7 @@ export const nanEncoding = "NaN";
 
 export const noResultPlaceholder = "";
 
-export function tryEncodeScalar(num: any): PreszrEncodedScalar | PreszrPrimitive {
+export function tryEncodeScalar(num: any): EncodedScalar | Primitive {
     if (num === null || typeof num === "boolean") {
         return num;
     }
@@ -103,4 +103,4 @@ export function tryDecodeScalar(candidate: any) {
     }
     return noResultPlaceholder;
 }
-export const unrecognizedSymbolKey = getLibraryString("symbol?");
+export const unrecognizedSymbolKey = getLibraryEncodingName("symbol?");

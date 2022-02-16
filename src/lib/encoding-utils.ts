@@ -11,16 +11,16 @@ import {
     getSymbolName,
 } from "./utils";
 import {
-    PreszrEncoding,
-    PreszrEncodingSpecifier,
-    PreszrPrototypeEncoding,
-    PreszrPrototypeSpecifier,
-    PreszrSymbolEncoding,
+    Encoding,
+    EncodingSpecifier,
+    PrototypeEncoding,
+    PrototypeEncodingSpecifier,
+    SymbolEncoding,
 } from "./interface";
 
 export function makeSymbolEncoding(
-    x: PreszrSymbolEncoding | symbol
-): PreszrSymbolEncoding {
+    x: SymbolEncoding | symbol
+): SymbolEncoding {
     if (typeof x !== "symbol") {
         return x as any;
     }
@@ -43,8 +43,8 @@ export function makeEncodingFromCtor(ctor: Function) {
     });
 }
 
-export function makeEncodingFromSpecifier(specifier: PreszrPrototypeSpecifier) {
-    const encoding = {} as PreszrPrototypeEncoding;
+export function makeEncodingFromSpecifier(specifier: PrototypeEncodingSpecifier) {
+    const encoding = {} as PrototypeEncoding;
     if (specifier.prototype === undefined) {
         throw new PreszrError("Encoding must specify a prototype.");
     }
@@ -67,7 +67,7 @@ export function makeEncodingFromSpecifier(specifier: PreszrPrototypeSpecifier) {
     return encoding;
 }
 
-export function makeFullEncoding(specifier: PreszrEncodingSpecifier): PreszrEncoding {
+export function makeFullEncoding(specifier: EncodingSpecifier): Encoding {
     if (typeof specifier === "symbol" || "symbol" in specifier)
         return makeSymbolEncoding(specifier);
     if (typeof specifier === "function") return makeEncodingFromCtor(specifier);

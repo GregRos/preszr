@@ -3,12 +3,12 @@ import { PreszrOutput } from "./data-types";
 import { DeepPartial, PreszrConfig } from "./interface";
 
 export {
-    PreszrEncoding,
-    PreszrEncodingSpecifier,
-    PreszrPrototypeEncoding,
-    PreszrPrototypeSpecifier,
+    Encoding,
+    EncodingSpecifier,
+    PrototypeEncoding,
+    PrototypeEncodingSpecifier,
     Decoder,
-    PreszrSymbolEncoding,
+    SymbolEncoding,
     DecodeCreateContext,
     DecodeInitContext,
     DeepPartial,

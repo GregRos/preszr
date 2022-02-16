@@ -1,12 +1,12 @@
 import {
     EncodeContext,
-    PreszrPrototypeEncoding,
+    PrototypeEncoding,
     DecodeCreateContext,
     DecodeInitContext,
     Decoder,
 } from "../interface";
-import { getClassName, getLibraryString } from "../utils";
-import { PreszrLeaf } from "../data-types";
+import { getClassName, getLibraryEncodingName } from "../utils";
+import { ScalarValue } from "../data-types";
 
 export const nullPlaceholder = {};
 function getAllOwnKeys(obj: object, onlyEnumerable: boolean): PropertyKey[] {
@@ -25,11 +25,11 @@ export function decodeObject(target, input, ctx: DecodeInitContext) {
         let symbolKeys;
         [stringKeys, symbolKeys] = input;
         for (const [key, value] of Object.entries(symbolKeys)) {
-            target[ctx.decode(key) as symbol] = ctx.decode(value as PreszrLeaf);
+            target[ctx.decode(key) as symbol] = ctx.decode(value as ScalarValue);
         }
     }
     for (const [key, value] of Object.entries(stringKeys)) {
-        target[key] = ctx.decode(value as PreszrLeaf);
+        target[key] = ctx.decode(value as ScalarValue);
     }
     return target;
 }
@@ -41,7 +41,7 @@ export function encodeObject(
     explicitlyInclude = [] as string[]
 ) {
     const strKeyObject = {};
-    let symbKeyObject: Record<string, PreszrLeaf> | undefined;
+    let symbKeyObject: Record<string, ScalarValue> | undefined;
     for (const key of getAllOwnKeys(input, !alsoNonEnumerable)) {
         const value = input[key];
         if (typeof key === "symbol") {
@@ -63,9 +63,9 @@ export function encodeObject(
     return strKeyObject;
 }
 
-export const objectEncoding: PreszrPrototypeEncoding = {
+export const objectEncoding: PrototypeEncoding = {
     prototypes: [Object.prototype],
-    key: getLibraryString("object"),
+    key: getLibraryEncodingName("object"),
     encode(input: any, ctx: EncodeContext): any {
         return encodeObject(input, ctx, false);
     },
@@ -86,8 +86,8 @@ function encodeAsSparseArray(input: any, ctx: EncodeContext) {
     return result;
 }
 
-export const arrayEncoding: PreszrPrototypeEncoding = {
-    key: getLibraryString("array"),
+export const arrayEncoding: PrototypeEncoding = {
+    key: getLibraryEncodingName("array"),
     prototypes: [Array.prototype],
     encode(input: any, ctx: EncodeContext): any {
         const keys = Object.keys(input);
@@ -122,8 +122,8 @@ export const arrayEncoding: PreszrPrototypeEncoding = {
         },
     },
 };
-export const nullPrototypeEncoding: PreszrPrototypeEncoding = {
-    key: getLibraryString("null"),
+export const nullPrototypeEncoding: PrototypeEncoding = {
+    key: getLibraryEncodingName("null"),
     encode: getPrototypeEncoder(null),
     decoder: getPrototypeDecoder(null),
     prototypes: [nullPlaceholder],
@@ -146,11 +146,11 @@ export function getPrototypeEncoder(proto: object | null) {
     };
 }
 
-export const unsupportedEncodingKey = getLibraryString("unsupported");
+export const unsupportedEncodingKey = getLibraryEncodingName("unsupported");
 
 export function getUnsupportedEncoding(
     ...protos: object[]
-): PreszrPrototypeEncoding {
+): PrototypeEncoding {
     return {
         key: unsupportedEncodingKey,
         prototypes: protos,

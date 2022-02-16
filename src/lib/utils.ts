@@ -29,16 +29,16 @@ export function defaultsDeep(target: any, ...sources: any[]) {
     return target;
 }
 
-export function getLibraryString(str: string) {
-    return `!@#preszr-${str}`;
+export function getLibraryEncodingName(str: string) {
+    return `Preszr/${str}`;
 }
 
 export function getImplicitSymbolEncodingName(str: string) {
-    return getLibraryString(`symbol-${str}`);
+    return getLibraryEncodingName(`symbol-${str}`);
 }
 
 export function getImplicitClassEncodingName(str: string) {
-    return getLibraryString(`class-${str}`);
+    return getLibraryEncodingName(`class-${str}`);
 }
 
 export function getClassName(proto: object): string | null | undefined {

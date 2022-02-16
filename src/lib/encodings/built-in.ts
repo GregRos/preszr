@@ -2,16 +2,16 @@ import {
     DecodeCreateContext,
     DecodeInitContext,
     EncodeContext,
-    PreszrPrototypeEncoding,
+    PrototypeEncoding,
 } from "../interface";
-import { getLibraryString } from "../utils";
+import { getLibraryEncodingName } from "../utils";
 import { decodeObject, encodeObject } from "./basic";
 
 const errorProperties = ["stack", "name", "message"];
 export function createErrorEncoding(errorCtor: { new (): Error }) {
     return {
         prototypes: [errorCtor.prototype],
-        key: getLibraryString(errorCtor.name),
+        key: getLibraryEncodingName(errorCtor.name),
         encode(input: any, ctx: EncodeContext): any {
             const encodedAsObject = encodeObject(
                 input,
@@ -30,7 +30,7 @@ export function createErrorEncoding(errorCtor: { new (): Error }) {
                 decodeObject(target, encoded, ctx);
             },
         },
-    } as PreszrPrototypeEncoding;
+    } as PrototypeEncoding;
 }
 
 export const errorEncodings = [

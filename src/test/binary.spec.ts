@@ -5,7 +5,7 @@ import {
     testEncodeMacro,
     toBase64,
 } from "./utils";
-import { getLibraryString } from "../lib/utils";
+import { getLibraryEncodingName } from "../lib/utils";
 import { typedArrayCtors } from "../lib/encodings/binary";
 
 const scalarMacros = encodeDecodeMacro({
@@ -33,13 +33,13 @@ test("deepEqual works on binary types", (t) => {
 const array1 = createArrayBuffer(1, 2, 3, 4, 5, 6, 7, 8);
 
 test("ArrayBuffer", scalarMacros, array1, [
-    [{ 1: getLibraryString("ArrayBuffer") }, {}],
+    [{ 1: getLibraryEncodingName("ArrayBuffer") }, {}],
     toBase64(array1),
 ]);
 
 for (const ctor of typedArrayCtors) {
     test(ctor.name, scalarMacros, new ctor(array1), [
-        [{ 1: getLibraryString(ctor.name) }, {}],
+        [{ 1: getLibraryEncodingName(ctor.name) }, {}],
         toBase64(array1),
     ]);
 }

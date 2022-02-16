@@ -4,7 +4,7 @@
 
 import test from "ava";
 import { encodeDecodeMacro, testDecodeMacro, testEncodeMacro } from "./utils";
-import { getLibraryString } from "../lib/utils";
+import { getLibraryEncodingName } from "../lib/utils";
 
 const scalarMacros = encodeDecodeMacro({
     encode: testEncodeMacro,
@@ -35,33 +35,33 @@ test("deepEqual works on regex", (t) => {
 });
 
 test("Number wrapper", scalarMacros, new Number(5), [
-    [{ 1: getLibraryString("Number") }, {}],
+    [{ 1: getLibraryEncodingName("Number") }, {}],
     5,
 ]);
 
 test("Boolean wrapper", scalarMacros, new Boolean(true), [
-    [{ 1: getLibraryString("Boolean") }, {}],
+    [{ 1: getLibraryEncodingName("Boolean") }, {}],
     true,
 ]);
 
 test("String wrapper", scalarMacros, new String("a"), [
-    [{ 1: getLibraryString("String") }, {}],
+    [{ 1: getLibraryEncodingName("String") }, {}],
     "a",
 ]);
 
 const date = new Date();
 
 test("Date", scalarMacros, new Date(), [
-    [{ 1: getLibraryString("Date") }, {}],
+    [{ 1: getLibraryEncodingName("Date") }, {}],
     date.getTime(),
 ]);
 
 test("regexp no flags", scalarMacros, /abc/, [
-    [{ 1: getLibraryString("RegExp") }, {}],
+    [{ 1: getLibraryEncodingName("RegExp") }, {}],
     "abc",
 ]);
 
 test("regexp with flags", scalarMacros, /abc/gi, [
-    [{ 1: getLibraryString("RegExp") }, {}],
+    [{ 1: getLibraryEncodingName("RegExp") }, {}],
     ["abc", "gi"],
 ]);

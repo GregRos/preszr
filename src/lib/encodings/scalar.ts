@@ -2,13 +2,13 @@ import {
     DecodeCreateContext,
     DecodeInitContext,
     EncodeContext,
-    PreszrPrototypeEncoding,
+    PrototypeEncoding,
 } from "../interface";
-import { getLibraryString } from "../utils";
+import { getLibraryEncodingName } from "../utils";
 
-export const regexpEncoding: PreszrPrototypeEncoding = {
+export const regexpEncoding: PrototypeEncoding = {
     prototypes: [RegExp.prototype],
-    key: getLibraryString("RegExp"),
+    key: getLibraryEncodingName("RegExp"),
     encode({ source, flags }: RegExp, ctx: EncodeContext): any {
         return flags ? [source, flags] : source;
     },
@@ -22,9 +22,9 @@ export const regexpEncoding: PreszrPrototypeEncoding = {
         },
     },
 };
-export const dateEncoding: PreszrPrototypeEncoding = {
+export const dateEncoding: PrototypeEncoding = {
     prototypes: [Date.prototype],
-    key: getLibraryString("Date"),
+    key: getLibraryEncodingName("Date"),
     encode(input: Date, ctx: EncodeContext): any {
         return input.getTime();
     },
@@ -37,9 +37,9 @@ export const dateEncoding: PreszrPrototypeEncoding = {
 
 export function createFundamentalObjectEncoding(ctor: {
     new (x): any;
-}): PreszrPrototypeEncoding {
+}): PrototypeEncoding {
     return {
-        key: getLibraryString(ctor.name),
+        key: getLibraryEncodingName(ctor.name),
         prototypes: [ctor.prototype],
         encode(input: any, ctx: EncodeContext): any {
             return input.valueOf();

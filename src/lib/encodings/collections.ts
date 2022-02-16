@@ -2,16 +2,16 @@ import {
     DecodeCreateContext,
     DecodeInitContext,
     EncodeContext,
-    PreszrPrototypeEncoding,
+    PrototypeEncoding,
 } from "../interface";
-import { getLibraryString } from "../utils";
-import { PreszrEncodedEntity, PreszrLeaf } from "../data-types";
+import { getLibraryEncodingName } from "../utils";
+import { EncodedEntity, ScalarValue } from "../data-types";
 
-export const mapEncoding: PreszrPrototypeEncoding = {
+export const mapEncoding: PrototypeEncoding = {
     prototypes: [Map.prototype],
-    key: getLibraryString("Map"),
+    key: getLibraryEncodingName("Map"),
     encode(input: Map<any, any>, ctx: EncodeContext): any {
-        const array = [] as [PreszrLeaf, PreszrLeaf][];
+        const array = [] as [ScalarValue, ScalarValue][];
         for (const key of input.keys()) {
             const value = input.get(key);
             array.push([ctx.encode(key), ctx.encode(value)]);
@@ -24,7 +24,7 @@ export const mapEncoding: PreszrPrototypeEncoding = {
         },
         init(
             target: Map<any, any>,
-            encoded: [PreszrLeaf, PreszrLeaf][],
+            encoded: [ScalarValue, ScalarValue][],
             ctx: DecodeInitContext
         ) {
             for (const [key, value] of encoded) {
@@ -34,11 +34,11 @@ export const mapEncoding: PreszrPrototypeEncoding = {
     },
 };
 
-export const setEncoding: PreszrPrototypeEncoding = {
+export const setEncoding: PrototypeEncoding = {
     prototypes: [Set.prototype],
-    key: getLibraryString("Set"),
-    encode(input: Set<any>, ctx: EncodeContext): PreszrEncodedEntity {
-        const outArray = [] as PreszrLeaf[];
+    key: getLibraryEncodingName("Set"),
+    encode(input: Set<any>, ctx: EncodeContext): EncodedEntity {
+        const outArray = [] as ScalarValue[];
         for (const item of input) {
             outArray.push(ctx.encode(item));
         }
@@ -48,7 +48,7 @@ export const setEncoding: PreszrPrototypeEncoding = {
         create(): any {
             return new Set();
         },
-        init(target: Set<any>, encoded: PreszrLeaf[], ctx: DecodeInitContext) {
+        init(target: Set<any>, encoded: ScalarValue[], ctx: DecodeInitContext) {
             for (const item of encoded) {
                 target.add(ctx.decode(item));
             }
