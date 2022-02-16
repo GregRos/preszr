@@ -13,7 +13,7 @@ export {
     DecodeInitContext,
     DeepPartial,
     SzrConfig,
-    EncodeContext
+    EncodeContext,
 } from "./interface";
 const defaultSzr = new SzrClass();
 
@@ -27,7 +27,8 @@ export const encode = (value: unknown): SzrOutput => defaultSzr.encode(value);
  * Decodes a value using szr with the default settings.
  * @param encoded The default
  */
-export const decode = <T = unknown>(encoded: SzrOutput): T => defaultSzr.decode(encoded) as T;
+export const decode = <T = unknown>(encoded: SzrOutput): T =>
+    defaultSzr.decode(encoded) as T;
 
 /**
  * Creates a new `Szr` instance. Can be called with or without `new`.
@@ -42,7 +43,7 @@ export const Szr = function Szr(config?: DeepPartial<SzrConfig>) {
      * @param config The configuration. Should be the same in the source and destination.
      * @constructor
      */
-    new(config?: DeepPartial<SzrConfig>): Szr;
+    new (config?: DeepPartial<SzrConfig>): Szr;
 
     /**
      * Creates a new `Szr` instance. Can be called with or without `new`.
@@ -50,7 +51,6 @@ export const Szr = function Szr(config?: DeepPartial<SzrConfig>) {
      * @constructor
      */
     (config?: DeepPartial<SzrConfig>): Szr;
-
 };
 
 /**
@@ -58,4 +58,3 @@ export const Szr = function Szr(config?: DeepPartial<SzrConfig>) {
  */
 export type Szr = SzrClass;
 Szr.prototype = SzrClass.prototype;
-

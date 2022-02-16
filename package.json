@@ -18,19 +18,17 @@
     "clean": "shx rm -rf dist/",
     "build": "tsc",
     "build+clean": "npm-run-all clean build",
+    "prettier:fix": "prettier -w 'src/**/*.ts'",
+    "eslint:fix": "eslint --fix 'src/**/*.ts'",
     "test": "nyc ava",
     "test:no-cover": "node node_modules/ava/cli.js",
-    "docs": "node dist/generate-docs/run.js",
-    "lint": "tslint -p .",
-    "lint:fix": "tslint -p . --fix",
-    "package:build": "npm-run-all lint build:clean test && node dist/publish.js",
-    "package:publish": "yarn run package:build && cd .publish && yarn publish"
+    "docs": "node dist/generate-docs/run.js"
   },
   "dependencies": {
     "base64-js": "^1.5.1"
   },
   "devDependencies": {
-    "@gregros/eslint-config": "file:../packages/gregros-eslint-config-0.1.0.tgz",
+    "@gregros/eslint-config": "../packages/gregros-eslint-config-0.1.5.tgz",
     "@types/lodash": "^4.14.170",
     "@types/shelljs": "^0.8.6",
     "@typescript-eslint/eslint-plugin": "^5.11.0",

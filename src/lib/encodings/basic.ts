@@ -3,17 +3,18 @@ import {
     SzrPrototypeEncoding,
     DecodeCreateContext,
     DecodeInitContext,
-    Decoder
+    Decoder,
 } from "../interface";
-import {getClassName, getLibraryString} from "../utils";
-import {SzrLeaf, Reference} from "../data-types";
-import {SzrError} from "../errors";
+import { getClassName, getLibraryString } from "../utils";
+import { SzrLeaf} from "../data-types";
 
 export const nullPlaceholder = {};
 function getAllOwnKeys(obj: object, onlyEnumerable: boolean): PropertyKey[] {
     const keys = Reflect.ownKeys(obj);
     if (onlyEnumerable) {
-        return keys.filter(x => Object.prototype.propertyIsEnumerable.call(obj, x));
+        return keys.filter((x) =>
+            Object.prototype.propertyIsEnumerable.call(obj, x)
+        );
     }
     return keys;
 }
@@ -33,7 +34,12 @@ export function decodeObject(target, input, ctx: DecodeInitContext) {
     return target;
 }
 
-export function encodeObject(input, ctx: EncodeContext, alsoNonEnumerable: boolean, explicitlyInclude = [] as string[]) {
+export function encodeObject(
+    input,
+    ctx: EncodeContext,
+    alsoNonEnumerable: boolean,
+    explicitlyInclude = [] as string[]
+) {
     const strKeyObject = {};
     let symbKeyObject: Record<string, SzrLeaf> | undefined;
     for (const key of getAllOwnKeys(input, !alsoNonEnumerable)) {
@@ -69,8 +75,8 @@ export const ObjectEncoding: SzrPrototypeEncoding = {
         },
         init(target: any, encoded: any, ctx: DecodeInitContext) {
             decodeObject(target, encoded, ctx);
-        }
-    }
+        },
+    },
 };
 
 function encodeAsSparseArray(input: any, ctx: EncodeContext) {
@@ -85,7 +91,7 @@ export const ArrayEncoding: SzrPrototypeEncoding = {
     prototypes: [Array.prototype],
     encode(input: any, ctx: EncodeContext): any {
         const keys = Object.keys(input);
-        let isSparseCanFalseNegative = input.length !== keys.length;
+        const isSparseCanFalseNegative = input.length !== keys.length;
         if (isSparseCanFalseNegative) {
             return encodeAsSparseArray(input, ctx);
         }
@@ -113,14 +119,14 @@ export const ArrayEncoding: SzrPrototypeEncoding = {
             for (let i = 0; i < input.length; i++) {
                 target[i] = ctx.decode(input[i]);
             }
-        }
-    }
+        },
+    },
 };
 export const NullPrototypeEncoding: SzrPrototypeEncoding = {
     key: getLibraryString("null"),
     encode: getPrototypeEncoder(null),
     decoder: getPrototypeDecoder(null),
-    prototypes: [nullPlaceholder]
+    prototypes: [nullPlaceholder],
 };
 
 export function getPrototypeDecoder(proto: object | null) {
@@ -128,7 +134,7 @@ export function getPrototypeDecoder(proto: object | null) {
         init: ObjectEncoding.decoder.init,
         create(encodedValue: any, ctx: DecodeCreateContext): any {
             return Object.create(proto);
-        }
+        },
     } as Decoder;
 }
 
@@ -142,7 +148,9 @@ export function getPrototypeEncoder(proto: object | null) {
 
 export const unsupportedEncodingKey = getLibraryString("unsupported");
 
-export function getUnsupportedEncoding(...protos: object[]): SzrPrototypeEncoding {
+export function getUnsupportedEncoding(
+    ...protos: object[]
+): SzrPrototypeEncoding {
     return {
         key: unsupportedEncodingKey,
         prototypes: protos,
@@ -153,7 +161,7 @@ export function getUnsupportedEncoding(...protos: object[]): SzrPrototypeEncodin
         decoder: {
             create(encodedValue: any, ctx: DecodeCreateContext): any {
                 return undefined;
-            }
-        }
+            },
+        },
     };
 }

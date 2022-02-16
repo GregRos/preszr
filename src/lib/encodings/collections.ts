@@ -1,10 +1,11 @@
 import {
-    DecodeCreateContext, DecodeInitContext,
+    DecodeCreateContext,
+    DecodeInitContext,
     EncodeContext,
-    SzrPrototypeEncoding
+    SzrPrototypeEncoding,
 } from "../interface";
-import {getLibraryString} from "../utils";
-import {SzrEncodedEntity, SzrLeaf} from "../data-types";
+import { getLibraryString } from "../utils";
+import { SzrEncodedEntity, SzrLeaf } from "../data-types";
 
 export const MapEncoding: SzrPrototypeEncoding = {
     prototypes: [Map.prototype],
@@ -21,12 +22,16 @@ export const MapEncoding: SzrPrototypeEncoding = {
         create(encodedValue: any, ctx: DecodeCreateContext): any {
             return new Map();
         },
-        init(target: Map<any, any>, encoded: [SzrLeaf, SzrLeaf][], ctx: DecodeInitContext) {
+        init(
+            target: Map<any, any>,
+            encoded: [SzrLeaf, SzrLeaf][],
+            ctx: DecodeInitContext
+        ) {
             for (const [key, value] of encoded) {
                 target.set(ctx.decode(key), ctx.decode(value));
             }
-        }
-    }
+        },
+    },
 };
 
 export const SetEncoding: SzrPrototypeEncoding = {
@@ -47,6 +52,6 @@ export const SetEncoding: SzrPrototypeEncoding = {
             for (const item of encoded) {
                 target.add(ctx.decode(item));
             }
-        }
-    }
+        },
+    },
 };

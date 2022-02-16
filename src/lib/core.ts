@@ -6,11 +6,14 @@ import {
     SzrEncodingSpecifier,
     SzrEncoding,
     SzrSymbolEncoding,
-    DecodeInitContext
+    DecodeInitContext,
 } from "./interface";
 import {
-    defaultsDeep, getLibraryString, getSymbolName, getUnrecognizedSymbol,
-    version
+    defaultsDeep,
+    getLibraryString,
+    getSymbolName,
+    getUnrecognizedSymbol,
+    version,
 } from "./utils";
 import {
     SzrLeaf,
@@ -25,19 +28,29 @@ import {
     tryEncodeScalar,
     tryDecodeScalar,
     undefinedEncoding,
-    noResultPlaceholder, unrecognizedSymbolKey, SzrEncodedEntity, SzrEncodingKeys
+    noResultPlaceholder,
+    unrecognizedSymbolKey,
+    SzrEncodedEntity,
+    SzrEncodingKeys,
 } from "./data-types";
 import {
-    ArrayEncoding, getUnsupportedEncoding, nullPlaceholder,
+    ArrayEncoding,
+    getUnsupportedEncoding,
+    nullPlaceholder,
     NullPrototypeEncoding,
-    ObjectEncoding, unsupportedEncodingKey
+    ObjectEncoding,
+    unsupportedEncodingKey,
 } from "./encodings/basic";
-import {createFundamentalObjectEncoding, dateEncoding, regexpEncoding} from "./encodings/scalar";
-import {SzrError} from "./errors";
-import {ArrayBufferEncoding, typedArrayEncodings} from "./encodings/binary";
-import {MapEncoding, SetEncoding} from "./encodings/collections";
-import {errorEncodings} from "./encodings/built-in";
-import {makeFullEncoding} from "./encoding-utils";
+import {
+    createFundamentalObjectEncoding,
+    dateEncoding,
+    regexpEncoding,
+} from "./encodings/scalar";
+import { SzrError } from "./errors";
+import { arrayBufferEncoding, typedArrayEncodings } from "./encodings/binary";
+import { MapEncoding, SetEncoding } from "./encodings/collections";
+import { errorEncodings } from "./encodings/built-in";
+import { makeFullEncoding } from "./encoding-utils";
 
 /**
  * The class used to encode and decode things in the szr format.
@@ -54,9 +67,13 @@ export class Szr {
         this.config = defaultsDeep({}, config, defaultConfig);
         const unsupportedEncoding = getUnsupportedEncoding(
             ...builtinUnsupportedTypes,
-            ...this.config.unsupported,
+            ...this.config.unsupported
         );
-        this._addEncoding(...builtinEncodings, unsupportedEncoding, ...this.config.encodings);
+        this._addEncoding(
+            ...builtinEncodings,
+            unsupportedEncoding,
+            ...this.config.encodings
+        );
     }
 
     private _buildEncodingCache() {
@@ -72,7 +89,9 @@ export class Szr {
         for (const encSpecifier of encoders) {
             const encoding = makeFullEncoding(encSpecifier);
             if (this._keyToEncoding.get(encoding.key)) {
-                throw new SzrError(`Encoding with the key '${encoding.key}' already exists.`);
+                throw new SzrError(
+                    `Encoding with the key '${encoding.key}' already exists.`
+                );
             }
             if ("prototypes" in encoding) {
                 this._protoEncodings.push(encoding);
@@ -89,14 +108,20 @@ export class Szr {
             return ArrayEncoding;
         }
         let foundEncoding: SzrPrototypeEncoding;
-        for (let proto = obj;; proto = Object.getPrototypeOf(proto) ?? nullPlaceholder) {
+        for (
+            let proto = obj;
+            ;
+            proto = Object.getPrototypeOf(proto) ?? nullPlaceholder
+        ) {
             const cached = this._protoEncodingCache.get(proto);
             if (cached !== undefined) {
                 foundEncoding = cached;
                 break;
             }
             if (proto === nullPlaceholder) {
-                throw new SzrError("FindEncodingForObject got stuck. Internal Error.");
+                throw new SzrError(
+                    "FindEncodingForObject got stuck. Internal Error."
+                );
             }
         }
         foundEncoding ??= ObjectEncoding;
@@ -107,12 +132,14 @@ export class Szr {
     }
 
     private _findEncodingForSymbol(symb: symbol): SzrSymbolEncoding {
-        let encoding = this._symbToEncoding.get(symb) ?? this._tempSymbEncoding.get(symb);
+        let encoding =
+            this._symbToEncoding.get(symb) ?? this._tempSymbEncoding.get(symb);
         if (encoding == null) {
             encoding = {
                 symbol: symb,
                 key: unrecognizedSymbolKey,
-                metadata: getSymbolName(symb) || `#${this._symbToEncoding.size + 1}`
+                metadata:
+                    getSymbolName(symb) || `#${this._symbToEncoding.size + 1}`,
             };
             this._tempSymbEncoding.set(symb, encoding);
         }
@@ -151,13 +178,17 @@ export class Szr {
                 } else if (+versionInfo !== parseInt(versionInfo)) {
                     reason = "version is not numeric";
                 } else if (versionInfo !== version) {
-                    throw new SzrError(`Input was encoded using version ${versionInfo}, but szr is version ${version}. Set skipValidateVersion to allow this.`);
+                    throw new SzrError(
+                        `Input was encoded using version ${versionInfo}, but szr is version ${version}. Set skipValidateVersion to allow this.`
+                    );
                 } else if (!Array.isArray(header[1])) {
                     reason = "no encoding keys or encoding keys not an array";
                 } else if (typeof header[2] !== "object" || !header[1]) {
-                    reason = "no encoding data or encoding data is not an object";
+                    reason =
+                        "no encoding data or encoding data is not an object";
                 } else if (typeof header[3] !== "object" || !header[2]) {
-                    reason = "no custom metadata or custom metadata is not an object";
+                    reason =
+                        "no custom metadata or custom metadata is not an object";
                 } else if (input.length === 1) {
                     reason = "input must have at least 2 elements";
                 }
@@ -166,7 +197,6 @@ export class Szr {
         if (reason) {
             throw new SzrError(`Input is not szr-encoded: ${reason}`);
         }
-
     }
 
     decode(input: SzrOutput): any {
@@ -181,20 +211,24 @@ export class Szr {
         const needToInit = new Map<number, SzrPrototypeEncoding>();
         const ctx: DecodeInitContext = {
             decode: null!,
-            metadata: undefined
+            metadata: undefined,
         };
 
         for (const encodingKey of encodingKeys) {
-            if (!this._keyToEncoding.has(encodingKey) && encodingKey !== unrecognizedSymbolKey) {
-                throw new SzrError(`Encoding with key '${encodingKey}' not found. Szr wasn't configured correctly.`);
-
+            if (
+                !this._keyToEncoding.has(encodingKey) &&
+                encodingKey !== unrecognizedSymbolKey
+            ) {
+                throw new SzrError(
+                    `Encoding with key '${encodingKey}' not found. Szr wasn't configured correctly.`
+                );
             }
         }
 
         for (let i = 1; i < input.length; i++) {
             const encodingIndex = encodingSpec[i];
             const encodingKey = encodingKeys[encodingIndex];
-            let cur = input[i] as SzrEncodedEntity;
+            const cur = input[i] as SzrEncodedEntity;
             if (encodingKey === unrecognizedSymbolKey) {
                 targetArray[i] = getUnrecognizedSymbol(metadata[i] as string);
                 continue;
@@ -217,17 +251,21 @@ export class Szr {
 
         ctx.decode = (value: any) => {
             const decodedPrimitive = tryDecodeScalar(value);
-            if (decodedPrimitive !== noResultPlaceholder) return decodedPrimitive;
+            if (decodedPrimitive !== noResultPlaceholder)
+                return decodedPrimitive;
             return targetArray[value];
         };
-        for (let key of needToInit.keys()) {
+        for (const key of needToInit.keys()) {
             const encoding = needToInit.get(key)!;
             ctx.metadata = metadata[key];
-            encoding.decoder.init!(targetArray[key], input[key] as SzrEncodedEntity, ctx);
+            encoding.decoder.init!(
+                targetArray[key],
+                input[key] as SzrEncodedEntity,
+                ctx
+            );
         }
         return targetArray[1];
     }
-
 
     encode(root: any): SzrOutput {
         try {
@@ -259,7 +297,7 @@ export class Szr {
                         existingRef = createNewRef(value);
                     }
                     return existingRef;
-                }
+                },
             };
             const createNewRef = <T>(value: SzrEntity): Reference => {
                 const index = szrRep.length;
@@ -293,18 +331,22 @@ export class Szr {
                 return ref;
             };
             ctx.encode(root);
-            header.push(version, [...encodingKeys.keys()], encodingSpec, metadata);
+            header.push(
+                version,
+                [...encodingKeys.keys()],
+                encodingSpec,
+                metadata
+            );
             return szrRep;
         } finally {
             this._tempSymbEncoding.clear();
         }
-
     }
 }
 
 export const defaultConfig: SzrConfig = {
     encodings: [],
-    unsupported: []
+    unsupported: [],
 };
 
 const builtinEncodings = [
@@ -317,14 +359,14 @@ const builtinEncodings = [
     dateEncoding,
     regexpEncoding,
     ...typedArrayEncodings,
-    ArrayBufferEncoding,
+    arrayBufferEncoding,
     MapEncoding,
     SetEncoding,
-    ...errorEncodings
+    ...errorEncodings,
 ] as SzrEncodingSpecifier[];
 
 const builtinUnsupportedTypes = [
     WeakMap.prototype,
     WeakSet.prototype,
-    Function.prototype
+    Function.prototype,
 ];

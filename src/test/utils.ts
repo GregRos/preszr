@@ -1,9 +1,9 @@
-import {SzrHeader, SzrFormat} from "../lib/data-types";
-import {version} from "../lib/utils";
-import {ExecutionContext, Macro} from "ava";
-import {cloneDeep} from "lodash";
-import {defaultConfig, Szr} from "../lib/core";
-import {DecodeInitContext, EncodeContext} from "../lib/interface";
+import { SzrHeader, SzrFormat } from "../lib/data-types";
+import { version } from "../lib/utils";
+import { ExecutionContext, Macro } from "ava";
+import { cloneDeep } from "lodash";
+import { defaultConfig, Szr } from "../lib/core";
+import { DecodeInitContext, EncodeContext } from "../lib/interface";
 
 export function stringify(value: any) {
     if (typeof value === "object") {
@@ -12,16 +12,15 @@ export function stringify(value: any) {
     if (typeof value === "bigint") {
         return `${value}n`;
     }
-    if (Object.is(value, -0)) {}
+    if (Object.is(value, -0)) {
+    }
     return `${value}`;
 }
 
 export function getSpecialObject(obj?) {
     obj ??= {};
     Object.defineProperty(obj, "idProperty", {
-        get() {
-
-        }
+        get() {},
     });
 }
 
@@ -65,7 +64,11 @@ export function simplifyEncoding(encoding: SzrFormat) {
 }
 
 export function createSzrRep([encodingSpec, meta], ...arr): SzrFormat {
-    const header = [version, ...getEncodingComponent(encodingSpec), meta] as SzrHeader;
+    const header = [
+        version,
+        ...getEncodingComponent(encodingSpec),
+        meta,
+    ] as SzrHeader;
     return [header, ...arr];
 }
 
@@ -81,24 +84,37 @@ export function createWithTitle(macro, argsFunc, titleFunc) {
 
 const defaultSzr = new Szr();
 
-export const testEncodeMacro: any = (t: ExecutionContext, decoded: any, encoded: any, szr = defaultSzr) => {
+export const testEncodeMacro: any = (
+    t: ExecutionContext,
+    decoded: any,
+    encoded: any,
+    szr = defaultSzr
+) => {
     const rEncoded = szr.encode(decoded) as any;
     t.deepEqual(simplifyEncoding(rEncoded), simplifyEncoding(encoded));
 };
 
-export const testDecodeMacro: any = (t: ExecutionContext, decoded: any, encoded: any, szr = defaultSzr) => {
+export const testDecodeMacro: any = (
+    t: ExecutionContext,
+    decoded: any,
+    encoded: any,
+    szr = defaultSzr
+) => {
     const rDecoded = szr.decode(encoded);
     t.deepEqual(rDecoded, decoded);
 };
 
-export const testEncodeMacroBindSzr = szr => (a, b, c) => testEncodeMacro(a, b, c, szr);
+export const testEncodeMacroBindSzr = (szr) => (a, b, c) =>
+    testEncodeMacro(a, b, c, szr);
 
+export const testDecodeMacroBindSzr = (szr) => (a, b, c) =>
+    testDecodeMacro(a, b, c, szr);
 
-export const testDecodeMacroBindSzr = szr => (a, b, c) => testDecodeMacro(a, b, c, szr);
-
-
-export const combAttachHeader = titleFunc => {
-    const attachHeader = (decoded, encoded) => [decoded, szrDefaultHeader(...encoded)];
+export const combAttachHeader = (titleFunc) => {
+    const attachHeader = (decoded, encoded) => [
+        decoded,
+        szrDefaultHeader(...encoded),
+    ];
     return [
         createWithTitle(
             testEncodeMacro,
@@ -109,14 +125,14 @@ export const combAttachHeader = titleFunc => {
             testDecodeMacro,
             attachHeader,
             (title, ...args) => `decode:: ${title ?? titleFunc(...args)}`
-        )
+        ),
     ] as [Macro<any>, Macro<any>];
 };
 
 export function getDummyCtx() {
     return {
-        encode: x => x,
-        decode: x => x
+        encode: (x) => x,
+        decode: (x) => x,
     } as EncodeContext & DecodeInitContext;
 }
 
@@ -128,8 +144,16 @@ export interface EncodeDecodeMacros {
 
 export const encodeDecodeMacro = (args: EncodeDecodeMacros) => {
     return [
-        createWithTitle(args.encode, (decoded, encoded, szr) => [decoded, embedSzrVersion(encoded), szr], title => `encode :: ${title}`),
-        createWithTitle(args.decode, (decoded, encoded, szr) => [decoded, embedSzrVersion(encoded), szr], title => `decode :: ${title}`)
+        createWithTitle(
+            args.encode,
+            (decoded, encoded, szr) => [decoded, embedSzrVersion(encoded), szr],
+            (title) => `encode :: ${title}`
+        ),
+        createWithTitle(
+            args.decode,
+            (decoded, encoded, szr) => [decoded, embedSzrVersion(encoded), szr],
+            (title) => `decode :: ${title}`
+        ),
     ] as [any, any];
 };
 

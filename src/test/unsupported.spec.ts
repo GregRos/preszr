@@ -1,22 +1,54 @@
-import {createSzrRep, testEncodeMacro} from "./utils";
-import {unsupportedEncodingKey} from "../lib/encodings/basic";
+import { createSzrRep, testEncodeMacro } from "./utils";
+import { unsupportedEncodingKey } from "../lib/encodings/basic";
 import test from "ava";
-import {decode} from "../lib";
+import { decode } from "../lib";
 
-const unsupportedObjectProperty = name => createSzrRep([{2: unsupportedEncodingKey}, {2: name}], {a: "2"}, 0);
+const unsupportedObjectProperty = (name) =>
+    createSzrRep([{ 2: unsupportedEncodingKey }, { 2: name }], { a: "2" }, 0);
 
-test("unsupported - {a: function}", testEncodeMacro, {a() {}}, unsupportedObjectProperty("Function"));
-test("unsupported - {a: WeakMap}", testEncodeMacro, {a: new WeakMap()}, unsupportedObjectProperty("WeakMap"));
-test("unsupported - {a: WeakSet}", testEncodeMacro, {a: new WeakSet()}, unsupportedObjectProperty("WeakSet"));
+test(
+    "unsupported - {a: function}",
+    testEncodeMacro,
+    { a() {} },
+    unsupportedObjectProperty("Function")
+);
+test(
+    "unsupported - {a: WeakMap}",
+    testEncodeMacro,
+    { a: new WeakMap() },
+    unsupportedObjectProperty("WeakMap")
+);
+test(
+    "unsupported - {a: WeakSet}",
+    testEncodeMacro,
+    { a: new WeakSet() },
+    unsupportedObjectProperty("WeakSet")
+);
 
-const unsupported = name => createSzrRep([{1: unsupportedEncodingKey}, {1: name}], 0);
+const unsupported = (name) =>
+    createSzrRep([{ 1: unsupportedEncodingKey }, { 1: name }], 0);
 
-test("unsupported - function", testEncodeMacro, () => {}, unsupported("Function"));
-test("unsupported - WeakMap", testEncodeMacro, new WeakMap(), unsupported("WeakMap"));
-test("unsupported - WeakSet", testEncodeMacro, new WeakSet(), unsupported("WeakSet"));
+test(
+    "unsupported - function",
+    testEncodeMacro,
+    () => {},
+    unsupported("Function")
+);
+test(
+    "unsupported - WeakMap",
+    testEncodeMacro,
+    new WeakMap(),
+    unsupported("WeakMap")
+);
+test(
+    "unsupported - WeakSet",
+    testEncodeMacro,
+    new WeakSet(),
+    unsupported("WeakSet")
+);
 
-test("decode unsupported", t => {
+test("decode unsupported", (t) => {
     const unsupported = unsupportedObjectProperty("Function");
     const result = decode(unsupported);
-    t.deepEqual(result, {a: undefined});
+    t.deepEqual(result, { a: undefined });
 });

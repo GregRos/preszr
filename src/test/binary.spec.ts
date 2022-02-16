@@ -1,18 +1,23 @@
 import test from "ava";
-import {encodeDecodeMacro, testDecodeMacro, testEncodeMacro, toBase64} from "./utils";
-import {getLibraryString} from "../lib/utils";
-import {typedArrayCtors} from "../lib/encodings/binary";
+import {
+    encodeDecodeMacro,
+    testDecodeMacro,
+    testEncodeMacro,
+    toBase64,
+} from "./utils";
+import { getLibraryString } from "../lib/utils";
+import { typedArrayCtors } from "../lib/encodings/binary";
 
 const scalarMacros = encodeDecodeMacro({
     encode: testEncodeMacro,
-    decode: testDecodeMacro
+    decode: testDecodeMacro,
 });
 function createArrayBuffer(...bytes: number[]) {
     const arr = new Uint8Array(bytes);
     return arr.buffer;
 }
 
-test("deepEqual works on binary types", t => {
+test("deepEqual works on binary types", (t) => {
     const array = createArrayBuffer(1, 2, 3, 4);
     const array2 = createArrayBuffer(1, 2, 3, 4);
     t.deepEqual(array, array2);
@@ -28,13 +33,13 @@ test("deepEqual works on binary types", t => {
 const array1 = createArrayBuffer(1, 2, 3, 4, 5, 6, 7, 8);
 
 test("ArrayBuffer", scalarMacros, array1, [
-    [{1: getLibraryString("ArrayBuffer")}, {}],
-    toBase64(array1)
+    [{ 1: getLibraryString("ArrayBuffer") }, {}],
+    toBase64(array1),
 ]);
 
 for (const ctor of typedArrayCtors) {
     test(ctor.name, scalarMacros, new ctor(array1), [
-        [{1: getLibraryString(ctor.name)}, {}],
-        toBase64(array1)
+        [{ 1: getLibraryString(ctor.name) }, {}],
+        toBase64(array1),
     ]);
 }

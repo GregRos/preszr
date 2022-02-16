@@ -2,16 +2,15 @@ import {
     DecodeCreateContext,
     DecodeInitContext,
     EncodeContext,
-    SzrPrototypeEncoding
+    SzrPrototypeEncoding,
 } from "../interface";
-import {getLibraryString} from "../utils";
+import { getLibraryString } from "../utils";
 
 export const regexpEncoding: SzrPrototypeEncoding = {
     prototypes: [RegExp.prototype],
     key: getLibraryString("RegExp"),
-    encode({source, flags}: RegExp, ctx: EncodeContext): any {
+    encode({ source, flags }: RegExp, ctx: EncodeContext): any {
         return flags ? [source, flags] : source;
-
     },
     decoder: {
         create(input: string | string[], ctx: DecodeInitContext) {
@@ -20,8 +19,8 @@ export const regexpEncoding: SzrPrototypeEncoding = {
             } else {
                 return new RegExp(input[0], input[1]);
             }
-        }
-    }
+        },
+    },
 };
 export const dateEncoding: SzrPrototypeEncoding = {
     prototypes: [Date.prototype],
@@ -32,11 +31,13 @@ export const dateEncoding: SzrPrototypeEncoding = {
     decoder: {
         create(encodedValue: number, ctx: DecodeCreateContext): any {
             return new Date(encodedValue);
-        }
-    }
+        },
+    },
 };
 
-export function createFundamentalObjectEncoding(ctor: { new(x): any }): SzrPrototypeEncoding {
+export function createFundamentalObjectEncoding(ctor: {
+    new (x): any;
+}): SzrPrototypeEncoding {
     return {
         key: getLibraryString(ctor.name),
         prototypes: [ctor.prototype],
@@ -46,14 +47,11 @@ export function createFundamentalObjectEncoding(ctor: { new(x): any }): SzrProto
         decoder: {
             create(encodedValue: any, ctx: DecodeCreateContext): any {
                 return new ctor(encodedValue);
-            }
-        }
+            },
+        },
     };
 }
 
-export const fundamentalObjectEncodings = [
-    Number,
-    String,
-    Boolean
-].map(createFundamentalObjectEncoding);
-
+export const fundamentalObjectEncodings = [Number, String, Boolean].map(
+    createFundamentalObjectEncoding
+);

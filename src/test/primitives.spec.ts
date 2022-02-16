@@ -1,20 +1,28 @@
 import {
-    infinityEncoding, nanEncoding,
-    negInfinityEncoding, negZeroEncoding,
-    SzrOutput, undefinedEncoding
+    infinityEncoding,
+    nanEncoding,
+    negInfinityEncoding,
+    negZeroEncoding,
+    SzrOutput,
+    undefinedEncoding,
 } from "../lib/data-types";
-import test, {ExecutionContext, Macro} from "ava";
-import {decode, encode} from "../lib";
-import {stringify} from "./utils";
+import test, { ExecutionContext, Macro } from "ava";
+import { decode, encode } from "../lib";
+import { stringify } from "./utils";
 
-const primtiveTests: Macro<any> = (t: ExecutionContext, decoded: any, encoded: SzrOutput) => {
+const primtiveTests: Macro<any> = (
+    t: ExecutionContext,
+    decoded: any,
+    encoded: SzrOutput
+) => {
     const rDecoded = decode(encoded);
     t.is(rDecoded, decoded);
     const rEncoded = encode(decoded);
     t.is(rEncoded, encoded);
 };
 
-primtiveTests.title = (title, decoded) => title ?? `primitive - ${stringify(decoded)}`;
+primtiveTests.title = (title, decoded) =>
+    title ?? `primitive - ${stringify(decoded)}`;
 
 test(primtiveTests, 1, 1);
 test(primtiveTests, true, true);

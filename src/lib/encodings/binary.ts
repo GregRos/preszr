@@ -1,16 +1,16 @@
 import {
     DecodeCreateContext,
     EncodeContext,
-    SzrPrototypeEncoding
+    SzrPrototypeEncoding,
 } from "../interface";
-import {getLibraryString} from "../utils";
-import {fromByteArray, toByteArray} from "base64-js";
+import { getLibraryString } from "../utils";
+import { fromByteArray, toByteArray } from "base64-js";
 
 /**
  * A union of all typed array constructors.
  */
 export type TypedArrayConstructor =
-    Int8ArrayConstructor
+    | Int8ArrayConstructor
     | Int16ArrayConstructor
     | Int32ArrayConstructor
     | Uint8ArrayConstructor
@@ -21,7 +21,7 @@ export type TypedArrayConstructor =
     | Float64ArrayConstructor
     | DataViewConstructor;
 
-export const ArrayBufferEncoding: SzrPrototypeEncoding = {
+export const arrayBufferEncoding: SzrPrototypeEncoding = {
     key: getLibraryString("ArrayBuffer"),
     prototypes: [ArrayBuffer.prototype],
     encode(input: ArrayBuffer, ctx: EncodeContext): any {
@@ -32,23 +32,31 @@ export const ArrayBufferEncoding: SzrPrototypeEncoding = {
         create(encodedValue: string, ctx: DecodeCreateContext): any {
             const byteArray = toByteArray(encodedValue);
             return byteArray.buffer;
-        }
-    }
+        },
+    },
 };
 
-export function createTypedArrayEncoding(ctor: TypedArrayConstructor): SzrPrototypeEncoding {
+export function createTypedArrayEncoding(
+    ctor: TypedArrayConstructor
+): SzrPrototypeEncoding {
     return {
         key: getLibraryString(ctor.name),
         prototypes: [ctor.prototype],
-        encode(input: InstanceType<TypedArrayConstructor>, ctx: EncodeContext): any {
-            return ArrayBufferEncoding.encode(input.buffer, ctx);
+        encode(
+            input: InstanceType<TypedArrayConstructor>,
+            ctx: EncodeContext
+        ): any {
+            return arrayBufferEncoding.encode(input.buffer, ctx);
         },
         decoder: {
             create(encodedValue: any, ctx: DecodeCreateContext): any {
-                const buffer = ArrayBufferEncoding.decoder.create(encodedValue, ctx) as ArrayBuffer;
+                const buffer = arrayBufferEncoding.decoder.create(
+                    encodedValue,
+                    ctx
+                ) as ArrayBuffer;
                 return new ctor(buffer);
-            }
-        }
+            },
+        },
     };
 }
 
@@ -62,7 +70,9 @@ export const typedArrayCtors = [
     Int32Array,
     Float32Array,
     Float64Array,
-    DataView
+    DataView,
 ];
 
-export const typedArrayEncodings = typedArrayCtors.map(createTypedArrayEncoding);
+export const typedArrayEncodings = typedArrayCtors.map(
+    createTypedArrayEncoding
+);

@@ -1,7 +1,7 @@
 import test from "ava";
-import {decode, encode, Szr} from "../lib";
+import { decode, encode, Szr } from "../lib";
 
-test("simple object", t => {
+test("simple object", (t) => {
     const obj2 = {};
     const obj = {
         boolean: true,
@@ -17,46 +17,40 @@ test("simple object", t => {
         nullProtoObject: Object.create(null, {
             value: {
                 value: 5,
-                enumerable: true
-            }
+                enumerable: true,
+            },
         }),
-        map: new Map([[
-            1, 1
-        ]]),
+        map: new Map([[1, 1]]),
         set: new Set([5]),
         array: [1],
         date: new Date(),
         regexp: /abc/gi,
         ref1: obj2,
-        ref2: obj2
+        ref2: obj2,
     };
 
-    const decoded = decode<any>(
-        JSON.parse(JSON.stringify(encode(obj)))
-    );
+    const decoded = decode<any>(JSON.parse(JSON.stringify(encode(obj))));
     t.deepEqual(decoded, obj);
     t.is(decoded.ref1, decoded.ref2);
 });
 
-test("circular references", t => {
+test("circular references", (t) => {
     const obj = {
-        circular: null as any
+        circular: null as any,
     };
     obj.circular = obj;
-    const decoded = decode<any>(
-        JSON.parse(JSON.stringify(encode(obj)))
-    );
+    const decoded = decode<any>(JSON.parse(JSON.stringify(encode(obj))));
     t.is(decoded, decoded.circular);
 });
 
-test("custom class", t => {
+test("custom class", (t) => {
     class MyCustomClass {
         myMethod() {
             return 10;
         }
     }
     const szr = Szr({
-        encodings: [MyCustomClass]
+        encodings: [MyCustomClass],
     });
     const instance = new MyCustomClass();
     const decoded = szr.decode(

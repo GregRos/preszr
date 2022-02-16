@@ -1,4 +1,4 @@
-import {getLibraryString} from "./utils";
+import { getLibraryString } from "./utils";
 
 export type Version = string;
 
@@ -6,7 +6,11 @@ export interface SzrEncodingSpec {
     [key: number]: number;
 }
 
-export type SzrEncodedEntity = SzrPrimitive | string | SzrDataObject | SzrEncodedEntity[];
+export type SzrEncodedEntity =
+    | SzrPrimitive
+    | string
+    | SzrDataObject
+    | SzrEncodedEntity[];
 
 export interface SzrDataObject {
     [key: string]: SzrEncodedEntity;
@@ -19,7 +23,12 @@ export interface SzrMetadata {
 
 export type SzrEncodingKeys = string[];
 
-export type SzrHeader = [Version, SzrEncodingKeys, SzrEncodingSpec, SzrMetadata];
+export type SzrHeader = [
+    Version,
+    SzrEncodingKeys,
+    SzrEncodingSpec,
+    SzrMetadata
+];
 
 export type Reference = string;
 
@@ -73,7 +82,8 @@ export function tryEncodeScalar(num: any): SzrEncodedScalar | SzrPrimitive {
 
 export function tryDecodeScalar(candidate: any) {
     const t = typeof candidate;
-    if (t === "boolean" || t === "number" || candidate === null) return candidate;
+    if (t === "boolean" || t === "number" || candidate === null)
+        return candidate;
     switch (candidate) {
         case infinityEncoding:
             return Infinity;
@@ -94,4 +104,3 @@ export function tryDecodeScalar(candidate: any) {
     return noResultPlaceholder;
 }
 export const unrecognizedSymbolKey = getLibraryString("symbol?");
-

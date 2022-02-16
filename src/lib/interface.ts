@@ -1,5 +1,4 @@
-import {SzrEncodedEntity, SzrLeaf} from "./data-types";
-
+import { SzrEncodedEntity, SzrLeaf } from "./data-types";
 
 /**
  * The context used by the encoding process.
@@ -44,7 +43,11 @@ export interface Decoder {
     // Creates an instance of the entity without referencing any other encoded entities.
     create(encoded: SzrEncodedEntity, ctx: DecodeCreateContext): unknown;
     // Fills in additional data by resolving references to other entities.
-    init?(target: unknown, encoded: SzrEncodedEntity, ctx: DecodeInitContext): void;
+    init?(
+        target: unknown,
+        encoded: SzrEncodedEntity,
+        ctx: DecodeInitContext
+    ): void;
 }
 
 /**
@@ -72,7 +75,6 @@ export interface SzrSymbolEncoding {
     metadata?: any;
 }
 
-
 /**
  * A full prototype encoding.
  */
@@ -93,7 +95,12 @@ export type SzrEncoding = SzrPrototypeEncoding | SzrSymbolEncoding;
  * symbol or prototype encoding. You can also give symbol or prototype encoding specifier
  * if you want to be more explicit.
  */
-export type SzrEncodingSpecifier = symbol | Function | SzrPrototypeSpecifier | SzrPrototypeEncoding | SzrSymbolEncoding;
+export type SzrEncodingSpecifier =
+    | symbol
+    | Function
+    | SzrPrototypeSpecifier
+    | SzrPrototypeEncoding
+    | SzrSymbolEncoding;
 
 /**
  * Configuration for an Szr instance.
@@ -115,6 +122,5 @@ export interface SzrConfig {
  * Similar to Partial<T>, but recursively applied.
  */
 export type DeepPartial<T> = {
-    [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K]
+    [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K];
 };
-

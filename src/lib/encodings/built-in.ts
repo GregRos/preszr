@@ -1,15 +1,30 @@
-import {DecodeCreateContext, DecodeInitContext, EncodeContext, SzrPrototypeEncoding} from "../interface";
-import {getLibraryString} from "../utils";
-import {decodeObject, encodeObject, getPrototypeDecoder, ObjectEncoding} from "./basic";
+import {
+    DecodeCreateContext,
+    DecodeInitContext,
+    EncodeContext,
+    SzrPrototypeEncoding,
+} from "../interface";
+import { getLibraryString } from "../utils";
+import {
+    decodeObject,
+    encodeObject,
+    getPrototypeDecoder,
+    ObjectEncoding,
+} from "./basic";
 
 const errorProperties = ["stack", "name", "message"];
 const nonEnumerableProperties = ["stack", "name"];
-export function createErrorEncoding(errorCtor: {new(): Error}) {
+export function createErrorEncoding(errorCtor: { new (): Error }) {
     return {
         prototypes: [errorCtor.prototype],
         key: getLibraryString(errorCtor.name),
         encode(input: any, ctx: EncodeContext): any {
-            const encodedAsObject = encodeObject(input, ctx, false, errorProperties);
+            const encodedAsObject = encodeObject(
+                input,
+                ctx,
+                false,
+                errorProperties
+            );
             (ctx as any)._isImplicit = false;
             return encodedAsObject;
         },
@@ -19,8 +34,8 @@ export function createErrorEncoding(errorCtor: {new(): Error}) {
             },
             init(target: any, encoded: any, ctx: DecodeInitContext) {
                 decodeObject(target, encoded, ctx);
-            }
-        }
+            },
+        },
     } as SzrPrototypeEncoding;
 }
 
@@ -31,6 +46,5 @@ export const errorEncodings = [
     ReferenceError,
     TypeError,
     URIError,
-    SyntaxError
+    SyntaxError,
 ].map(createErrorEncoding);
-
