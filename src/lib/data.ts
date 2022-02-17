@@ -1,4 +1,6 @@
 import { getLibraryEncodingName } from "./utils";
+import { errorNoTypeInEnv } from "./errors";
+import { _BigInt } from "./opt-types";
 
 export type Version = string;
 
@@ -76,6 +78,12 @@ export function tryDecodeScalar(candidate: any) {
     if (t === "boolean" || t === "number" || candidate === null) {
         return candidate;
     }
+    if (t === "string") {
+        if (candidate.startsWith("B")) {
+            const result = _BigInt(candidate.slice(1));
+            return result;
+        }
+    }
     switch (candidate) {
         case infinityEncoding:
             return Infinity;
@@ -88,11 +96,7 @@ export function tryDecodeScalar(candidate: any) {
         case undefinedEncoding:
             return undefined;
     }
-    if (t === "string") {
-        if (candidate.startsWith("B")) {
-            return BigInt(candidate.slice(1));
-        }
-    }
+
     return noResultPlaceholder;
 }
 export const unrecognizedSymbolKey = getLibraryEncodingName("symbol?");

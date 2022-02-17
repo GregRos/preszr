@@ -226,10 +226,10 @@
     minimatch "^3.0.4"
     strip-json-comments "^3.1.1"
 
-"@gregros/eslint-config@^0.2.2":
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/@gregros/eslint-config/-/eslint-config-0.2.2.tgz#9c0a0f47148f7a1376772e3567add2ee3ae28eb7"
-  integrity sha512-B04EMSF+nr9hB7psOGKfcywmfC3NsQVre87ppuCeoIg1CyulzSjaLC6z0+K+eGAR/PnePilXy74gs+6aYacNnw==
+"@gregros/eslint-config@^0.2.7":
+  version "0.2.7"
+  resolved "https://registry.yarnpkg.com/@gregros/eslint-config/-/eslint-config-0.2.7.tgz#d734ae5b06bee69376b67044300ff8a644ca1788"
+  integrity sha512-4CT5+Kfrgam9oIq5bNHfDSZNgbVnF26x4/bvJWKypVcRRUbVEDTmWjW8yfOF5IC/elKPivIj5XQZUPaJhWnSGw==
   dependencies:
     eslint-config-prettier "^8.3.0"
     shelljs "^0.8.5"

@@ -3,7 +3,7 @@ import test, { UntitledMacro } from "ava";
 import { decode } from "../lib";
 import { createWithTitle, embedPreszrVersion, testDecodeMacro, testEncodeMacro } from "./utils";
 import { objectEncoding } from "../lib/encodings/basic";
-import { unrecognizedSymbolKey } from "../lib/data-types";
+import { unrecognizedSymbolKey } from "../lib/data";
 import {
     getImplicitSymbolEncodingName,
     getLibraryEncodingName,

@@ -92,17 +92,17 @@ yarn add preszr
 
 ## Unsupported Types
 
-`preszr` will intelligently encode all *platform-independent* objects, except for a few that are outside its scope. Those are explicitly *unsupported*. Here they are:
+`preszr` will intelligently encode all [*platform-independent*](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects) objects, except for a few that are outside its scope. Those are explicitly *unsupported*. Here they are:
 
-❌ `function`
+❌ `Function` and its variants
 
 ❌ `Promise`
 
 ❌ `WeakMap`, `WeakSet`, `WeakRef`, and so on.
 
-❌ `Iterator`, `Generator`, `GeneratorFunction`, and so on
+❌ `Generator`
 
-If you really want to see the list of supported types, see <u>supported.md</u>. You can also generate the list from any `Preszr` instance, as described in the `In-depth Configuration` section below.
+If you really want to see the list of supported types, see <u>supported.md</u>. You can also generate the list from any `Preszr` instance, as described in the `In-depth Configuration` section below.A	
 
 When `preszr` encounters a value it unsupports, it won't error - it will instead replace it with a marker that indicates an unsupported value was encountered. This is because it aims to reproduce the input object as closely as possible, and just ignoring some of the data doesn't do that.
 

@@ -1,0 +1,19 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es6",
+    "sourceMap": true,
+    "lib": [
+      "es6"
+    ],
+    "declaration": true,
+    "outDir": "../../dist/lib",
+    "rootDir": ".",
+    "allowJs": true
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.js"
+  ]
+}

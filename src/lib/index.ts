@@ -1,5 +1,5 @@
 import { Preszr as PreszrClass } from "./core";
-import { PreszrOutput } from "./data-types";
+import { PreszrOutput } from "./data";
 import { DeepPartial, PreszrConfig } from "./interface";
 
 export {

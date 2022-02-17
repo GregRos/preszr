@@ -6,7 +6,7 @@ import {
     Decoder
 } from "../interface";
 import { getClassName, getLibraryEncodingName } from "../utils";
-import { ScalarValue } from "../data-types";
+import { ScalarValue } from "../data";
 
 export const nullPlaceholder = {};
 function getAllOwnKeys(obj: object, onlyEnumerable: boolean): PropertyKey[] {
@@ -17,7 +17,7 @@ function getAllOwnKeys(obj: object, onlyEnumerable: boolean): PropertyKey[] {
     return keys;
 }
 
-export function decodeObject(target, input, ctx: InitContext) {
+export function decodeObject(target: any, input: any, ctx: InitContext) {
     let stringKeys = input;
     if (Array.isArray(input)) {
         let symbolKeys;
@@ -33,12 +33,12 @@ export function decodeObject(target, input, ctx: InitContext) {
 }
 
 export function encodeObject(
-    input,
+    input: any,
     ctx: EncodeContext,
     alsoNonEnumerable: boolean,
     explicitlyInclude = [] as string[]
 ) {
-    const strKeyObject = {};
+    const strKeyObject: any = {};
     let symbKeyObject: Record<string, ScalarValue> | undefined;
     for (const key of getAllOwnKeys(input, !alsoNonEnumerable)) {
         const value = input[key];
@@ -62,6 +62,7 @@ export function encodeObject(
 }
 
 export const objectEncoding: PrototypeEncoding = {
+    version: 0,
     prototypes: [Object.prototype],
     key: getLibraryEncodingName("object"),
     encode(input: any, ctx: EncodeContext): any {
@@ -86,6 +87,7 @@ function encodeAsSparseArray(input: any, ctx: EncodeContext) {
 
 export const arrayEncoding: PrototypeEncoding = {
     key: getLibraryEncodingName("array"),
+    version: 0,
     prototypes: [Array.prototype],
     encode(input: any, ctx: EncodeContext): any {
         const keys = Object.keys(input);
@@ -121,6 +123,7 @@ export const arrayEncoding: PrototypeEncoding = {
     }
 };
 export const nullPrototypeEncoding: PrototypeEncoding = {
+    version: 0,
     key: getLibraryEncodingName("null"),
     encode: getPrototypeEncoder(null),
     decoder: getPrototypeDecoder(null),
@@ -137,7 +140,7 @@ export function getPrototypeDecoder(proto: object | null) {
 }
 
 export function getPrototypeEncoder(proto: object | null) {
-    return (input, ctx: EncodeContext) => {
+    return (input: any, ctx: EncodeContext) => {
         const result = encodeObject(input, ctx, false);
         (ctx as any)._isImplicit = false;
         return result;
@@ -149,6 +152,7 @@ export const unsupportedEncodingKey = getLibraryEncodingName("unsupported");
 export function getUnsupportedEncoding(...protos: object[]): PrototypeEncoding {
     return {
         key: unsupportedEncodingKey,
+        version: 0,
         prototypes: protos,
         encode(input: any, ctx: EncodeContext): any {
             ctx.metadata = getClassName(input);

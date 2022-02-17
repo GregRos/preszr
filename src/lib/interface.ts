@@ -1,4 +1,4 @@
-import { EncodedEntity, ScalarValue } from "./data-types";
+import { EncodedEntity, ScalarValue } from "./data";
 
 /**
  * The context used by the encoding process.
@@ -54,8 +54,8 @@ export interface Decoder {
 export interface PrototypeEncodingSpecifier {
     // The key of the encoding. Must be unique. Will be inferred from the prototype if missing.
     key?: string;
-    // A 1-based version. Up the version
-    version: number;
+    // Optionally, a 1-based version number. If not supplied, defaults to 0.
+    version?: number;
     // The prototype. Required.
     prototype: object | null;
     // The decoding logic. If missing, the default decoding will be used, which will fill in
@@ -71,6 +71,7 @@ export interface PrototypeEncodingSpecifier {
  */
 export interface SymbolEncoding {
     key: string;
+    version?: number;
     symbol: symbol;
     metadata?: any;
 }
@@ -80,9 +81,9 @@ export interface SymbolEncoding {
  */
 export interface PrototypeEncoding {
     key: string;
+    version: number;
     prototypes: object[];
     decoder: Decoder;
-
     encode(input: any, ctx: EncodeContext): EncodedEntity;
 }
 

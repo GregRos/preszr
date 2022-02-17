@@ -6,7 +6,7 @@ import {
     getLibraryEncodingName
 } from "../lib/utils";
 import { getDummyCtx } from "./utils";
-import { makeFullEncoding } from "../lib/encoding-utils";
+import { makeFullEncoding } from "../lib/encodings/utils";
 
 const testSymbol = Symbol("test");
 

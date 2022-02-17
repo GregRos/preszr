@@ -29,6 +29,10 @@ export function defaultsDeep(target: any, ...sources: any[]) {
     return target;
 }
 
+export function isNumericString(input: string) {
+    return +input !== parseInt(input);
+}
+
 export function getLibraryEncodingName(str: string) {
     return `Preszr/${str}`;
 }
@@ -41,7 +45,7 @@ export function getImplicitClassEncodingName(str: string) {
     return getLibraryEncodingName(`class-${str}`);
 }
 
-export function getClassName(proto: object): string | null | undefined {
+export function getClassName(proto: any): string | null | undefined {
     return proto[Symbol.toStringTag] ?? proto.constructor?.name;
 }
 

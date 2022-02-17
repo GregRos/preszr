@@ -13,7 +13,7 @@ import {
     negInfinityEncoding,
     negZeroEncoding,
     undefinedEncoding
-} from "../lib/data-types";
+} from "../lib/data";
 import { arrayEncoding } from "../lib/encodings/basic";
 
 {

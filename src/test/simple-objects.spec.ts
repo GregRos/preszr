@@ -5,7 +5,7 @@ import {
     negInfinityEncoding,
     negZeroEncoding,
     undefinedEncoding
-} from "../lib/data-types";
+} from "../lib/data";
 import { combAttachHeader, stringify, preszrDefaultHeader } from "./utils";
 import { encode } from "../lib";
 

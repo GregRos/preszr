@@ -1,4 +1,4 @@
-import { Header, PreszrFormat } from "../lib/data-types";
+import { Header, PreszrFormat } from "../lib/data";
 import { version } from "../lib/utils";
 import { ExecutionContext, Macro } from "ava";
 import { cloneDeep } from "lodash";

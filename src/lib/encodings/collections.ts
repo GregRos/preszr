@@ -1,10 +1,11 @@
 import { CreateContext, InitContext, EncodeContext, PrototypeEncoding } from "../interface";
 import { getLibraryEncodingName } from "../utils";
-import { EncodedEntity, ScalarValue } from "../data-types";
+import { EncodedEntity, ScalarValue } from "../data";
 
 export const mapEncoding: PrototypeEncoding = {
-    prototypes: [Map.prototype],
     key: getLibraryEncodingName("Map"),
+    version: 0,
+    prototypes: [Map.prototype],
     encode(input: Map<any, any>, ctx: EncodeContext): any {
         const array = [] as [ScalarValue, ScalarValue][];
         for (const key of input.keys()) {
@@ -26,8 +27,9 @@ export const mapEncoding: PrototypeEncoding = {
 };
 
 export const setEncoding: PrototypeEncoding = {
-    prototypes: [Set.prototype],
     key: getLibraryEncodingName("Set"),
+    version: 0,
+    prototypes: [Set.prototype],
     encode(input: Set<any>, ctx: EncodeContext): EncodedEntity {
         const outArray = [] as ScalarValue[];
         for (const item of input) {

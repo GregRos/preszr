@@ -5,7 +5,7 @@ import {
     negZeroEncoding,
     PreszrOutput,
     undefinedEncoding
-} from "../lib/data-types";
+} from "../lib/data";
 import test, { ExecutionContext, Macro } from "ava";
 import { decode, encode } from "../lib";
 import { stringify } from "./utils";

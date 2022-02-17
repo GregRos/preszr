@@ -23,20 +23,17 @@ import {
     noResultPlaceholder,
     unrecognizedSymbolKey,
     EncodedEntity
-} from "./data-types";
+} from "./data";
 import {
     arrayEncoding,
     getUnsupportedEncoding,
     nullPlaceholder,
-    nullPrototypeEncoding,
-    objectEncoding
-} from "./encodings/basic";
-import { createFundamentalObjectEncoding, dateEncoding, regexpEncoding } from "./encodings/scalar";
+    objectEncoding,
+    builtinEncodings
+} from "./encodings";
 import { PreszrError } from "./errors";
-import { arrayBufferEncoding, typedArrayEncodings } from "./encodings/binary";
-import { mapEncoding, setEncoding } from "./encodings/collections";
-import { errorEncodings } from "./encodings/built-in";
-import { makeFullEncoding } from "./encoding-utils";
+import { getFullEncodingKey, makeFullEncoding, parseEncodingKey } from "./encodings/utils";
+import { unsupportedTypes } from "./unsupported";
 
 /**
  * The class used to encode and decode things in the preszr format.
@@ -52,7 +49,7 @@ export class Preszr {
     constructor(config?: DeepPartial<PreszrConfig>) {
         this.config = defaultsDeep({}, config, defaultConfig);
         const unsupportedEncoding = getUnsupportedEncoding(
-            ...builtinUnsupportedTypes,
+            ...unsupportedTypes,
             ...this.config.unsupported
         );
         this._addEncoding(...builtinEncodings, unsupportedEncoding, ...this.config.encodings);
@@ -129,7 +126,7 @@ export class Preszr {
         return objectEncoding;
     }
 
-    private _checkInputValid(input) {
+    private _checkInputHeader(input: any) {
         let reason = "" as string;
         let versionInfo = "" as any;
         if (!Array.isArray(input)) {
@@ -173,10 +170,11 @@ export class Preszr {
         const tryScalar = tryDecodeScalar(input);
         if (tryScalar !== noResultPlaceholder) return tryScalar;
         input = input as PreszrFormat;
-        this._checkInputValid(input);
+        this._checkInputHeader(input);
         const header = input?.[0];
 
         const [, encodingKeys, encodingSpec, metadata] = header;
+        const encodings = encodingKeys.map(parseEncodingKey);
         const targetArray = Array(input.length - 1);
         const needToInit = new Map<number, PrototypeEncoding>();
         const ctx: InitContext = {
@@ -184,12 +182,13 @@ export class Preszr {
             metadata: undefined
         };
 
-        for (const encodingKey of encodingKeys) {
-            if (!this._keyToEncoding.has(encodingKey) && encodingKey !== unrecognizedSymbolKey) {
+        for (const { version, key } of encodings) {
+            if (!this._keyToEncoding.has(key) && key !== unrecognizedSymbolKey) {
                 throw new PreszrError(
-                    `Encoding with key '${encodingKey}' not found. Preszr wasn't configured correctly.`
+                    `Encoding with key '${key}' not found. Preszr wasn't configured correctly.`
                 );
             }
+            const myEncoding = this._keyToEncoding.get();
         }
 
         for (let i = 1; i < input.length; i++) {
@@ -307,21 +306,3 @@ export const defaultConfig: PreszrConfig = {
     encodings: [],
     unsupported: []
 };
-
-const builtinEncodings = [
-    objectEncoding,
-    arrayEncoding,
-    nullPrototypeEncoding,
-    createFundamentalObjectEncoding(Number),
-    createFundamentalObjectEncoding(Boolean),
-    createFundamentalObjectEncoding(String),
-    dateEncoding,
-    regexpEncoding,
-    ...typedArrayEncodings,
-    arrayBufferEncoding,
-    mapEncoding,
-    setEncoding,
-    ...errorEncodings
-] as EncodingSpecifier[];
-
-const builtinUnsupportedTypes = [WeakMap.prototype, WeakSet.prototype, Function.prototype];

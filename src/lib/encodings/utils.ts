@@ -1,18 +1,19 @@
-import { PreszrError } from "./errors";
-import { getPrototypeDecoder, getPrototypeEncoder, nullPlaceholder } from "./encodings/basic";
+import { PreszrError } from "../errors";
+import { getPrototypeDecoder, getPrototypeEncoder, nullPlaceholder } from "./basic";
 import {
     getClassName,
     getImplicitClassEncodingName,
     getImplicitSymbolEncodingName,
-    getSymbolName
-} from "./utils";
+    getSymbolName,
+    isNumericString
+} from "../utils";
 import {
     Encoding,
     EncodingSpecifier,
     PrototypeEncoding,
     PrototypeEncodingSpecifier,
     SymbolEncoding
-} from "./interface";
+} from "../interface";
 
 export function makeSymbolEncoding(x: SymbolEncoding | symbol): SymbolEncoding {
     if (typeof x !== "symbol") {
@@ -40,6 +41,8 @@ export function makeProtoEncodingByCtor(ctor: Function) {
 
 export function makeProtoEncoding(specifier: PrototypeEncodingSpecifier): PrototypeEncoding {
     const encoding = {} as PrototypeEncoding;
+
+    // protype CAN be `null`.
     if (specifier.prototype === undefined) {
         throw new PreszrError("Encoding must specify a prototype.");
     }
@@ -57,6 +60,14 @@ export function makeProtoEncoding(specifier: PrototypeEncodingSpecifier): Protot
     encoding.key = specifier.key ?? getImplicitClassEncodingName(className!);
     encoding.encode = specifier.encode ?? getPrototypeEncoder(proto);
     encoding.decoder = specifier.decoder ?? getPrototypeDecoder(proto);
+    const v = specifier.version;
+    if (v != null && (typeof v !== "number" || !Number.isSafeInteger(v) || v < 0)) {
+        throw new PreszrError(
+            `Provided version for encoding ${specifier.key} must be an safe, non-negative integer, but was: ${v}.`
+        );
+    }
+    encoding.version = specifier.version == null ? 0 : specifier.version;
+
     return encoding;
 }
 
@@ -67,7 +78,7 @@ export function makeFullEncoding(specifier: EncodingSpecifier): Encoding {
     if (typeof specifier === "function") {
         return makeProtoEncodingByCtor(specifier);
     }
-    if ("prototype" in specifier) return makeProtoEncoding(specifier);
+    if ("prototype" in specifier) specifier = makeProtoEncoding(specifier);
     if (!specifier.prototypes || specifier.prototypes.length === 0) {
         throw new PreszrError("Encoding must specify prototypes.");
     }
@@ -77,5 +88,30 @@ export function makeFullEncoding(specifier: EncodingSpecifier): Encoding {
     if (!specifier.key) {
         throw new PreszrError("Multi-prototype specifier must provide a key.");
     }
+    const v = specifier.version;
+    if (typeof v !== "number" || !Number.isSafeInteger(v) || v < 0) {
+        throw new PreszrError(
+            `Version for encoding ${specifier.key} must be an safe, non-negative integer, but was: ${v}.`
+        );
+    }
     return specifier;
+}
+
+export function getFullEncodingKey(enc: Encoding) {
+    return `${enc.key}.${enc.version}`;
+}
+
+export function parseEncodingKey(key: string) {
+    const lastDot = key.lastIndexOf(".");
+    const strVersion = key.slice(lastDot + 1);
+    if (!isNumericString(strVersion)) {
+        throw new PreszrError(`Version in encoding key ${key} wasn't numeric.`);
+    }
+    if (strVersion.trim() === "") {
+        throw new PreszrError("Encoding name was empty.");
+    }
+    return {
+        key: key.slice(0, lastDot),
+        version: +strVersion
+    };
 }
