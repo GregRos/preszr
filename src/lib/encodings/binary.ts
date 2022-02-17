@@ -1,8 +1,4 @@
-import {
-    DecodeCreateContext,
-    EncodeContext,
-    PrototypeEncoding,
-} from "../interface";
+import { CreateContext, EncodeContext, PrototypeEncoding } from "../interface";
 import { getLibraryEncodingName } from "../utils";
 import { fromByteArray, toByteArray } from "base64-js";
 
@@ -29,34 +25,26 @@ export const arrayBufferEncoding: PrototypeEncoding = {
         return b64;
     },
     decoder: {
-        create(encodedValue: string, ctx: DecodeCreateContext): any {
+        create(encodedValue: string, ctx: CreateContext): any {
             const byteArray = toByteArray(encodedValue);
             return byteArray.buffer;
-        },
-    },
+        }
+    }
 };
 
-export function createTypedArrayEncoding(
-    ctor: TypedArrayConstructor
-): PrototypeEncoding {
+export function createTypedArrayEncoding(ctor: TypedArrayConstructor): PrototypeEncoding {
     return {
         key: getLibraryEncodingName(ctor.name),
         prototypes: [ctor.prototype],
-        encode(
-            input: InstanceType<TypedArrayConstructor>,
-            ctx: EncodeContext
-        ): any {
+        encode(input: InstanceType<TypedArrayConstructor>, ctx: EncodeContext): any {
             return arrayBufferEncoding.encode(input.buffer, ctx);
         },
         decoder: {
-            create(encodedValue: any, ctx: DecodeCreateContext): any {
-                const buffer = arrayBufferEncoding.decoder.create(
-                    encodedValue,
-                    ctx
-                ) as ArrayBuffer;
+            create(encodedValue: any, ctx: CreateContext): any {
+                const buffer = arrayBufferEncoding.decoder.create(encodedValue, ctx) as ArrayBuffer;
                 return new ctor(buffer);
-            },
-        },
+            }
+        }
     };
 }
 
@@ -70,9 +58,7 @@ export const typedArrayCtors = [
     Int32Array,
     Float32Array,
     Float64Array,
-    DataView,
+    DataView
 ];
 
-export const typedArrayEncodings = typedArrayCtors.map(
-    createTypedArrayEncoding
-);
+export const typedArrayEncodings = typedArrayCtors.map(createTypedArrayEncoding);

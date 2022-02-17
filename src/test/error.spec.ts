@@ -3,23 +3,16 @@ import { decode } from "../lib";
 import { encodeDecodeMacro, testEncodeMacro } from "./utils";
 import { getLibraryEncodingName } from "../lib/utils";
 
-export const errorDecodeMacro: any = (
-    t: ExecutionContext,
-    decoded: any,
-    encoded: any
-) => {
+export const errorDecodeMacro: any = (t: ExecutionContext, decoded: any, encoded: any) => {
     const rDecoded = decode<any>(encoded);
     t.is(rDecoded.name, decoded.name);
     t.is(rDecoded.stack, decoded.stack);
     t.is(rDecoded.message, decoded.message);
-    t.deepEqual(
-        Object.getPrototypeOf(rDecoded),
-        Object.getPrototypeOf(decoded)
-    );
+    t.deepEqual(Object.getPrototypeOf(rDecoded), Object.getPrototypeOf(decoded));
     t.deepEqual(rDecoded, decoded);
 };
 
-test("works on Error", (t) => {
+test("works on Error", t => {
     const err1 = new Error();
     const err2 = new Error();
     t.deepEqual(err1, err2);
@@ -27,7 +20,7 @@ test("works on Error", (t) => {
 
 const macro = encodeDecodeMacro({
     encode: testEncodeMacro,
-    decode: errorDecodeMacro,
+    decode: errorDecodeMacro
 });
 const err1 = new Error("hi");
 
@@ -36,11 +29,11 @@ test("regular error", macro, err1, [
     {
         stack: "2",
         name: "3",
-        message: "4",
+        message: "4"
     },
     err1.stack,
     err1.name,
-    err1.message,
+    err1.message
 ]);
 
 const err2 = new SyntaxError("blah");
@@ -50,11 +43,11 @@ test("error subclass", macro, err2, [
     {
         stack: "2",
         name: "3",
-        message: "4",
+        message: "4"
     },
     err2.stack,
     err2.name,
-    err2.message,
+    err2.message
 ]);
 
 class SubError extends Error {
@@ -73,7 +66,7 @@ test(
             t.is(rDecoded.stack, decoded.stack);
             t.is(rDecoded.message, decoded.message);
             t.is(Object.getPrototypeOf(rDecoded), Error.prototype);
-        },
+        }
     }),
     err3,
     [
@@ -81,10 +74,10 @@ test(
         {
             stack: "3",
             name: "2",
-            message: "4",
+            message: "4"
         },
         err3.name,
         err3.stack,
-        err3.message,
+        err3.message
     ]
 );

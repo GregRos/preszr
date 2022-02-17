@@ -9,11 +9,11 @@ export {
     PrototypeEncodingSpecifier,
     Decoder,
     SymbolEncoding,
-    DecodeCreateContext,
-    DecodeInitContext,
+    CreateContext,
+    InitContext,
     DeepPartial,
     PreszrConfig,
-    EncodeContext,
+    EncodeContext
 } from "./interface";
 const defaultPreszr = new PreszrClass();
 
@@ -27,8 +27,7 @@ export const encode = (value: unknown): PreszrOutput => defaultPreszr.encode(val
  * Decodes a value using preszr with the default settings.
  * @param encoded The default
  */
-export const decode = <T = unknown>(encoded: PreszrOutput): T =>
-    defaultPreszr.decode(encoded) as T;
+export const decode = <T = unknown>(encoded: PreszrOutput): T => defaultPreszr.decode(encoded) as T;
 
 /**
  * Creates a new `Preszr` instance. Can be called with or without `new`.

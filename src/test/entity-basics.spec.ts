@@ -2,11 +2,11 @@ import test from "ava";
 import { decode, encode } from "../lib";
 import { version as pkgVersion } from "../lib/utils";
 
-test("encoding - entity is array", (t) => {
+test("encoding - entity is array", t => {
     t.true(Array.isArray(encode({})));
 });
 
-test("decoding - header structure", (t) => {
+test("decoding - header structure", t => {
     const [header] = encode({}) as any[];
     const [version, encodingKeys, encodingSpec, metadata] = header;
     t.is(version, pkgVersion);
@@ -23,7 +23,7 @@ function isBadVersionError(err: Error) {
     return err.message.includes("version");
 }
 
-test("decoding - error when trying to decode anomalous object", (t) => {
+test("decoding - error when trying to decode anomalous object", t => {
     const badPayloads = [
         {}, // non-array
         [], // no header
@@ -33,7 +33,7 @@ test("decoding - error when trying to decode anomalous object", (t) => {
         [["g", {}, {}], 1], // non-numeric version
         [[1, {}, {}], 1], // non-string version
         [[pkgVersion], 1], // no encoding info
-        [[pkgVersion, {}], 1], // no metadata,
+        [[pkgVersion, {}], 1] // no metadata,
     ] as any[];
 
     for (const payload of badPayloads) {
@@ -42,13 +42,13 @@ test("decoding - error when trying to decode anomalous object", (t) => {
     }
 });
 
-test("decoding - error when trying to decode wrong version", (t) => {
+test("decoding - error when trying to decode wrong version", t => {
     const encoded = [[pkgVersion + 1, [], {}, {}], {}] as any;
     const err = t.throws(() => decode(encoded));
     t.true(isBadVersionError(err));
 });
 
-test("decoding error - unknown encoding", (t) => {
+test("decoding error - unknown encoding", t => {
     const encoded = [[pkgVersion, ["test"], { 1: 0 }, {}], 0] as any;
     const err = t.throws(() => decode(encoded));
     t.regex(err.message, /not found/);

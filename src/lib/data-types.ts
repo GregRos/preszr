@@ -6,11 +6,7 @@ export interface EncodingSpec {
     [key: number]: number;
 }
 
-export type EncodedEntity =
-    | Primitive
-    | string
-    | DataObject
-    | EncodedEntity[];
+export type EncodedEntity = Primitive | string | DataObject | EncodedEntity[];
 
 export interface DataObject {
     [key: string]: EncodedEntity;
@@ -23,12 +19,7 @@ export interface Metadata {
 
 export type EncodingKeys = string[];
 
-export type Header = [
-    Version,
-    EncodingKeys,
-    EncodingSpec,
-    Metadata
-];
+export type Header = [Version, EncodingKeys, EncodingSpec, Metadata];
 
 export type Reference = string;
 
@@ -82,8 +73,9 @@ export function tryEncodeScalar(num: any): EncodedScalar | Primitive {
 
 export function tryDecodeScalar(candidate: any) {
     const t = typeof candidate;
-    if (t === "boolean" || t === "number" || candidate === null)
+    if (t === "boolean" || t === "number" || candidate === null) {
         return candidate;
+    }
     switch (candidate) {
         case infinityEncoding:
             return Infinity;

@@ -1,9 +1,4 @@
-import {
-    DecodeCreateContext,
-    DecodeInitContext,
-    EncodeContext,
-    PrototypeEncoding,
-} from "../interface";
+import { CreateContext, InitContext, EncodeContext, PrototypeEncoding } from "../interface";
 import { getLibraryEncodingName } from "../utils";
 import { EncodedEntity, ScalarValue } from "../data-types";
 
@@ -19,19 +14,15 @@ export const mapEncoding: PrototypeEncoding = {
         return array;
     },
     decoder: {
-        create(encodedValue: any, ctx: DecodeCreateContext): any {
+        create(encodedValue: any, ctx: CreateContext): any {
             return new Map();
         },
-        init(
-            target: Map<any, any>,
-            encoded: [ScalarValue, ScalarValue][],
-            ctx: DecodeInitContext
-        ) {
+        init(target: Map<any, any>, encoded: [ScalarValue, ScalarValue][], ctx: InitContext) {
             for (const [key, value] of encoded) {
                 target.set(ctx.decode(key), ctx.decode(value));
             }
-        },
-    },
+        }
+    }
 };
 
 export const setEncoding: PrototypeEncoding = {
@@ -48,10 +39,10 @@ export const setEncoding: PrototypeEncoding = {
         create(): any {
             return new Set();
         },
-        init(target: Set<any>, encoded: ScalarValue[], ctx: DecodeInitContext) {
+        init(target: Set<any>, encoded: ScalarValue[], ctx: InitContext) {
             for (const item of encoded) {
                 target.add(ctx.decode(item));
             }
-        },
-    },
+        }
+    }
 };

@@ -3,7 +3,7 @@ import { version } from "../lib/utils";
 import { ExecutionContext, Macro } from "ava";
 import { cloneDeep } from "lodash";
 import { Preszr } from "../lib/core";
-import { DecodeInitContext, EncodeContext } from "../lib";
+import { InitContext, EncodeContext } from "../lib";
 
 export function stringify(value: any) {
     if (typeof value === "object") {
@@ -58,11 +58,7 @@ export function simplifyEncoding(encoding: PreszrFormat) {
 }
 
 export function createPreszrRep([encodingSpec, meta], ...arr): PreszrFormat {
-    const header = [
-        version,
-        ...getEncodingComponent(encodingSpec),
-        meta,
-    ] as Header;
+    const header = [version, ...getEncodingComponent(encodingSpec), meta] as Header;
     return [header, ...arr];
 }
 
@@ -98,17 +94,12 @@ export const testDecodeMacro: any = (
     t.deepEqual(rDecoded, decoded);
 };
 
-export const testEncodeMacroBindPreszr = (preszr) => (a, b, c) =>
-    testEncodeMacro(a, b, c, preszr);
+export const testEncodeMacroBindPreszr = preszr => (a, b, c) => testEncodeMacro(a, b, c, preszr);
 
-export const testDecodeMacroBindPreszr = (preszr) => (a, b, c) =>
-    testDecodeMacro(a, b, c, preszr);
+export const testDecodeMacroBindPreszr = preszr => (a, b, c) => testDecodeMacro(a, b, c, preszr);
 
-export const combAttachHeader = (titleFunc) => {
-    const attachHeader = (decoded, encoded) => [
-        decoded,
-        preszrDefaultHeader(...encoded),
-    ];
+export const combAttachHeader = titleFunc => {
+    const attachHeader = (decoded, encoded) => [decoded, preszrDefaultHeader(...encoded)];
     return [
         createWithTitle(
             testEncodeMacro,
@@ -119,15 +110,15 @@ export const combAttachHeader = (titleFunc) => {
             testDecodeMacro,
             attachHeader,
             (title, ...args) => `decode:: ${title ?? titleFunc(...args)}`
-        ),
+        )
     ] as [Macro<any>, Macro<any>];
 };
 
 export function getDummyCtx() {
     return {
-        encode: (x) => x,
-        decode: (x) => x,
-    } as EncodeContext & DecodeInitContext;
+        encode: x => x,
+        decode: x => x
+    } as EncodeContext & InitContext;
 }
 
 export interface EncodeDecodeMacros {
@@ -141,13 +132,13 @@ export const encodeDecodeMacro = (args: EncodeDecodeMacros) => {
         createWithTitle(
             args.encode,
             (decoded, encoded, preszr) => [decoded, embedPreszrVersion(encoded), preszr],
-            (title) => `encode :: ${title}`
+            title => `encode :: ${title}`
         ),
         createWithTitle(
             args.decode,
             (decoded, encoded, preszr) => [decoded, embedPreszrVersion(encoded), preszr],
-            (title) => `decode :: ${title}`
-        ),
+            title => `decode :: ${title}`
+        )
     ] as [any, any];
 };
 

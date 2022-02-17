@@ -3,7 +3,7 @@ import { PrototypeEncoding, SymbolEncoding } from "../lib";
 import {
     getImplicitClassEncodingName,
     getImplicitSymbolEncodingName,
-    getLibraryEncodingName,
+    getLibraryEncodingName
 } from "../lib/utils";
 import { getDummyCtx } from "./utils";
 import { makeFullEncoding } from "../lib/encoding-utils";
@@ -22,40 +22,37 @@ class TestClass2 {
 TestClass.prototype.field = 5;
 TestClass2.prototype.field = 10;
 
-test("implicit class encoding name", (t) => {
-    t.is(
-        getImplicitSymbolEncodingName("test"),
-        getLibraryEncodingName("symbol-test")
-    );
+test("implicit class encoding name", t => {
+    t.is(getImplicitSymbolEncodingName("test"), getLibraryEncodingName("symbol-test"));
 });
 
-test("implicit symbol encoding name", (t) => {
+test("implicit symbol encoding name", t => {
     t.is(getImplicitClassEncodingName("test"), getLibraryEncodingName("class-test"));
 });
 
-test("from symbol with name", (t) => {
+test("from symbol with name", t => {
     const encoding = makeFullEncoding(testSymbol);
     t.deepEqual(encoding, {
         key: getImplicitSymbolEncodingName("test"),
-        symbol: testSymbol,
+        symbol: testSymbol
     });
 });
 
-test("error when trying with symbol without name", (t) => {
+test("error when trying with symbol without name", t => {
     // eslint-disable-next-line symbol-description
     const err = t.throws(() => makeFullEncoding(Symbol()));
     t.true(err.message.includes(`Failed to detect symbol name`));
 });
 
-test("symbol encoding with explicit name unchanged", (t) => {
+test("symbol encoding with explicit name unchanged", t => {
     const encoding: SymbolEncoding = {
         key: "a",
-        symbol: testSymbol,
+        symbol: testSymbol
     };
     t.deepEqual(encoding, makeFullEncoding(encoding));
 });
 
-test("encoding from class", (t) => {
+test("encoding from class", t => {
     const encoding = makeFullEncoding(TestClass) as PrototypeEncoding;
     t.is(encoding.key, getImplicitClassEncodingName("TestClass"));
     t.is(encoding.prototypes.length, 1);
@@ -65,9 +62,9 @@ test("encoding from class", (t) => {
     t.deepEqual(result, { field: 5 });
 });
 
-test("encoding from prototype", (t) => {
+test("encoding from prototype", t => {
     const encoding = makeFullEncoding({
-        prototype: TestClass.prototype,
+        prototype: TestClass.prototype
     }) as PrototypeEncoding;
     t.is(encoding.key, getImplicitClassEncodingName("TestClass"));
     t.is(encoding.prototypes.length, 1);
@@ -78,15 +75,15 @@ test("encoding from prototype", (t) => {
     t.deepEqual(result, { field: 5 });
 });
 
-test("encoding with multiple prototypes", (t) => {
+test("encoding with multiple prototypes", t => {
     const f = () => 1;
     const encoding = makeFullEncoding({
         prototypes: [class {}, TestClass.prototype],
         key: "blah",
         encode: f,
         decoder: {
-            create: f,
-        },
+            create: f
+        }
     }) as PrototypeEncoding;
 
     t.is(encoding.key, "blah");
@@ -94,51 +91,48 @@ test("encoding with multiple prototypes", (t) => {
     t.is(encoding.encode, f);
 });
 
-test("encoding prototype field", (t) => {
+test("encoding prototype field", t => {
     const encoding = makeFullEncoding({
-        prototype: TestClass.prototype,
+        prototype: TestClass.prototype
     }) as PrototypeEncoding;
     t.is(encoding.key, getImplicitClassEncodingName("TestClass"));
-    t.deepEqual(
-        encoding.decoder.create({}, {} as any),
-        Object.create(TestClass.prototype)
-    );
+    t.deepEqual(encoding.decoder.create({}, {} as any), Object.create(TestClass.prototype));
 });
 
-test("error - nameless ctor without key", (t) => {
+test("error - nameless ctor without key", t => {
     const err = t.throws(() => makeFullEncoding(class {}));
     t.true(err.message.includes("no name"));
 });
 
-test("error - cannot get prototype from ctor", (t) => {
+test("error - cannot get prototype from ctor", t => {
     const brokenCtor = function () {};
     brokenCtor.prototype = null;
     const err = t.throws(() => makeFullEncoding(brokenCtor));
     t.regex(err.message, /prototype from constructor/);
 });
 
-test("error - multiple prototypes provide key", (t) => {
+test("error - multiple prototypes provide key", t => {
     const err = t.throws(() =>
         makeFullEncoding({
             prototypes: [{}, {}],
             encode: (() => {}) as any,
-            decoder: {} as any,
+            decoder: {} as any
         } as any)
     );
     t.regex(err.message, /provide a key/);
 });
 
-test("error - multiple prototypes, provide encoder/decoder", (t) => {
+test("error - multiple prototypes, provide encoder/decoder", t => {
     const err = t.throws(() =>
         makeFullEncoding({
             prototypes: [{}, {}],
-            key: "blah",
+            key: "blah"
         } as any)
     );
     t.regex(err.message, /decoder.*encode/);
 });
 
-test("error - no prototype(s)", (t) => {
+test("error - no prototype(s)", t => {
     const err = t.throws(() => makeFullEncoding({} as any));
 
     t.regex(err.message, /specify prototypes/);

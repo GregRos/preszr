@@ -1,9 +1,9 @@
 import {
     EncodeContext,
     PrototypeEncoding,
-    DecodeCreateContext,
-    DecodeInitContext,
-    Decoder,
+    CreateContext,
+    InitContext,
+    Decoder
 } from "../interface";
 import { getClassName, getLibraryEncodingName } from "../utils";
 import { ScalarValue } from "../data-types";
@@ -12,14 +12,12 @@ export const nullPlaceholder = {};
 function getAllOwnKeys(obj: object, onlyEnumerable: boolean): PropertyKey[] {
     const keys = Reflect.ownKeys(obj);
     if (onlyEnumerable) {
-        return keys.filter((x) =>
-            Object.prototype.propertyIsEnumerable.call(obj, x)
-        );
+        return keys.filter(x => Object.prototype.propertyIsEnumerable.call(obj, x));
     }
     return keys;
 }
 
-export function decodeObject(target, input, ctx: DecodeInitContext) {
+export function decodeObject(target, input, ctx: InitContext) {
     let stringKeys = input;
     if (Array.isArray(input)) {
         let symbolKeys;
@@ -70,13 +68,13 @@ export const objectEncoding: PrototypeEncoding = {
         return encodeObject(input, ctx, false);
     },
     decoder: {
-        create(encodedValue: any, ctx: DecodeCreateContext): any {
+        create(encodedValue: any, ctx: CreateContext): any {
             return {};
         },
-        init(target: any, encoded: any, ctx: DecodeInitContext) {
+        init(target: any, encoded: any, ctx: InitContext) {
             decodeObject(target, encoded, ctx);
-        },
-    },
+        }
+    }
 };
 
 function encodeAsSparseArray(input: any, ctx: EncodeContext) {
@@ -107,10 +105,10 @@ export const arrayEncoding: PrototypeEncoding = {
         return newArray;
     },
     decoder: {
-        create(encodedValue: any, ctx: DecodeCreateContext): any {
+        create(encodedValue: any, ctx: CreateContext): any {
             return [];
         },
-        init(target: any, input: any, ctx: DecodeInitContext) {
+        init(target: any, input: any, ctx: InitContext) {
             if (!Array.isArray(input)) {
                 // Decode similarly to objects
                 decodeObject(target, input, ctx);
@@ -119,22 +117,22 @@ export const arrayEncoding: PrototypeEncoding = {
             for (let i = 0; i < input.length; i++) {
                 target[i] = ctx.decode(input[i]);
             }
-        },
-    },
+        }
+    }
 };
 export const nullPrototypeEncoding: PrototypeEncoding = {
     key: getLibraryEncodingName("null"),
     encode: getPrototypeEncoder(null),
     decoder: getPrototypeDecoder(null),
-    prototypes: [nullPlaceholder],
+    prototypes: [nullPlaceholder]
 };
 
 export function getPrototypeDecoder(proto: object | null) {
     return {
         init: objectEncoding.decoder.init,
-        create(encodedValue: any, ctx: DecodeCreateContext): any {
+        create(encodedValue: any, ctx: CreateContext): any {
             return Object.create(proto);
-        },
+        }
     } as Decoder;
 }
 
@@ -148,9 +146,7 @@ export function getPrototypeEncoder(proto: object | null) {
 
 export const unsupportedEncodingKey = getLibraryEncodingName("unsupported");
 
-export function getUnsupportedEncoding(
-    ...protos: object[]
-): PrototypeEncoding {
+export function getUnsupportedEncoding(...protos: object[]): PrototypeEncoding {
     return {
         key: unsupportedEncodingKey,
         prototypes: protos,
@@ -159,9 +155,9 @@ export function getUnsupportedEncoding(
             return 0;
         },
         decoder: {
-            create(encodedValue: any, ctx: DecodeCreateContext): any {
+            create(encodedValue: any, ctx: CreateContext): any {
                 return undefined;
-            },
-        },
+            }
+        }
     };
 }

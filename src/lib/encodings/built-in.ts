@@ -1,9 +1,4 @@
-import {
-    DecodeCreateContext,
-    DecodeInitContext,
-    EncodeContext,
-    PrototypeEncoding,
-} from "../interface";
+import { CreateContext, InitContext, EncodeContext, PrototypeEncoding } from "../interface";
 import { getLibraryEncodingName } from "../utils";
 import { decodeObject, encodeObject } from "./basic";
 
@@ -13,23 +8,18 @@ export function createErrorEncoding(errorCtor: { new (): Error }) {
         prototypes: [errorCtor.prototype],
         key: getLibraryEncodingName(errorCtor.name),
         encode(input: any, ctx: EncodeContext): any {
-            const encodedAsObject = encodeObject(
-                input,
-                ctx,
-                false,
-                errorProperties
-            );
+            const encodedAsObject = encodeObject(input, ctx, false, errorProperties);
             (ctx as any)._isImplicit = false;
             return encodedAsObject;
         },
         decoder: {
-            create(encodedValue: any, ctx: DecodeCreateContext): any {
+            create(encodedValue: any, ctx: CreateContext): any {
                 return new errorCtor();
             },
-            init(target: any, encoded: any, ctx: DecodeInitContext) {
+            init(target: any, encoded: any, ctx: InitContext) {
                 decodeObject(target, encoded, ctx);
-            },
-        },
+            }
+        }
     } as PrototypeEncoding;
 }
 
@@ -40,5 +30,5 @@ export const errorEncodings = [
     ReferenceError,
     TypeError,
     URIError,
-    SyntaxError,
+    SyntaxError
 ].map(createErrorEncoding);

@@ -11,6 +11,7 @@ export interface EncodeContext {
      * @param value
      */
     encode(value: any): ScalarValue;
+
     /**
      * Sets the metadata for this entity. The metadata can be any JSON-legal value,
      * including an object. It doesn't do anything, but can be accessed while decoding.
@@ -22,7 +23,7 @@ export interface EncodeContext {
  * The context used by the create stage of the decoding process. Only
  * exposes the entity's metadata.
  */
-export interface DecodeCreateContext {
+export interface CreateContext {
     // The metadata for this encoded entity.
     metadata: any;
 }
@@ -31,7 +32,7 @@ export interface DecodeCreateContext {
  * The context used by the init stage of the decoding process. Allows
  * resolving references to other entities.
  */
-export interface DecodeInitContext extends DecodeCreateContext {
+export interface InitContext extends CreateContext {
     // Resolves references and decodes encoded scalars. This isn't a recursive call.
     decode(value: ScalarValue): unknown;
 }
@@ -41,13 +42,10 @@ export interface DecodeInitContext extends DecodeCreateContext {
  */
 export interface Decoder {
     // Creates an instance of the entity without referencing any other encoded entities.
-    create(encoded: EncodedEntity, ctx: DecodeCreateContext): unknown;
+    create(encoded: EncodedEntity, ctx: CreateContext): unknown;
+
     // Fills in additional data by resolving references to other entities.
-    init?(
-        target: unknown,
-        encoded: EncodedEntity,
-        ctx: DecodeInitContext
-    ): void;
+    init?(target: unknown, encoded: EncodedEntity, ctx: InitContext): void;
 }
 
 /**
@@ -56,6 +54,8 @@ export interface Decoder {
 export interface PrototypeEncodingSpecifier {
     // The key of the encoding. Must be unique. Will be inferred from the prototype if missing.
     key?: string;
+    // A 1-based version. Up the version
+    version: number;
     // The prototype. Required.
     prototype: object | null;
     // The decoding logic. If missing, the default decoding will be used, which will fill in
@@ -82,6 +82,7 @@ export interface PrototypeEncoding {
     key: string;
     prototypes: object[];
     decoder: Decoder;
+
     encode(input: any, ctx: EncodeContext): EncodedEntity;
 }
 

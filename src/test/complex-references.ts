@@ -2,7 +2,7 @@ import test from "ava";
 import { decode, encode } from "../lib";
 import { preszrDefaultHeader } from "./utils";
 
-test("object references same object twice", (t) => {
+test("object references same object twice", t => {
     const o = {};
     const b = { o1: o, o2: o };
     const encoded = encode(b);
@@ -12,7 +12,7 @@ test("object references same object twice", (t) => {
     t.is(B.o1, B.o2);
 });
 
-test("one object, circular reference", (t) => {
+test("one object, circular reference", t => {
     const a = {} as any;
     a.a = a;
     const encoded = encode(a);
@@ -21,7 +21,7 @@ test("one object, circular reference", (t) => {
     t.is(decoded.a, decoded);
 });
 
-test("one array, circular reference", (t) => {
+test("one array, circular reference", t => {
     const a = [] as any;
     a.push(a);
     const encoded = encode(a);
@@ -30,7 +30,7 @@ test("one array, circular reference", (t) => {
     t.is(decoded[0], decoded);
 });
 
-test("two objects, circular references", (t) => {
+test("two objects, circular references", t => {
     const a = {} as any;
     const b = {} as any;
     a.b = b;

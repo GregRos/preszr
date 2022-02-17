@@ -4,7 +4,7 @@ import {
     encodeDecodeMacro,
     stringify,
     testDecodeMacro,
-    testEncodeMacro,
+    testEncodeMacro
 } from "./utils";
 import test from "ava";
 import {
@@ -12,7 +12,7 @@ import {
     nanEncoding,
     negInfinityEncoding,
     negZeroEncoding,
-    undefinedEncoding,
+    undefinedEncoding
 } from "../lib/data-types";
 import { arrayEncoding } from "../lib/encodings/basic";
 
@@ -35,7 +35,7 @@ import { arrayEncoding } from "../lib/encodings/basic";
     test("array [[]]", simpleArrayTest, [[]], [["2"], []]);
 }
 
-test("deepEqual assertions work for sparse arrays", (t) => {
+test("deepEqual assertions work for sparse arrays", t => {
     const sparse1 = createSparseArray({ 5: 1, 6: 1 });
     sparse1[5] = 1;
     sparse1[6] = 1;
@@ -47,25 +47,23 @@ test("deepEqual assertions work for sparse arrays", (t) => {
 {
     const testSparseArrays = encodeDecodeMacro({
         encode: testEncodeMacro,
-        decode: testDecodeMacro,
+        decode: testDecodeMacro
     });
 
     test("sparse array", testSparseArrays, createSparseArray({ 1: 5, 2: 6 }), [
         [{ 1: arrayEncoding.key }, {}],
-        { 1: 5, 2: 6 },
+        { 1: 5, 2: 6 }
     ]);
 
-    test(
-        "sparse array with reference",
-        testSparseArrays,
-        createSparseArray({ 1: {}, 2: {} }),
-        [[{ 1: arrayEncoding.key }, {}], { 1: "2", 2: "3" }, {}, {}]
-    );
+    test("sparse array with reference", testSparseArrays, createSparseArray({ 1: {}, 2: {} }), [
+        [{ 1: arrayEncoding.key }, {}],
+        { 1: "2", 2: "3" },
+        {},
+        {}
+    ]);
 
-    test(
-        "array with string keys",
-        testSparseArrays,
-        createSparseArray({ 1: 1, a: 2 }),
-        [[{ 1: arrayEncoding.key }, {}], { 1: 1, a: 2 }]
-    );
+    test("array with string keys", testSparseArrays, createSparseArray({ 1: 1, a: 2 }), [
+        [{ 1: arrayEncoding.key }, {}],
+        { 1: 1, a: 2 }
+    ]);
 }

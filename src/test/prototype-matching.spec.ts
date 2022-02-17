@@ -4,7 +4,7 @@ import {
     encodeDecodeMacro,
     testDecodeMacroBindPreszr,
     testEncodeMacro,
-    testEncodeMacroBindPreszr,
+    testEncodeMacroBindPreszr
 } from "./utils";
 import { decode } from "../lib";
 import { Preszr } from "../lib/core";
@@ -19,7 +19,7 @@ class TestClass {
 
 class TestSubclass extends TestClass {}
 
-test("deepEqual distinguishes prototypes", (t) => {
+test("deepEqual distinguishes prototypes", t => {
     t.notDeepEqual(new TestClass(), {});
     t.notDeepEqual(new TestSubclass(), {});
     t.notDeepEqual(new TestClass(), new TestSubclass());
@@ -32,20 +32,20 @@ test(
             const rDecoded = decode(encoded);
             t.deepEqual(rDecoded, {});
         },
-        encode: testEncodeMacro,
+        encode: testEncodeMacro
     }),
     new TestClass(),
     [[{}, {}], {}]
 );
 
 const preszrWithTestClass = new Preszr({
-    encodings: [TestClass],
+    encodings: [TestClass]
 });
 test(
     "known prototype",
     encodeDecodeMacro({
         encode: testEncodeMacroBindPreszr(preszrWithTestClass),
-        decode: testEncodeMacroBindPreszr(preszrWithTestClass),
+        decode: testEncodeMacroBindPreszr(preszrWithTestClass)
     }),
     new TestClass({ a: 1 }),
     [[{ 1: getImplicitClassEncodingName("TestClass") }, {}], { a: 1 }]
@@ -59,14 +59,14 @@ test(
             const rDecoded = preszrWithTestClass.decode(encoded);
             t.deepEqual(rDecoded, new TestClass({ a: 1 }));
             t.is(Object.getPrototypeOf(rDecoded), TestClass.prototype);
-        },
+        }
     }),
     new TestSubclass({ a: 1 }),
     [[{ 1: getImplicitClassEncodingName("TestClass") }, {}], { a: 1 }]
 );
 
 const preszrWithSubclass = new Preszr({
-    encodings: [TestClass, TestSubclass],
+    encodings: [TestClass, TestSubclass]
 });
 
 class TestSubSubclass extends TestSubclass {}
@@ -78,7 +78,7 @@ test(
         decode(t, decoded, encoded) {
             const rDecoded = preszrWithSubclass.decode(encoded);
             t.deepEqual(rDecoded, new TestSubclass());
-        },
+        }
     }),
     new TestSubSubclass(),
     [[{ 1: getImplicitClassEncodingName(`TestSubclass`) }, {}], {}]
@@ -88,22 +88,22 @@ test(
     "two different classes",
     encodeDecodeMacro({
         encode: testEncodeMacroBindPreszr(preszrWithSubclass),
-        decode: testDecodeMacroBindPreszr(preszrWithSubclass),
+        decode: testDecodeMacroBindPreszr(preszrWithSubclass)
     }),
     {
-        a: new TestClass({ b: new TestSubclass() }),
+        a: new TestClass({ b: new TestSubclass() })
     },
     [
         [
             {
                 2: getImplicitClassEncodingName("TestClass"),
-                3: getImplicitClassEncodingName("TestSubclass"),
+                3: getImplicitClassEncodingName("TestSubclass")
             },
-            {},
+            {}
         ],
         { a: "2" },
         { b: "3" },
-        {},
+        {}
     ]
 );
 
@@ -115,13 +115,13 @@ test(
             const rDecoded = decode(encoded);
             t.is(Object.getPrototypeOf(rDecoded), null);
             t.deepEqual(rDecoded, {});
-        },
+        }
     }),
     Object.create(null),
     [[{ 1: nullPrototypeEncoding.key }, {}], {}]
 );
 
-test("override prototype", (t) => {
+test("override prototype", t => {
     const preszr = new Preszr({
         encodings: [
             TestClass,
@@ -130,10 +130,10 @@ test("override prototype", (t) => {
                 prototype: TestClass.prototype,
                 encode: () => 5,
                 decoder: {
-                    create: () => 5,
-                },
-            },
-        ],
+                    create: () => 5
+                }
+            }
+        ]
     });
 
     const encoded = preszr.encode(new TestClass());
@@ -142,7 +142,7 @@ test("override prototype", (t) => {
     t.is(decoded, 5);
 });
 
-test("override built-in prototype", (t) => {
+test("override built-in prototype", t => {
     const preszr = new Preszr({
         encodings: [
             {
@@ -150,10 +150,10 @@ test("override built-in prototype", (t) => {
                 key: "new-date",
                 encode: () => 5,
                 decoder: {
-                    create: () => 5,
-                },
-            },
-        ],
+                    create: () => 5
+                }
+            }
+        ]
     });
 
     const encoded = preszr.encode(new Date());

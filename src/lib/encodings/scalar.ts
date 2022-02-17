@@ -1,9 +1,4 @@
-import {
-    DecodeCreateContext,
-    DecodeInitContext,
-    EncodeContext,
-    PrototypeEncoding,
-} from "../interface";
+import { CreateContext, InitContext, EncodeContext, PrototypeEncoding } from "../interface";
 import { getLibraryEncodingName } from "../utils";
 
 export const regexpEncoding: PrototypeEncoding = {
@@ -13,14 +8,14 @@ export const regexpEncoding: PrototypeEncoding = {
         return flags ? [source, flags] : source;
     },
     decoder: {
-        create(input: string | string[], ctx: DecodeInitContext) {
+        create(input: string | string[], ctx: InitContext) {
             if (typeof input === "string") {
                 return new RegExp(input);
             } else {
                 return new RegExp(input[0], input[1]);
             }
-        },
-    },
+        }
+    }
 };
 export const dateEncoding: PrototypeEncoding = {
     prototypes: [Date.prototype],
@@ -29,15 +24,13 @@ export const dateEncoding: PrototypeEncoding = {
         return input.getTime();
     },
     decoder: {
-        create(encodedValue: number, ctx: DecodeCreateContext): any {
+        create(encodedValue: number, ctx: CreateContext): any {
             return new Date(encodedValue);
-        },
-    },
+        }
+    }
 };
 
-export function createFundamentalObjectEncoding(ctor: {
-    new (x): any;
-}): PrototypeEncoding {
+export function createFundamentalObjectEncoding(ctor: { new (x): any }): PrototypeEncoding {
     return {
         key: getLibraryEncodingName(ctor.name),
         prototypes: [ctor.prototype],
@@ -45,9 +38,9 @@ export function createFundamentalObjectEncoding(ctor: {
             return input.valueOf();
         },
         decoder: {
-            create(encodedValue: any, ctx: DecodeCreateContext): any {
+            create(encodedValue: any, ctx: CreateContext): any {
                 return new ctor(encodedValue);
-            },
-        },
+            }
+        }
     };
 }

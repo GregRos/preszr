@@ -1,26 +1,20 @@
 import { PreszrError } from "./errors";
-import {
-    getPrototypeDecoder,
-    getPrototypeEncoder,
-    nullPlaceholder,
-} from "./encodings/basic";
+import { getPrototypeDecoder, getPrototypeEncoder, nullPlaceholder } from "./encodings/basic";
 import {
     getClassName,
     getImplicitClassEncodingName,
     getImplicitSymbolEncodingName,
-    getSymbolName,
+    getSymbolName
 } from "./utils";
 import {
     Encoding,
     EncodingSpecifier,
     PrototypeEncoding,
     PrototypeEncodingSpecifier,
-    SymbolEncoding,
+    SymbolEncoding
 } from "./interface";
 
-export function makeSymbolEncoding(
-    x: SymbolEncoding | symbol
-): SymbolEncoding {
+export function makeSymbolEncoding(x: SymbolEncoding | symbol): SymbolEncoding {
     if (typeof x !== "symbol") {
         return x as any;
     }
@@ -30,20 +24,21 @@ export function makeSymbolEncoding(
     }
     return {
         key: getImplicitSymbolEncodingName(key),
-        symbol: x,
+        symbol: x
     } as any;
 }
 
-export function makeEncodingFromCtor(ctor: Function) {
+export function makeProtoEncodingByCtor(ctor: Function) {
     if (!ctor.prototype) {
         throw new PreszrError("Failed to detect prototype from constructor.");
     }
-    return makeEncodingFromSpecifier({
+    return makeProtoEncoding({
         prototype: ctor.prototype,
+        version: 0
     });
 }
 
-export function makeEncodingFromSpecifier(specifier: PrototypeEncodingSpecifier) {
+export function makeProtoEncoding(specifier: PrototypeEncodingSpecifier): PrototypeEncoding {
     const encoding = {} as PrototypeEncoding;
     if (specifier.prototype === undefined) {
         throw new PreszrError("Encoding must specify a prototype.");
@@ -57,9 +52,7 @@ export function makeEncodingFromSpecifier(specifier: PrototypeEncodingSpecifier)
     encoding.prototypes = [proto];
     const className = getClassName(proto);
     if (!className && !specifier.key) {
-        throw new PreszrError(
-            `No key has been provided, and the prototype has no name.`
-        );
+        throw new PreszrError(`No key has been provided, and the prototype has no name.`);
     }
     encoding.key = specifier.key ?? getImplicitClassEncodingName(className!);
     encoding.encode = specifier.encode ?? getPrototypeEncoder(proto);
@@ -68,17 +61,18 @@ export function makeEncodingFromSpecifier(specifier: PrototypeEncodingSpecifier)
 }
 
 export function makeFullEncoding(specifier: EncodingSpecifier): Encoding {
-    if (typeof specifier === "symbol" || "symbol" in specifier)
+    if (typeof specifier === "symbol" || "symbol" in specifier) {
         return makeSymbolEncoding(specifier);
-    if (typeof specifier === "function") return makeEncodingFromCtor(specifier);
-    if ("prototype" in specifier) return makeEncodingFromSpecifier(specifier);
+    }
+    if (typeof specifier === "function") {
+        return makeProtoEncodingByCtor(specifier);
+    }
+    if ("prototype" in specifier) return makeProtoEncoding(specifier);
     if (!specifier.prototypes || specifier.prototypes.length === 0) {
         throw new PreszrError("Encoding must specify prototypes.");
     }
     if (!("decoder" in specifier && "encode" in specifier)) {
-        throw new PreszrError(
-            "Multi-prototype specifier must have both decoder and encode."
-        );
+        throw new PreszrError("Multi-prototype specifier must have both decoder and encode.");
     }
     if (!specifier.key) {
         throw new PreszrError("Multi-prototype specifier must provide a key.");
