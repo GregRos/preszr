@@ -51,19 +51,19 @@ test("deepEqual assertions work for sparse arrays", t => {
     });
 
     test("sparse array", testSparseArrays, createSparseArray({ 1: 5, 2: 6 }), [
-        [{ 1: arrayEncoding.key }, {}],
+        [{ 1: arrayEncoding.name }, {}],
         { 1: 5, 2: 6 }
     ]);
 
     test("sparse array with reference", testSparseArrays, createSparseArray({ 1: {}, 2: {} }), [
-        [{ 1: arrayEncoding.key }, {}],
+        [{ 1: arrayEncoding.name }, {}],
         { 1: "2", 2: "3" },
         {},
         {}
     ]);
 
     test("array with string keys", testSparseArrays, createSparseArray({ 1: 1, a: 2 }), [
-        [{ 1: arrayEncoding.key }, {}],
+        [{ 1: arrayEncoding.name }, {}],
         { 1: 1, a: 2 }
     ]);
 }

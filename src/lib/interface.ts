@@ -53,7 +53,7 @@ export interface Decoder {
  */
 export interface PrototypeEncodingSpecifier {
     // The key of the encoding. Must be unique. Will be inferred from the prototype if missing.
-    key?: string;
+    name?: string;
     // Optionally, a 1-based version number. If not supplied, defaults to 0.
     version?: number;
     // The prototype. Required.
@@ -70,8 +70,7 @@ export interface PrototypeEncodingSpecifier {
  * A full symbol encoding.
  */
 export interface SymbolEncoding {
-    key: string;
-    version?: number;
+    name: string;
     symbol: symbol;
     metadata?: any;
 }
@@ -80,7 +79,7 @@ export interface SymbolEncoding {
  * A full prototype encoding.
  */
 export interface PrototypeEncoding {
-    key: string;
+    name: string;
     version: number;
     prototypes: object[];
     decoder: Decoder;

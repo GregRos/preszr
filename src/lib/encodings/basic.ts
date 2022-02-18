@@ -64,7 +64,7 @@ export function encodeObject(
 export const objectEncoding: PrototypeEncoding = {
     version: 0,
     prototypes: [Object.prototype],
-    key: getLibraryEncodingName("object"),
+    name: getLibraryEncodingName("object"),
     encode(input: any, ctx: EncodeContext): any {
         return encodeObject(input, ctx, false);
     },
@@ -86,7 +86,7 @@ function encodeAsSparseArray(input: any, ctx: EncodeContext) {
 }
 
 export const arrayEncoding: PrototypeEncoding = {
-    key: getLibraryEncodingName("array"),
+    name: getLibraryEncodingName("array"),
     version: 0,
     prototypes: [Array.prototype],
     encode(input: any, ctx: EncodeContext): any {
@@ -124,7 +124,7 @@ export const arrayEncoding: PrototypeEncoding = {
 };
 export const nullPrototypeEncoding: PrototypeEncoding = {
     version: 0,
-    key: getLibraryEncodingName("null"),
+    name: getLibraryEncodingName("null"),
     encode: getPrototypeEncoder(null),
     decoder: getPrototypeDecoder(null),
     prototypes: [nullPlaceholder]
@@ -151,7 +151,7 @@ export const unsupportedEncodingKey = getLibraryEncodingName("unsupported");
 
 export function getUnsupportedEncoding(...protos: object[]): PrototypeEncoding {
     return {
-        key: unsupportedEncodingKey,
+        name: unsupportedEncodingKey,
         version: 0,
         prototypes: protos,
         encode(input: any, ctx: EncodeContext): any {

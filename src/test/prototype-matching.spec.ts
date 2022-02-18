@@ -118,7 +118,7 @@ test(
         }
     }),
     Object.create(null),
-    [[{ 1: nullPrototypeEncoding.key }, {}], {}]
+    [[{ 1: nullPrototypeEncoding.name }, {}], {}]
 );
 
 test("override prototype", t => {
@@ -126,7 +126,7 @@ test("override prototype", t => {
         encodings: [
             TestClass,
             {
-                key: "override",
+                name: "override",
                 prototype: TestClass.prototype,
                 encode: () => 5,
                 decoder: {
@@ -147,7 +147,7 @@ test("override built-in prototype", t => {
         encodings: [
             {
                 prototype: Date.prototype,
-                key: "new-date",
+                name: "new-date",
                 encode: () => 5,
                 decoder: {
                     create: () => 5

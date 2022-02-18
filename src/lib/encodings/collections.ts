@@ -3,7 +3,7 @@ import { getLibraryEncodingName } from "../utils";
 import { EncodedEntity, ScalarValue } from "../data";
 
 export const mapEncoding: PrototypeEncoding = {
-    key: getLibraryEncodingName("Map"),
+    name: getLibraryEncodingName("Map"),
     version: 0,
     prototypes: [Map.prototype],
     encode(input: Map<any, any>, ctx: EncodeContext): any {
@@ -27,7 +27,7 @@ export const mapEncoding: PrototypeEncoding = {
 };
 
 export const setEncoding: PrototypeEncoding = {
-    key: getLibraryEncodingName("Set"),
+    name: getLibraryEncodingName("Set"),
     version: 0,
     prototypes: [Set.prototype],
     encode(input: Set<any>, ctx: EncodeContext): EncodedEntity {

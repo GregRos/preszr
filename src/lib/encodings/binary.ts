@@ -11,7 +11,7 @@ export type TypedArrayConstructor = {
 };
 
 export const arrayBufferEncoding: PrototypeEncoding = {
-    key: getLibraryEncodingName("ArrayBuffer"),
+    name: getLibraryEncodingName("ArrayBuffer"),
     version: 0,
     prototypes: [ArrayBuffer.prototype].filter(x => !!x),
     encode(input: ArrayBuffer, ctx: EncodeContext): any {
@@ -27,12 +27,13 @@ export const arrayBufferEncoding: PrototypeEncoding = {
 };
 
 export const sharedArrayBufferEncoding: PrototypeEncoding = {
-    key: getLibraryEncodingName("SharedArrayBuffer"),
+    name: getLibraryEncodingName("SharedArrayBuffer"),
     version: 0,
     prototypes: [_SharedArrayBuffer.prototype],
     encode: arrayBufferEncoding.encode.bind(arrayBufferEncoding),
     decoder: {
         create(encodedValue: string, ctx: CreateContext): any {
+            // This is not performant, but it's an uncommon use-case.
             const byteArray = toByteArray(encodedValue);
             const sharedBuffer = new _SharedArrayBuffer(byteArray.byteLength);
             const sharedByteArray = new Uint8Array(sharedBuffer);
@@ -44,7 +45,7 @@ export const sharedArrayBufferEncoding: PrototypeEncoding = {
 
 export function createTypedArrayEncoding(ctor: TypedArrayConstructor): PrototypeEncoding {
     return {
-        key: getLibraryEncodingName(ctor.name),
+        name: getLibraryEncodingName(ctor.name),
         version: 0,
         prototypes: [ctor.prototype],
         encode(input: InstanceType<TypedArrayConstructor>, ctx: EncodeContext): any {

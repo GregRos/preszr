@@ -6,7 +6,7 @@ const errorProperties = ["stack", "name", "message"];
 export function createErrorEncoding(errorCtor: { new (): Error }) {
     return {
         prototypes: [errorCtor.prototype],
-        key: getLibraryEncodingName(errorCtor.name),
+        name: getLibraryEncodingName(errorCtor.name),
         encode(input: any, ctx: EncodeContext): any {
             const encodedAsObject = encodeObject(input, ctx, false, errorProperties);
             (ctx as any)._isImplicit = false;

@@ -3,7 +3,7 @@ import { getPrototypeDecoder, getPrototypeEncoder, nullPlaceholder } from "./bas
 import {
     getClassName,
     getImplicitClassEncodingName,
-    getImplicitSymbolEncodingName,
+    getSymbolEncodingName,
     getSymbolName,
     isNumericString
 } from "../utils";
@@ -15,18 +15,21 @@ import {
     SymbolEncoding
 } from "../interface";
 
+const MAX_VERSION = 1024;
+const MIN_VERSION = 0;
+
 export function makeSymbolEncoding(x: SymbolEncoding | symbol): SymbolEncoding {
     if (typeof x !== "symbol") {
-        return x as any;
+        return x;
     }
-    const key = getSymbolName(x);
-    if (!key) {
+    const name = getSymbolName(x);
+    if (!name) {
         throw new PreszrError(`Failed to detect symbol name for ${String(x)}`);
     }
     return {
-        key: getImplicitSymbolEncodingName(key),
+        name: name,
         symbol: x
-    } as any;
+    };
 }
 
 export function makeProtoEncodingByCtor(ctor: Function) {
@@ -54,16 +57,16 @@ export function makeProtoEncoding(specifier: PrototypeEncodingSpecifier): Protot
     const proto = specifier.prototype ?? nullPlaceholder;
     encoding.prototypes = [proto];
     const className = getClassName(proto);
-    if (!className && !specifier.key) {
+    if (!className && !specifier.name) {
         throw new PreszrError(`No key has been provided, and the prototype has no name.`);
     }
-    encoding.key = specifier.key ?? getImplicitClassEncodingName(className!);
+    encoding.name = specifier.name ?? getImplicitClassEncodingName(className!);
     encoding.encode = specifier.encode ?? getPrototypeEncoder(proto);
     encoding.decoder = specifier.decoder ?? getPrototypeDecoder(proto);
     const v = specifier.version;
     if (v != null && (typeof v !== "number" || !Number.isSafeInteger(v) || v < 0)) {
         throw new PreszrError(
-            `Provided version for encoding ${specifier.key} must be an safe, non-negative integer, but was: ${v}.`
+            `Provided version for encoding ${specifier.name} must be an safe, non-negative integer, but was: ${v}.`
         );
     }
     encoding.version = specifier.version == null ? 0 : specifier.version;
@@ -85,33 +88,66 @@ export function makeFullEncoding(specifier: EncodingSpecifier): Encoding {
     if (!("decoder" in specifier && "encode" in specifier)) {
         throw new PreszrError("Multi-prototype specifier must have both decoder and encode.");
     }
-    if (!specifier.key) {
+    if (!specifier.name) {
         throw new PreszrError("Multi-prototype specifier must provide a key.");
     }
     const v = specifier.version;
-    if (typeof v !== "number" || !Number.isSafeInteger(v) || v < 0) {
+    if (typeof v !== "number" || !Number.isSafeInteger(v)) {
         throw new PreszrError(
-            `Version for encoding ${specifier.key} must be an safe, non-negative integer, but was: ${v}.`
+            `Version for encoding ${specifier.name} must be an safe integer, but was: ${v}.`
+        );
+    }
+    if (v > MAX_VERSION || v < MIN_VERSION) {
+        throw new PreszrError(
+            `Version number for ${specifier.name} must be between ${MIN_VERSION} and ${MAX_VERSION}, but was: ${v}`
         );
     }
     return specifier;
 }
 
-export function getFullEncodingKey(enc: Encoding) {
-    return `${enc.key}.${enc.version}`;
+export function getEncodingKey(enc: Encoding) {
+    if ("prototypes" in enc) {
+        return `${enc.name}.v${enc.version}`;
+    }
+    return `${enc.name}.S`;
 }
 
-export function parseEncodingKey(key: string) {
+export interface ProtoEncodingKeyInfo {
+    type: "prototype";
+    name: string;
+    version: number;
+}
+
+export interface SymbolEncodingKeyInfo {
+    type: "symbol";
+    name: string;
+}
+
+export type EncodingKeyInfo = ProtoEncodingKeyInfo | SymbolEncodingKeyInfo;
+
+export function mustParseEncodingKey(key: string): EncodingKeyInfo {
     const lastDot = key.lastIndexOf(".");
-    const strVersion = key.slice(lastDot + 1);
-    if (!isNumericString(strVersion)) {
-        throw new PreszrError(`Version in encoding key ${key} wasn't numeric.`);
+    if (lastDot === -1) {
+        throw new PreszrError(`Bad format - in encoding key ${key}, had no postfix.`);
     }
-    if (strVersion.trim() === "") {
-        throw new PreszrError("Encoding name was empty.");
+    const strPostfix = key.slice(lastDot + 1);
+    const name = key.slice(0, lastDot);
+    if (strPostfix === "S") {
+        return {
+            type: "symbol",
+            name
+        };
+    }
+    const strVersion = strPostfix.slice(1);
+    if (!isNumericString(strVersion)) {
+        throw new PreszrError(`Bad format - in encoding key ${key}, version wasn't numeric.`);
+    }
+    if (strPostfix.trim() === "") {
+        throw new PreszrError(`Bad format - in encoding key ${key}, name was empty.`);
     }
     return {
-        key: key.slice(0, lastDot),
-        version: +strVersion
+        type: "prototype",
+        name,
+        version: +strPostfix
     };
 }

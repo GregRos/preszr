@@ -5,7 +5,7 @@ import { createWithTitle, embedPreszrVersion, testDecodeMacro, testEncodeMacro }
 import { objectEncoding } from "../lib/encodings/basic";
 import { unrecognizedSymbolKey } from "../lib/data";
 import {
-    getImplicitSymbolEncodingName,
+    getSymbolEncodingName,
     getLibraryEncodingName,
     getSymbolName,
     getUnrecognizedSymbol,
@@ -101,7 +101,7 @@ test(
         t.is(decoded[key], 1);
     }),
     { [testSymbol]: 1 },
-    [[{ 1: objectEncoding.key, 2: unrecognizedSymbolKey }, { 2: "test" }], [{}, { 2: 1 }], 0]
+    [[{ 1: objectEncoding.name, 2: unrecognizedSymbolKey }, { 2: "test" }], [{}, { 2: 1 }], 0]
 );
 
 test(
@@ -119,7 +119,7 @@ test(
     [
         [
             {
-                1: objectEncoding.key,
+                1: objectEncoding.name,
                 2: unrecognizedSymbolKey,
                 3: unrecognizedSymbolKey
             },
@@ -151,7 +151,7 @@ const preszrWithSymbol = new Preszr({
         testSymbol,
         {
             symbol: testSymbol2,
-            key: "test2"
+            name: "test2"
         }
     ]
 });
@@ -173,7 +173,7 @@ test(
     "recognized symbol",
     recognizedSymbolMacro,
     testSymbol,
-    [[{ 1: getImplicitSymbolEncodingName("test") }, {}], 0],
+    [[{ 1: getSymbolEncodingName("test") }, {}], 0],
     preszrWithSymbol
 );
 
@@ -187,7 +187,7 @@ test("encode+decode :: one recognized symbol, one not", t => {
         embedPreszrVersion([
             [
                 {
-                    2: getImplicitSymbolEncodingName("test"),
+                    2: getSymbolEncodingName("test"),
                     3: unrecognizedSymbolKey
                 },
                 { 3: "test" }
@@ -204,7 +204,7 @@ test("encode+decode :: one recognized symbol, one not", t => {
 });
 
 test("two recognized symbols", recognizedSymbolMacro, { a: testSymbol, b: testSymbol2 }, [
-    [{ 2: getImplicitSymbolEncodingName("test"), 3: "test2" }, {}],
+    [{ 2: getSymbolEncodingName("test"), 3: "test2" }, {}],
     { a: "2", b: "3" },
     0,
     0

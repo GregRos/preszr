@@ -2,7 +2,7 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "module": "commonjs",
-    "target": "es6",
+    "target": "es2020",
     "sourceMap": true,
     "lib": [
       "es6"
@@ -10,7 +10,8 @@
     "declaration": true,
     "outDir": "../../dist/lib",
     "rootDir": ".",
-    "allowJs": true
+    "allowJs": true,
+    "noEmit": true
   },
   "include": [
     "**/*.ts",

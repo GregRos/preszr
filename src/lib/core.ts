@@ -1,38 +1,38 @@
 import {
     DeepPartial,
     EncodeContext,
+    Encoding,
+    EncodingSpecifier,
+    InitContext,
     PreszrConfig,
     PrototypeEncoding,
-    EncodingSpecifier,
-    Encoding,
-    SymbolEncoding,
-    InitContext
+    SymbolEncoding
 } from "./interface";
 import { defaultsDeep, getSymbolName, getUnrecognizedSymbol, version } from "./utils";
 import {
-    ScalarValue,
-    Reference,
-    Header,
-    PreszrOutput,
-    PreszrFormat,
+    EncodedEntity,
     EncodingSpec,
-    Metadata,
     Entity,
-    tryEncodeScalar,
-    tryDecodeScalar,
+    Header,
+    Metadata,
     noResultPlaceholder,
-    unrecognizedSymbolKey,
-    EncodedEntity
+    PreszrFormat,
+    PreszrOutput,
+    Reference,
+    ScalarValue,
+    tryDecodeScalar,
+    tryEncodeScalar,
+    unrecognizedSymbolKey
 } from "./data";
 import {
     arrayEncoding,
+    builtinEncodings,
     getUnsupportedEncoding,
     nullPlaceholder,
-    objectEncoding,
-    builtinEncodings
+    objectEncoding
 } from "./encodings";
 import { PreszrError } from "./errors";
-import { getFullEncodingKey, makeFullEncoding, parseEncodingKey } from "./encodings/utils";
+import { makeFullEncoding, mustParseEncodingKey } from "./encodings/utils";
 import { unsupportedTypes } from "./unsupported";
 
 /**
@@ -41,6 +41,7 @@ import { unsupportedTypes } from "./unsupported";
 export class Preszr {
     readonly config = defaultConfig;
     private _keyToEncoding = new Map<string, Encoding>();
+    private _nameToProtoEncodings = new Map<string, Map<string, PrototypeEncoding>>();
     private _symbToEncoding = new Map<symbol, SymbolEncoding>();
     private _tempSymbEncoding = new Map<symbol, SymbolEncoding>();
     private _protoEncodingCache = new WeakMap<object, PrototypeEncoding>();
@@ -67,15 +68,13 @@ export class Preszr {
     private _addEncoding(...encoders: EncodingSpecifier[]) {
         for (const encSpecifier of encoders) {
             const encoding = makeFullEncoding(encSpecifier);
-            if (this._keyToEncoding.get(encoding.key)) {
-                throw new PreszrError(`Encoding with the key '${encoding.key}' already exists.`);
-            }
+            const encodings = this._keyToEncoding.get(encoding.name);
             if ("prototypes" in encoding) {
                 this._protoEncodings.push(encoding);
             } else {
                 this._symbToEncoding.set(encoding.symbol, encoding);
             }
-            this._keyToEncoding.set(encoding.key, encoding);
+            this._keyToEncoding.set(encoding.name, encoding);
         }
         this._buildEncodingCache();
     }
@@ -107,7 +106,7 @@ export class Preszr {
         if (encoding == null) {
             encoding = {
                 symbol: symb,
-                key: unrecognizedSymbolKey,
+                name: unrecognizedSymbolKey,
                 metadata: getSymbolName(symb) || `#${this._symbToEncoding.size + 1}`
             };
             this._tempSymbEncoding.set(symb, encoding);
@@ -174,7 +173,7 @@ export class Preszr {
         const header = input?.[0];
 
         const [, encodingKeys, encodingSpec, metadata] = header;
-        const encodings = encodingKeys.map(parseEncodingKey);
+        const encodings = encodingKeys.map(mustParseEncodingKey);
         const targetArray = Array(input.length - 1);
         const needToInit = new Map<number, PrototypeEncoding>();
         const ctx: InitContext = {
@@ -273,7 +272,7 @@ export class Preszr {
                 preszrRep.push(0);
                 if (typeof value === "symbol") {
                     const encoding = this._findEncodingForSymbol(value);
-                    encodingSpec[index] = cacheEncodingIndex(encoding.key);
+                    encodingSpec[index] = cacheEncodingIndex(encoding.name);
                     if (encoding.metadata) {
                         metadata[index] = encoding.metadata;
                     }
@@ -283,7 +282,7 @@ export class Preszr {
                 const oldMetadata = ctx.metadata;
                 const szed = encoding.encode(value, ctx);
                 if (!(ctx as any)._isImplicit) {
-                    encodingSpec[index] = cacheEncodingIndex(encoding.key);
+                    encodingSpec[index] = cacheEncodingIndex(encoding.name);
                 }
                 (ctx as any)._isImplicit = false;
                 if (ctx.metadata !== undefined) {
