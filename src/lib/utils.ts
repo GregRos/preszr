@@ -1,3 +1,5 @@
+import { PreszrError } from "./errors";
+
 let packageObj;
 try {
     packageObj = require("../../package.json");
@@ -20,6 +22,22 @@ export function _defaultsDeep(target: any, source: any) {
         }
     }
     return target;
+}
+
+export function maxBy<T>(target: T[], projection: (x: T, n: number) => number) {
+    if (target.length === 0) {
+        return undefined;
+    }
+    let maxProjected = projection(target[0], 0);
+    let maxIndex = 0;
+    for (let i = 1; i < target.length; i++) {
+        const curProjected = projection(target[i], i);
+        if (curProjected > maxProjected) {
+            maxProjected = curProjected;
+            maxIndex = i;
+        }
+    }
+    return target[maxIndex];
 }
 
 export function defaultsDeep(target: any, ...sources: any[]) {

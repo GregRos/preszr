@@ -1,10 +1,12 @@
 import { CreateContext, InitContext, EncodeContext, PrototypeEncoding } from "../interface";
 import { getLibraryEncodingName } from "../utils";
+import { Fixed } from "./fixed";
 
 export const regexpEncoding: PrototypeEncoding = {
     prototypes: [RegExp.prototype],
     version: 0,
     name: getLibraryEncodingName("RegExp"),
+    fixedIndex: Fixed.Regexp,
     encode({ source, flags }: RegExp, ctx: EncodeContext): any {
         return flags ? [source, flags] : source;
     },
@@ -21,6 +23,7 @@ export const regexpEncoding: PrototypeEncoding = {
 export const dateEncoding: PrototypeEncoding = {
     prototypes: [Date.prototype],
     version: 0,
+    fixedIndex: Fixed.Date,
     name: getLibraryEncodingName("Date"),
     encode(input: Date, ctx: EncodeContext): any {
         return input.getTime();
@@ -32,10 +35,11 @@ export const dateEncoding: PrototypeEncoding = {
     }
 };
 
-export function createFundamentalObjectEncoding(ctor: { new (x: any): any }): PrototypeEncoding {
+export function makeWrapperEncoding(index: number, ctor: { new (x: any): any }): PrototypeEncoding {
     return {
         name: getLibraryEncodingName(ctor.name),
         version: 0,
+        fixedIndex: index,
         prototypes: [ctor.prototype],
         encode(input: any, ctx: EncodeContext): any {
             return input.valueOf();
@@ -47,3 +51,9 @@ export function createFundamentalObjectEncoding(ctor: { new (x: any): any }): Pr
         }
     };
 }
+
+export const wrapperEncodings = [
+    makeWrapperEncoding(Fixed.FundNumber, Number),
+    makeWrapperEncoding(Fixed.FundBool, Boolean),
+    makeWrapperEncoding(Fixed.FundString, String)
+];

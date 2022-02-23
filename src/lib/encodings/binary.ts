@@ -2,6 +2,7 @@ import { CreateContext, EncodeContext, PrototypeEncoding } from "../interface";
 import { getLibraryEncodingName } from "../utils";
 import { fromByteArray, toByteArray } from "base64-js";
 import { _BigInt64Array, _BigUint64Array, _SharedArrayBuffer } from "../opt-types";
+import { Fixed } from "./fixed";
 
 /**
  * A union of all typed array constructors.
@@ -12,7 +13,7 @@ export type TypedArrayConstructor = {
 
 export const arrayBufferEncoding: PrototypeEncoding = {
     name: getLibraryEncodingName("ArrayBuffer"),
-    version: 0,
+    version: Fixed.ArrayBuffer,
     prototypes: [ArrayBuffer.prototype].filter(x => !!x),
     encode(input: ArrayBuffer, ctx: EncodeContext): any {
         const b64 = fromByteArray(new Uint8Array(input));
@@ -28,7 +29,7 @@ export const arrayBufferEncoding: PrototypeEncoding = {
 
 export const sharedArrayBufferEncoding: PrototypeEncoding = {
     name: getLibraryEncodingName("SharedArrayBuffer"),
-    version: 0,
+    version: Fixed.SharedArrayBuffer,
     prototypes: [_SharedArrayBuffer.prototype],
     encode: arrayBufferEncoding.encode.bind(arrayBufferEncoding),
     decoder: {
@@ -43,10 +44,15 @@ export const sharedArrayBufferEncoding: PrototypeEncoding = {
     }
 };
 
-export function createTypedArrayEncoding(ctor: TypedArrayConstructor): PrototypeEncoding {
+export function createBinEncoding(
+    index: number,
+    ctor: TypedArrayConstructor
+): PrototypeEncoding | undefined {
+    if (!ctor) return undefined;
     return {
         name: getLibraryEncodingName(ctor.name),
         version: 0,
+        fixedIndex: index,
         prototypes: [ctor.prototype],
         encode(input: InstanceType<TypedArrayConstructor>, ctx: EncodeContext): any {
             return arrayBufferEncoding.encode(input.buffer, ctx);
@@ -60,21 +66,19 @@ export function createTypedArrayEncoding(ctor: TypedArrayConstructor): Prototype
     };
 }
 
-export const typedArrayCtors = [
-    Uint8Array,
-    Uint16Array,
-    Uint32Array,
-    Uint8ClampedArray,
-    Int8Array,
-    Int16Array,
-    Int32Array,
-    Float32Array,
-    Float64Array,
-    DataView,
-    _BigInt64Array,
-    _BigUint64Array
+export const typedArrayEncodings = [
+    createBinEncoding(Fixed.Uint8Array, Uint8Array),
+    createBinEncoding(Fixed.Uint8ClampedArray, Uint8ClampedArray),
+    createBinEncoding(Fixed.Uint16Array, Uint16Array),
+    createBinEncoding(Fixed.Uint32Array, Uint32Array),
+    createBinEncoding(Fixed.Int8Array, Int8Array),
+    createBinEncoding(Fixed.Int16Array, Int16Array),
+    createBinEncoding(Fixed.Int32Array, Int32Array),
+    createBinEncoding(Fixed.Float32Array, Float32Array),
+    createBinEncoding(Fixed.Float64Array, Float64Array),
+    createBinEncoding(Fixed.DataView, DataView),
+    createBinEncoding(Fixed.BigInt64Array, _BigInt64Array),
+    createBinEncoding(Fixed.BigUint64Array, _BigUint64Array)
 ]
     .filter(x => !!x)
-    .map(x => x as TypedArrayConstructor);
-
-export const typedArrayEncodings = typedArrayCtors.map(createTypedArrayEncoding);
+    .map(x => x!);

@@ -81,6 +81,10 @@ export interface SymbolEncoding {
 export interface PrototypeEncoding {
     name: string;
     version: number;
+    // If this is set, the encoding has a fixed index and doesn't need
+    // to appear in the encoding keys list. It only needs to appear in the
+    // encoding spec map. It makes referencing it faster but makes it position-dependent.
+    fixedIndex?: number;
     prototypes: object[];
     decoder: Decoder;
     encode(input: any, ctx: EncodeContext): EncodedEntity;

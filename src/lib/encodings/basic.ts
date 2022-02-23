@@ -7,6 +7,7 @@ import {
 } from "../interface";
 import { getClassName, getLibraryEncodingName } from "../utils";
 import { ScalarValue } from "../data";
+import { Fixed } from "./fixed";
 
 export const nullPlaceholder = {};
 function getAllOwnKeys(obj: object, onlyEnumerable: boolean): PropertyKey[] {
@@ -64,6 +65,7 @@ export function encodeObject(
 export const objectEncoding: PrototypeEncoding = {
     version: 0,
     prototypes: [Object.prototype],
+    fixedIndex: Fixed.Object,
     name: getLibraryEncodingName("object"),
     encode(input: any, ctx: EncodeContext): any {
         return encodeObject(input, ctx, false);
@@ -88,6 +90,7 @@ function encodeAsSparseArray(input: any, ctx: EncodeContext) {
 export const arrayEncoding: PrototypeEncoding = {
     name: getLibraryEncodingName("array"),
     version: 0,
+    fixedIndex: Fixed.Array,
     prototypes: [Array.prototype],
     encode(input: any, ctx: EncodeContext): any {
         const keys = Object.keys(input);
@@ -124,6 +127,7 @@ export const arrayEncoding: PrototypeEncoding = {
 };
 export const nullPrototypeEncoding: PrototypeEncoding = {
     version: 0,
+    fixedIndex: Fixed.NullProto,
     name: getLibraryEncodingName("null"),
     encode: getPrototypeEncoder(null),
     decoder: getPrototypeDecoder(null),
@@ -153,6 +157,7 @@ export function getUnsupportedEncoding(...protos: object[]): PrototypeEncoding {
     return {
         name: unsupportedEncodingKey,
         version: 0,
+        fixedIndex: Fixed.Unsupported,
         prototypes: protos,
         encode(input: any, ctx: EncodeContext): any {
             ctx.metadata = getClassName(input);

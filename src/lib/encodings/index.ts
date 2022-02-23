@@ -5,7 +5,7 @@ import {
     nullPrototypeEncoding,
     objectEncoding
 } from "./basic";
-import { createFundamentalObjectEncoding, dateEncoding, regexpEncoding } from "./scalar";
+import { makeWrapperEncoding, dateEncoding, regexpEncoding, wrapperEncodings } from "./scalar";
 import { arrayBufferEncoding, typedArrayEncodings } from "./binary";
 import { mapEncoding, setEncoding } from "./collections";
 import { errorEncodings } from "./errors";
@@ -17,9 +17,7 @@ export const builtinEncodings = [
     objectEncoding,
     arrayEncoding,
     nullPrototypeEncoding,
-    createFundamentalObjectEncoding(Number),
-    createFundamentalObjectEncoding(Boolean),
-    createFundamentalObjectEncoding(String),
+    ...wrapperEncodings,
     dateEncoding,
     regexpEncoding,
     ...typedArrayEncodings,

@@ -40,17 +40,9 @@ import { EncodingStore } from "./encodings/encoding-store";
 /**
  * The class used to encode and decode things in the preszr format.
  */
-export class Preszr {
-    readonly config = defaultConfig;
-    private _cache = new EncodingStore();
-    private _
-    constructor(config?: DeepPartial<PreszrConfig>) {
-        this.config = defaultsDeep({}, config, defaultConfig);
-        const unsupportedEncoding = getUnsupportedEncoding(
-            ...unsupportedTypes,
-            ...this.config.unsupported
-        );
-        this._cache.add(...builtinEncodings, unsupportedEncoding, ...this.config.encodings);
+export class PreszrJob {
+    constructor(private _cache: WorkingEncodingCache) {
+
     }
 
     private _findEncodingByKeyValue(input: unknown, encodingKey: string) {
