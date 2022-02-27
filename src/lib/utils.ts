@@ -12,7 +12,8 @@ export function _defaultsDeep(target: any, source: any) {
     target = Object(target);
     if (!source) return target;
     source = Object(source);
-    for (const [key, value] of Object.entries(source)) {
+    for (const key of Object.keys(source)) {
+        const value = source[key];
         if (typeof target[key] === "object") {
             defaultsDeep(target[key], Object(value));
         } else {
@@ -56,7 +57,7 @@ export function getLibraryEncodingName(str: string) {
 }
 
 export function getSymbolEncodingName(str: string) {
-    return `${str}.S`;
+    return str;
 }
 
 export function getImplicitClassEncodingName(str: string) {

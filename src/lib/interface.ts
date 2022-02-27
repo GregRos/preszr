@@ -39,7 +39,8 @@ export interface CreateContext {
  * The context used by the init stage of the decoding process. Allows
  * resolving references to other entities.
  */
-export interface InitContext extends CreateContext {
+export interface InitContext {
+    metadata: any;
     // Resolves references and decodes encoded scalars. This isn't a recursive call.
     decode(value: ScalarValue): unknown;
 }
@@ -73,6 +74,12 @@ export interface PrototypeEncodingSpecifier {
     encode?(input: any, ctx: EncodeContext): EncodedEntity;
 }
 
+export interface SpecialEncoding {
+    name: string;
+    [fixedIndexProp]?: number;
+    metadata?: any;
+}
+
 /**
  * A full symbol encoding.
  */
@@ -100,10 +107,11 @@ export interface PrototypeEncoding {
     encode(input: any, ctx: EncodeContext): EncodedEntity;
 }
 
+export type UserEncoding = PrototypeEncoding | SymbolEncoding;
 /**
  * A full preszr encoding of any type.
  */
-export type Encoding = PrototypeEncoding | SymbolEncoding;
+export type Encoding = PrototypeEncoding | SymbolEncoding | SpecialEncoding;
 
 /**
  * An encoding specifier. Can be a symbol or constructor for a shorthand

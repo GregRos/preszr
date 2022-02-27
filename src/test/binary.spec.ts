@@ -1,7 +1,6 @@
 import test from "ava";
 import { encodeDecodeMacro, testDecodeMacro, testEncodeMacro, toBase64 } from "./utils";
 import { getLibraryEncodingName } from "../lib/utils";
-import { typedArrayCtors } from "../lib/encodings/binary";
 
 const scalarMacros = encodeDecodeMacro({
     encode: testEncodeMacro,
@@ -32,7 +31,20 @@ test("ArrayBuffer", scalarMacros, array1, [
     toBase64(array1)
 ]);
 
-for (const ctor of typedArrayCtors) {
+for (const ctor of [
+    Uint8Array,
+    Uint8ClampedArray,
+    Uint16Array,
+    Uint32Array,
+    BigUint64Array,
+    Int8Array,
+    Int16Array,
+    Int32Array,
+    BigInt64Array,
+    Float32Array,
+    Float64Array,
+    DataView
+]) {
     test(ctor.name, scalarMacros, new ctor(array1), [
         [{ 1: getLibraryEncodingName(ctor.name) }, {}],
         toBase64(array1)

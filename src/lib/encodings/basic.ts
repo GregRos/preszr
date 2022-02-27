@@ -24,11 +24,13 @@ export function decodeObject(target: any, input: any, ctx: InitContext) {
     if (Array.isArray(input)) {
         let symbolKeys;
         [stringKeys, symbolKeys] = input;
-        for (const [key, value] of Object.entries(symbolKeys)) {
+        for (const key of Object.keys(symbolKeys)) {
+            const value = symbolKeys[key];
             target[ctx.decode(key) as symbol] = ctx.decode(value as ScalarValue);
         }
     }
-    for (const [key, value] of Object.entries(stringKeys)) {
+    for (const key of Object.keys(stringKeys)) {
+        const value = stringKeys[key];
         target[key] = ctx.decode(value as ScalarValue);
     }
     return target;

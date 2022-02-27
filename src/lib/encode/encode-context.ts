@@ -1,19 +1,24 @@
-import { EncodeContext, Encoding, fixedIndexProp, PreszrConfig } from "../interface";
+import {
+    EncodeContext,
+    Encoding,
+    fixedIndexProp,
+    PreszrConfig,
+    SpecialEncoding,
+    SymbolEncoding
+} from "../interface";
 import { version } from "../utils";
 import {
     Entity,
     noResultPlaceholder,
     PreszrFormat,
-    PreszrOutput,
     Reference,
-    ScalarValue,
-    tryEncodeScalar
+    tryEncodeScalar,
+    unrecognizedSymbolKey
 } from "../data";
-import { arrayEncoding, objectEncoding } from "../encodings";
 import { getEncodingKey } from "../encodings/utils";
-import { WorkingEncodingCache } from "./encoding-cache";
 import { Fixed } from "../encodings/fixed";
 import { EncodingStore } from "./store";
+import { getUnrecSymbolEncoding } from "../encodings/unrec-symbol";
 
 export class EncodeCtx implements EncodeContext {
     private _encodingKeys = new Map<Encoding, number>();
@@ -21,9 +26,10 @@ export class EncodeCtx implements EncodeContext {
     private _encodingSpec = Object.create(null);
     private _metadata = Object.create(null);
     private _workingMessage = [{}] as unknown as PreszrFormat;
+
     _isImplicit = false;
     metadata = undefined;
-    constructor(private _cache: WorkingEncodingCache) {}
+    constructor(private _store: EncodingStore) {}
 
     private _getEncodingIndex(encoding: Encoding) {
         if (encoding[fixedIndexProp] != null) {
@@ -38,8 +44,16 @@ export class EncodeCtx implements EncodeContext {
         return encodingIndex;
     }
 
+    private _mustGetBySymbol(s: symbol): SymbolEncoding | SpecialEncoding {
+        const inner = this._store.mayGetBySymbol(s);
+        if (!inner) {
+            return getUnrecSymbolEncoding(s);
+        }
+        return inner;
+    }
+
     private _createNewRef(value: Entity): Reference {
-        const { _workingMessage: msg, _objectToRef, _encodingSpec, _metadata, _cache } = this;
+        const { _workingMessage: msg, _objectToRef, _encodingSpec, _metadata, _store } = this;
         const index = msg.length;
         const ref = `${index}`;
         _objectToRef.set(value, ref);
@@ -49,14 +63,14 @@ export class EncodeCtx implements EncodeContext {
         }
         msg.push(0);
         if (typeof value === "symbol") {
-            const encoding = _cache.mayGetBySymbol(value);
+            const encoding = this._mustGetBySymbol(value);
             this._encodingSpec[index] = this._getEncodingIndex(encoding);
             if (encoding.metadata) {
                 this._metadata[index] = encoding.metadata;
             }
             return ref;
         }
-        const encoding = _cache.mustGetByProto(value);
+        const encoding = _store.mustGetByProto(value);
         const oldMetadata = this.metadata;
         const preszed = encoding.encode(value, this);
         if (!this._isImplicit) {
@@ -98,60 +112,3 @@ export class EncodeCtx implements EncodeContext {
         return wm;
     }
 }
-
-/**
- * The class used to encode and decode things in the preszr format.
- */
-export class PreszrEncode {
-    private _encodingKeys = new Map<Encoding, number>();
-    private _objectToRef = new Map<object | symbol | string, Reference>();
-    private _encodingSpec = Object.create(null);
-    private _metadata = Object.create(null);
-    private _ctx = this._getEncodeCtx();
-    private _workingMessage = [0] as unknown as PreszrFormat;
-    constructor(private _cache: WorkingEncodingCache) {}
-
-    private _findEncodingByKeyValue(input: unknown, encodingKey: string) {
-        if (encodingKey != null) {
-            const encoding = this._cache.mustGetByKey(encodingKey);
-            return encoding;
-        }
-        if (Array.isArray(input)) {
-            return arrayEncoding;
-        }
-        return objectEncoding;
-    }
-
-    private _getHeader() {
-        return [version, null];
-    }
-
-    private _getEncodeCtx(): EncodeContext {
-        return {
-            metadata: undefined,
-            encode: (value: any): ScalarValue => {},
-            _isImplicit: false
-        };
-    }
-
-    encode(root: any): PreszrOutput {
-        const tryScalar = tryEncodeScalar(root);
-        if (tryScalar !== noResultPlaceholder) {
-            return tryScalar;
-        }
-        const { _ctx, _workingMessage } = this;
-        _ctx.encode(root);
-        _workingMessage[0] = [
-            version,
-            this._makeEncodingKeys(),
-            this._encodingSpec,
-            this._metadata
-        ];
-        return _workingMessage;
-    }
-}
-
-export const defaultConfig: PreszrConfig = {
-    encodings: [],
-    unsupported: []
-};

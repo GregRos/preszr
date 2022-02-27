@@ -1,12 +1,11 @@
 {
   "compilerOptions": {
-    "noImplicitAny": true,
-    "allowUnreachableCode": true,
+    "composite": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "moduleResolution": "node",
-    "strict": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "declaration": true
   },
   "files": []
 }

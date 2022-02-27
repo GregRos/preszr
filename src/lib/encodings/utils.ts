@@ -11,7 +11,8 @@ import {
     EncodingSpecifier,
     PrototypeEncoding,
     PrototypeEncodingSpecifier,
-    SymbolEncoding
+    SymbolEncoding,
+    UserEncoding
 } from "../interface";
 
 const MAX_VERSION = 1024;
@@ -73,7 +74,7 @@ export function makeProtoEncoding(specifier: PrototypeEncodingSpecifier): Protot
     return encoding;
 }
 
-export function makeFullEncoding(specifier: EncodingSpecifier): Encoding {
+export function makeFullEncoding(specifier: EncodingSpecifier): UserEncoding {
     if (typeof specifier === "symbol" || "symbol" in specifier) {
         return makeSymbolEncoding(specifier);
     }

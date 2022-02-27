@@ -28,15 +28,14 @@ import {
     arrayEncoding,
     builtinEncodings,
     getUnsupportedEncoding,
-    nullPlaceholder,
     objectEncoding
 } from "./encodings";
 import { PreszrError } from "./errors";
-import { mustParseEncodingKey } from "./encodings/utils";
 import { unsupportedTypes } from "./unsupported";
-import { WorkingEncodingCache } from "./encode/encoding-cache";
 import { EncodingStore } from "./encode/store";
-import { EncodeCtx } from "./encode/encode-job";
+import { EncodeCtx } from "./encode/encode-context";
+import { Fixed } from "./encodings/fixed";
+import { DecodeContext } from "./encode/decode-context";
 
 /**
  * The class used to encode and decode things in the preszr format.
@@ -44,7 +43,7 @@ import { EncodeCtx } from "./encode/encode-job";
 export class Preszr {
     readonly config = defaultConfig;
     private _store = new EncodingStore();
-    private _encodingCache: WorkingEncodingCache | undefined;
+
     constructor(config?: DeepPartial<PreszrConfig>) {
         this.config = defaultsDeep({}, config, defaultConfig);
         const unsupportedEncoding = getUnsupportedEncoding(
@@ -52,18 +51,6 @@ export class Preszr {
             ...this.config.unsupported
         );
         this._store.add(...builtinEncodings, unsupportedEncoding, ...this.config.encodings);
-    }
-
-    private _findEncodingByKeyValue(input: unknown, encodingKey: string) {
-        if (encodingKey != null) {
-            const encoding = this._store.mustGetByKey(encodingKey);
-            if (!encoding) {
-            }
-        }
-        if (Array.isArray(input)) {
-            return arrayEncoding;
-        }
-        return objectEncoding;
     }
 
     private _checkInputHeader(input: PreszrFormat) {
@@ -112,17 +99,13 @@ export class Preszr {
         input = input as PreszrFormat;
         // We check the header is in Preszr format.
         this._checkInputHeader(input);
-        const header = input?.[0];
         // Deconstruct the header to its parts
-        const [, encodingKeys, encodingSpec, metadata] = header;
+        const [[, encodingKeys, encodingSpec, metadata]] = input;
         const targetArray = Array(input.length - 1);
         const needToInit = new Map<number, PrototypeEncoding>();
         // For optimization purposes, create one instance of `InitContext`.
-        const ctx: InitContext = {
-            decode: null!,
-            metadata: undefined
-        };
-        const encodingByIndex = [];
+        const ctx = new DecodeContext(targetArray);
+        const encodingByIndex = [] as Encoding[];
 
         // Check all encoding keys are present.
         for (const encodingKey of encodingKeys) {
@@ -133,35 +116,40 @@ export class Preszr {
         for (let i = 1; i < input.length; i++) {
             const encodingIndex = encodingSpec[i];
             const cur = input[i] as EncodedEntity;
-            if (encodingKey === unrecognizedSymbolKey) {
+            let encoding: Encoding;
+            if (encodingIndex == null) {
+                if (typeof cur === "string") {
+                    targetArray[i] = cur;
+                    continue;
+                }
+                if (Array.isArray(cur)) {
+                    encoding = arrayEncoding;
+                } else {
+                    encoding = objectEncoding;
+                }
+            } else if (encodingIndex < Fixed.End) {
+                encoding = this._store.mustGetByIndex(encodingIndex);
+            } else {
+                encoding = encodingByIndex[encodingIndex - Fixed.End];
+            }
+            if (encodingIndex === Fixed.UnrecognizedSymbol) {
                 targetArray[i] = getUnrecognizedSymbol(metadata[i] as string);
                 continue;
-            }
-            if (encodingKey == null && typeof cur === "string") {
-                targetArray[i] = cur;
-                continue;
-            }
-            let encoding: Encoding;
-            if (!encodingKey) {
             }
             if ("symbol" in encoding) {
                 targetArray[i] = encoding.symbol;
                 continue;
             }
+            const protoEnc = encoding as PrototypeEncoding;
             ctx.metadata = metadata[i];
-            targetArray[i] = encoding.decoder.create(cur, ctx);
-            if (encoding.decoder.init) {
-                needToInit.set(i, encoding);
+            targetArray[i] = protoEnc.decoder.create(cur, ctx);
+            if (protoEnc.decoder.init) {
+                needToInit.set(i, protoEnc);
             }
         }
 
-        ctx.decode = (value: any) => {
-            const decodedPrimitive = tryDecodeScalar(value);
-            if (decodedPrimitive !== noResultPlaceholder) {
-                return decodedPrimitive;
-            }
-            return targetArray[value];
-        };
+        ctx.next();
+
         for (const key of needToInit.keys()) {
             const encoding = needToInit.get(key)!;
             ctx.metadata = metadata[key];
@@ -171,15 +159,11 @@ export class Preszr {
     }
 
     encode(root: any): PreszrOutput {
-        let cache = this._encodingCache;
-        if (!cache) {
-            cache = this._encodingCache = new WorkingEncodingCache(this._store);
-        }
         const tryScalar = tryEncodeScalar(root);
         if (tryScalar !== noResultPlaceholder) {
             return tryScalar;
         }
-        const ctx = new EncodeCtx(cache);
+        const ctx = new EncodeCtx(this._store);
         ctx.encode(root);
         const result = ctx.finish();
         return result;

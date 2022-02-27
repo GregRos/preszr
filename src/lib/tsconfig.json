@@ -1,17 +1,23 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "es2020",
+    "target": "es6",
     "sourceMap": true,
+    "declarationMap": true,
     "lib": [
       "es6"
     ],
-    "declaration": true,
+    "noImplicitAny": true,
+
     "outDir": "../../dist/lib",
     "rootDir": ".",
     "allowJs": true,
-    "noEmit": true
+    "noEmit": true,
+    "types": [
+      "base64-js",
+      "@types/node"
+    ],
+    "strict": true
   },
   "include": [
     "**/*.ts",

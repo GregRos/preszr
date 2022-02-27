@@ -33,7 +33,7 @@ test("implicit symbol encoding name", t => {
 test("from symbol with name", t => {
     const encoding = makeFullEncoding(testSymbol);
     t.deepEqual(encoding, {
-        key: getSymbolEncodingName("test"),
+        name: getSymbolEncodingName("test"),
         symbol: testSymbol
     });
 });

@@ -8,8 +8,8 @@ import {
 import { PreszrError } from "../errors";
 import { getEncodingKey, makeFullEncoding, mustParseEncodingKey } from "../encodings/utils";
 import { getClassName, getSymbolName } from "../utils";
-import { WorkingEncodingCache } from "./encoding-cache";
 import { Fixed } from "../encodings/fixed";
+import { nullPlaceholder } from "../encodings";
 
 export function expandInsert<T>(arr: (T | undefined)[], index: number, item: T) {
     // We want a number of empty spaces so that the array's new length is
@@ -48,6 +48,12 @@ export class EncodingStore {
     private _keyToEncoding = new Map<string, Encoding>();
 
     private _indexToEncoding = Array(Fixed.End);
+
+    // Quickly matches a prototype to an encoding. Weak map to avoid memory leaks.
+    // Used and updated during operation, and needs to be rebuilt whenever encodings are added.
+    // This will have the protos referenced by encodings, and also their descendants.
+    // whenever the proto encoding list is updated, this becomes outdated.
+    private _cacheProtoToEncoding: WeakMap<object, PrototypeEncoding> | undefined;
 
     all(): Encoding[] {
         return [...this.getProtoEncodings(), ...this.getSymbolEncodings()];
@@ -115,6 +121,8 @@ export class EncodingStore {
         const maxVersionEncoding = versioned.get(-1);
         if (!maxVersionEncoding || maxVersionEncoding.version < encoding.version) {
             versioned.set(-1, encoding);
+            // If the max version was set, that means the proto cache is obsolete
+            this._cacheProtoToEncoding = undefined;
         }
         versioned.set(encoding.version, encoding);
     }
@@ -160,7 +168,13 @@ export class EncodingStore {
     }
 
     mustGetByIndex(ix: number) {
-        return this._indexToEncoding[ix];
+        const encoding = this._indexToEncoding[ix];
+        if (!encoding) {
+            throw new PreszrError(
+                `Missing Encoding - Index ${ix} doesn't refer to any known encoding.`
+            );
+        }
+        return encoding;
     }
 
     mustGetByKey(key: string) {
@@ -186,5 +200,49 @@ export class EncodingStore {
                 `Missing encoding - prototype encoding ${info.name} exists, but not for version ${info.version}.`
             );
         }
+    }
+
+    private _makeWorkingProtoCache() {
+        // We add an entry to the working encoding cache for every registered
+        // encoding.
+        const cache = new WeakMap<object, PrototypeEncoding>();
+        for (const encoding of this.getProtoEncodings()) {
+            if (!(encoding as any)) {
+                throw new Error(
+                    `Invariant failed - expected there to be a maximum version encoding for ${encoding.name}.`
+                );
+            }
+            for (const proto of encoding.prototypes) {
+                cache.set(proto, encoding);
+            }
+        }
+        return cache;
+    }
+
+    mustGetByProto(obj: object) {
+        if (!this._cacheProtoToEncoding) {
+            this._cacheProtoToEncoding = this._makeWorkingProtoCache();
+        }
+        const fromCache = this._cacheProtoToEncoding.get(obj);
+        if (fromCache) {
+            return fromCache;
+        }
+        let foundEncoding: PrototypeEncoding;
+        const chain = [] as object[];
+        for (let proto = obj; ; proto = Object.getPrototypeOf(proto) ?? nullPlaceholder) {
+            chain.push(proto);
+            const cached = this._cacheProtoToEncoding.get(proto);
+            if (cached !== undefined) {
+                foundEncoding = cached;
+                break;
+            }
+            if (proto === nullPlaceholder) {
+                throw new PreszrError("Invariant failed - mustGetByProto failed to find anything.");
+            }
+        }
+        for (const proto of chain) {
+            this._cacheProtoToEncoding.set(proto, foundEncoding);
+        }
+        return foundEncoding;
     }
 }

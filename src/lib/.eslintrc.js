@@ -3,6 +3,6 @@ module.exports = {
     root: true,
     extends: ["@gregros/eslint-config"],
     parserOptions: {
-        project: path.join(__dirname, "tsconfig.json")
+        project: path.join(__dirname, "tsconfig.all.json")
     }
 };
