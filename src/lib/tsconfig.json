@@ -12,7 +12,6 @@
     "outDir": "../../dist/lib",
     "rootDir": ".",
     "allowJs": true,
-    "noEmit": true,
     "types": [
       "base64-js",
       "@types/node"

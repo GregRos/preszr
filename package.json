@@ -74,8 +74,7 @@
       "src/test/*.spec.ts"
     ],
     "require": [
-      "ts-node/register",
-      "./src/test/setup.ts"
+      "./src/test/setup.js"
     ],
     "timeout": "30s"
   }

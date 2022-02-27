@@ -1,17 +1,16 @@
 /* eslint-disable symbol-description */
 import test, { UntitledMacro } from "ava";
-import { decode } from "../lib";
-import { createWithTitle, embedPreszrVersion, testDecodeMacro, testEncodeMacro } from "./utils";
-import { objectEncoding } from "../lib/encodings/basic";
-import { unrecognizedSymbolKey } from "../lib/data";
+import { decode } from "../../lib";
+import { createWithTitle, embedPreszrVersion, testDecodeMacro, testEncodeMacro } from "../utils";
+import { objectEncoding } from "../../lib/encodings/basic";
+import { unrecognizedSymbolKey } from "../../lib/data";
 import {
-    getSymbolEncodingName,
     getLibraryEncodingName,
     getSymbolName,
     getUnrecognizedSymbol,
     getUnrecognizedSymbolName
-} from "../lib/utils";
-import { Preszr } from "../lib/core";
+} from "../../lib/utils";
+import { Preszr } from "../../lib/core";
 
 const testSymbol = Symbol("test");
 const testSymbol2 = Symbol("test");
@@ -173,7 +172,7 @@ test(
     "recognized symbol",
     recognizedSymbolMacro,
     testSymbol,
-    [[{ 1: getSymbolEncodingName("test") }, {}], 0],
+    [[{ 1: "test" }, {}], 0],
     preszrWithSymbol
 );
 
@@ -187,7 +186,7 @@ test("encode+decode :: one recognized symbol, one not", t => {
         embedPreszrVersion([
             [
                 {
-                    2: getSymbolEncodingName("test"),
+                    2: "test",
                     3: unrecognizedSymbolKey
                 },
                 { 3: "test" }
@@ -204,7 +203,7 @@ test("encode+decode :: one recognized symbol, one not", t => {
 });
 
 test("two recognized symbols", recognizedSymbolMacro, { a: testSymbol, b: testSymbol2 }, [
-    [{ 2: getSymbolEncodingName("test"), 3: "test2" }, {}],
+    [{ 2: "test", 3: "test2" }, {}],
     { a: "2", b: "3" },
     0,
     0

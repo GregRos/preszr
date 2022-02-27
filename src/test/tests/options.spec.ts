@@ -1,5 +1,5 @@
 import test from "ava";
-import { Preszr } from "../lib/core";
+import { Preszr } from "../../lib/core";
 
 class TestClass {}
 

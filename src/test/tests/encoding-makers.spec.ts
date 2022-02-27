@@ -1,12 +1,8 @@
 import test from "ava";
-import { PrototypeEncoding, SymbolEncoding } from "../lib";
-import {
-    getImplicitClassEncodingName,
-    getSymbolEncodingName,
-    getLibraryEncodingName
-} from "../lib/utils";
-import { getDummyCtx } from "./utils";
-import { makeFullEncoding } from "../lib/encodings/utils";
+import { PrototypeEncoding, SymbolEncoding } from "../../lib";
+import { getImplicitClassEncodingName, getLibraryEncodingName } from "../../lib/utils";
+import { getDummyCtx } from "../utils";
+import { makeFullEncoding } from "../../lib/encodings/utils";
 
 const testSymbol = Symbol("test");
 
@@ -23,7 +19,7 @@ TestClass.prototype.field = 5;
 TestClass2.prototype.field = 10;
 
 test("implicit class encoding name", t => {
-    t.is(getSymbolEncodingName("test"), getLibraryEncodingName("symbol-test"));
+    t.is("test", getLibraryEncodingName("symbol-test"));
 });
 
 test("implicit symbol encoding name", t => {
@@ -33,7 +29,7 @@ test("implicit symbol encoding name", t => {
 test("from symbol with name", t => {
     const encoding = makeFullEncoding(testSymbol);
     t.deepEqual(encoding, {
-        name: getSymbolEncodingName("test"),
+        name: "test",
         symbol: testSymbol
     });
 });
@@ -79,7 +75,8 @@ test("encoding with multiple prototypes", t => {
     const f = () => 1;
     const encoding = makeFullEncoding({
         prototypes: [class {}, TestClass.prototype],
-        key: "blah",
+        version: 0,
+        name: "blah",
         encode: f,
         decoder: {
             create: f

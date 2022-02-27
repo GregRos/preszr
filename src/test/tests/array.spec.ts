@@ -5,7 +5,7 @@ import {
     stringify,
     testDecodeMacro,
     testEncodeMacro
-} from "./utils";
+} from "../utils";
 import test from "ava";
 import {
     infinityEncoding,
@@ -13,8 +13,8 @@ import {
     negInfinityEncoding,
     negZeroEncoding,
     undefinedEncoding
-} from "../lib/data";
-import { arrayEncoding } from "../lib/encodings/basic";
+} from "../../lib/data";
+import { arrayEncoding } from "../../lib/encodings/basic";
 
 {
     const simpleArrayTest = combAttachHeader(

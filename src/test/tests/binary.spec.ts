@@ -1,6 +1,6 @@
 import test from "ava";
-import { encodeDecodeMacro, testDecodeMacro, testEncodeMacro, toBase64 } from "./utils";
-import { getLibraryEncodingName } from "../lib/utils";
+import { encodeDecodeMacro, testDecodeMacro, testEncodeMacro, toBase64 } from "../utils";
+import { getLibraryEncodingName } from "../../lib/utils";
 
 const scalarMacros = encodeDecodeMacro({
     encode: testEncodeMacro,

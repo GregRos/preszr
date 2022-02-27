@@ -1,6 +1,6 @@
 import test from "ava";
-import { decode, encode } from "../lib";
-import { preszrDefaultHeader } from "./utils";
+import { decode, encode } from "../../lib";
+import { preszrDefaultHeader } from "../utils";
 
 test("object references same object twice", t => {
     const o = {};

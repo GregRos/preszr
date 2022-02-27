@@ -56,10 +56,6 @@ export function getLibraryEncodingName(str: string) {
     return `Preszr/${str}`;
 }
 
-export function getSymbolEncodingName(str: string) {
-    return str;
-}
-
 export function getImplicitClassEncodingName(str: string) {
     return getLibraryEncodingName(`class-${str}`);
 }

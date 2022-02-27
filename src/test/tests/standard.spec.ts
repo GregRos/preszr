@@ -1,5 +1,5 @@
 import test from "ava";
-import { decode, encode, Preszr } from "../lib";
+import { decode, encode, Preszr } from "../../lib";
 
 test("simple object", t => {
     const obj2 = {};

@@ -5,10 +5,10 @@ import {
     negZeroEncoding,
     PreszrOutput,
     undefinedEncoding
-} from "../lib/data";
+} from "../../lib/data";
 import test, { ExecutionContext, Macro } from "ava";
-import { decode, encode } from "../lib";
-import { stringify } from "./utils";
+import { decode, encode } from "../../lib";
+import { stringify } from "../utils";
 
 const primtiveTests: Macro<any> = (t: ExecutionContext, decoded: any, encoded: PreszrOutput) => {
     const rDecoded = decode(encoded);

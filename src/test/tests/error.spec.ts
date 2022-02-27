@@ -1,7 +1,7 @@
 import test, { ExecutionContext } from "ava";
-import { decode } from "../lib";
-import { encodeDecodeMacro, testEncodeMacro } from "./utils";
-import { getLibraryEncodingName } from "../lib/utils";
+import { decode } from "../../lib";
+import { encodeDecodeMacro, testEncodeMacro } from "../utils";
+import { getLibraryEncodingName } from "../../lib/utils";
 
 export const errorDecodeMacro: any = (t: ExecutionContext, decoded: any, encoded: any) => {
     const rDecoded = decode<any>(encoded);

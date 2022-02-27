@@ -1,8 +1,8 @@
-import { encodeDecodeMacro, testDecodeMacro, testEncodeMacro } from "./utils";
+import { encodeDecodeMacro, testDecodeMacro, testEncodeMacro } from "../utils";
 import test from "ava";
-import { getLibraryEncodingName } from "../lib/utils";
-import { decode } from "../lib";
-import { unsupportedEncodingKey } from "../lib/encodings/basic";
+import { getLibraryEncodingName } from "../../lib/utils";
+import { decode } from "../../lib";
+import { unsupportedEncodingKey } from "../../lib/encodings/basic";
 
 const macro = encodeDecodeMacro({
     encode: testEncodeMacro,

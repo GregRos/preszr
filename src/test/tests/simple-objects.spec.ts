@@ -5,9 +5,9 @@ import {
     negInfinityEncoding,
     negZeroEncoding,
     undefinedEncoding
-} from "../lib/data";
-import { combAttachHeader, stringify, preszrDefaultHeader } from "./utils";
-import { encode } from "../lib";
+} from "../../lib/data";
+import { combAttachHeader, stringify, preszrDefaultHeader } from "../utils";
+import { encode } from "../../lib";
 
 const simpleObjectTest = combAttachHeader(input => `{value: ${stringify(input.value)}}`);
 
