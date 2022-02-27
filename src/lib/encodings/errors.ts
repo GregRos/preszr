@@ -1,4 +1,10 @@
-import { CreateContext, InitContext, EncodeContext, PrototypeEncoding } from "../interface";
+import {
+    CreateContext,
+    InitContext,
+    EncodeContext,
+    PrototypeEncoding,
+    fixedIndexProp
+} from "../interface";
 import { getLibraryEncodingName } from "../utils";
 import { decodeObject, encodeObject } from "./basic";
 import { Fixed } from "./fixed";
@@ -8,7 +14,7 @@ export function createErrorEncoding(index: number, errorCtor: { new (): Error })
     return {
         prototypes: [errorCtor.prototype],
         name: getLibraryEncodingName(errorCtor.name),
-        fixedIndex: index,
+        [fixedIndexProp]: index,
         encode(input: any, ctx: EncodeContext): any {
             const encodedAsObject = encodeObject(input, ctx, false, errorProperties);
             (ctx as any)._isImplicit = false;

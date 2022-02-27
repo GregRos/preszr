@@ -1,9 +1,9 @@
 import { PrototypeEncoding, SymbolEncoding } from "../interface";
 import { PreszrError } from "../errors";
 import { getSymbolName, maxBy } from "../utils";
-import { nullPlaceholder } from "./basic";
+import { nullPlaceholder } from "../encodings/basic";
 import { unrecognizedSymbolKey } from "../data";
-import { EncodingStore } from "./encoding-store";
+import { EncodingStore } from "./store";
 
 export class WorkingEncodingCache {
     // Quickly matches a prototype to an encoding. Weak map to avoid memory leaks.
@@ -12,14 +12,10 @@ export class WorkingEncodingCache {
     // whenever the proto encoding list is updated, this becomes outdated.
     private _cacheProtoToEncoding: WeakMap<object, PrototypeEncoding>;
 
-    // Mirrors this._symbolToEncoding but includes unknown symbol mappings.
-    private _cacheSymbolToEncoding: Map<symbol, SymbolEncoding>;
-
     private _unknownSymbolCount = 0;
 
     constructor(private _encodings: EncodingStore) {
         this._cacheProtoToEncoding = this._makeWorkingProtoCache();
-        this._cacheSymbolToEncoding = this._makeWorkingSymbolCache();
     }
 
     private _makeWorkingProtoCache() {
@@ -47,19 +43,10 @@ export class WorkingEncodingCache {
         return cache;
     }
 
-    mustGetBySymbol(sym: symbol) {
-        const found = this._cacheSymbolToEncoding.get(sym);
-        if (!found) {
-            this._unknownSymbolCount++;
-            const dummy = {
-                symbol: sym,
-                name: unrecognizedSymbolKey,
-                metadata: getSymbolName(sym) || `#${this._unknownSymbolCount}`
-            };
-            this._cacheSymbolToEncoding.set(sym, dummy);
-        } else {
-            return found;
-        }
+    mayGetBySymbol(sym: symbol) {}
+
+    mustGetByKey(key: string) {
+        return this._encodings.mustGetByKey(key);
     }
 
     mustGetByProto(obj: object) {

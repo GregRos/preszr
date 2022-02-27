@@ -1,5 +1,7 @@
 import { EncodedEntity, ScalarValue } from "./data";
 
+export const fixedIndexProp = Symbol("fixedIndex");
+
 /**
  * The context used by the encoding process.
  */
@@ -11,6 +13,11 @@ export interface EncodeContext {
      * @param value
      */
     encode(value: any): ScalarValue;
+
+    /**
+     * For internal use only.
+     */
+    _isImplicit: boolean;
 
     /**
      * Sets the metadata for this entity. The metadata can be any JSON-legal value,
@@ -73,6 +80,7 @@ export interface SymbolEncoding {
     name: string;
     symbol: symbol;
     metadata?: any;
+    [fixedIndexProp]?: number;
 }
 
 /**
@@ -83,8 +91,10 @@ export interface PrototypeEncoding {
     version: number;
     // If this is set, the encoding has a fixed index and doesn't need
     // to appear in the encoding keys list. It only needs to appear in the
-    // encoding spec map. It makes referencing it faster but makes it position-dependent.
-    fixedIndex?: number;
+    // encoding spec map. It makes referencing it faster and message size smaller
+    // but makes it position-dependent and fragile.
+    // This is only suitable for core encodings.
+    [fixedIndexProp]?: number;
     prototypes: object[];
     decoder: Decoder;
     encode(input: any, ctx: EncodeContext): EncodedEntity;

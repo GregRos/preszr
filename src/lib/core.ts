@@ -34,29 +34,31 @@ import {
 import { PreszrError } from "./errors";
 import { mustParseEncodingKey } from "./encodings/utils";
 import { unsupportedTypes } from "./unsupported";
-import { WorkingEncodingCache } from "./encodings/cache";
-import { EncodingStore } from "./encodings/encoding-store";
+import { WorkingEncodingCache } from "./encode/encoding-cache";
+import { EncodingStore } from "./encode/store";
+import { EncodeCtx } from "./encode/encode-job";
 
 /**
  * The class used to encode and decode things in the preszr format.
  */
 export class Preszr {
     readonly config = defaultConfig;
-    private _cache = new EncodingStore();
-    private _
+    private _store = new EncodingStore();
+    private _encodingCache: WorkingEncodingCache | undefined;
     constructor(config?: DeepPartial<PreszrConfig>) {
         this.config = defaultsDeep({}, config, defaultConfig);
         const unsupportedEncoding = getUnsupportedEncoding(
             ...unsupportedTypes,
             ...this.config.unsupported
         );
-        this._cache.add(...builtinEncodings, unsupportedEncoding, ...this.config.encodings);
+        this._store.add(...builtinEncodings, unsupportedEncoding, ...this.config.encodings);
     }
 
     private _findEncodingByKeyValue(input: unknown, encodingKey: string) {
         if (encodingKey != null) {
-            const encoding = this._cache.
-            return encoding;
+            const encoding = this._store.mustGetByKey(encodingKey);
+            if (!encoding) {
+            }
         }
         if (Array.isArray(input)) {
             return arrayEncoding;
@@ -64,7 +66,7 @@ export class Preszr {
         return objectEncoding;
     }
 
-    private _checkInputHeader(input: any) {
+    private _checkInputHeader(input: PreszrFormat) {
         let reason = "" as string;
         let versionInfo = "" as any;
         if (!Array.isArray(input)) {
@@ -120,16 +122,16 @@ export class Preszr {
             decode: null!,
             metadata: undefined
         };
+        const encodingByIndex = [];
 
         // Check all encoding keys are present.
         for (const encodingKey of encodingKeys) {
-            this._cache.mustGetByKey(encodingKey);
+            encodingByIndex.push(this._store.mustGetByKey(encodingKey));
         }
 
         // Start decoding the payload.
         for (let i = 1; i < input.length; i++) {
             const encodingIndex = encodingSpec[i];
-            const encodingKey = encodingKeys[encodingIndex];
             const cur = input[i] as EncodedEntity;
             if (encodingKey === unrecognizedSymbolKey) {
                 targetArray[i] = getUnrecognizedSymbol(metadata[i] as string);
@@ -139,7 +141,9 @@ export class Preszr {
                 targetArray[i] = cur;
                 continue;
             }
-            const encoding = this._findEncodingByKeyValue(cur, encodingKey);
+            let encoding: Encoding;
+            if (!encodingKey) {
+            }
             if ("symbol" in encoding) {
                 targetArray[i] = encoding.symbol;
                 continue;
@@ -167,74 +171,18 @@ export class Preszr {
     }
 
     encode(root: any): PreszrOutput {
-        try {
-            const tryScalar = tryEncodeScalar(root);
-            if (tryScalar !== noResultPlaceholder) return tryScalar;
-            const encodingSpec = {} as EncodingSpec;
-            const metadata = {} as Metadata;
-            const encodingKeys = new Map<string, number>();
-            const header = [] as unknown as Header;
-
-            const preszrRep = [header] as PreszrFormat;
-            const objectToRef = new Map<object | symbol | string, Reference>();
-
-            const cacheEncodingIndex = (key: string) => {
-                let encodingIndex = encodingKeys.get(key);
-                if (encodingIndex == null) {
-                    encodingIndex = encodingKeys.size;
-                    encodingKeys.set(key, encodingIndex);
-                }
-                return encodingIndex;
-            };
-            const ctx: EncodeContext = {
-                metadata: undefined,
-                encode(value: any): ScalarValue {
-                    const tryScalar = tryEncodeScalar(value);
-                    if (tryScalar !== noResultPlaceholder) return tryScalar;
-                    let existingRef = objectToRef.get(value);
-                    if (!existingRef) {
-                        existingRef = createNewRef(value);
-                    }
-                    return existingRef;
-                }
-            };
-            const createNewRef = (value: Entity): Reference => {
-                const index = preszrRep.length;
-                const ref = `${index}`;
-                objectToRef.set(value, ref);
-                if (typeof value === "string") {
-                    preszrRep.push(value);
-                    return ref;
-                }
-                preszrRep.push(0);
-                if (typeof value === "symbol") {
-                    const encoding = this._findEncodingForSymbol(value);
-                    encodingSpec[index] = cacheEncodingIndex(encoding.name);
-                    if (encoding.metadata) {
-                        metadata[index] = encoding.metadata;
-                    }
-                    return ref;
-                }
-                const encoding = this._findEncodingForObject(value);
-                const oldMetadata = ctx.metadata;
-                const szed = encoding.encode(value, ctx);
-                if (!(ctx as any)._isImplicit) {
-                    encodingSpec[index] = cacheEncodingIndex(encoding.name);
-                }
-                (ctx as any)._isImplicit = false;
-                if (ctx.metadata !== undefined) {
-                    metadata[index] = ctx.metadata;
-                }
-                ctx.metadata = oldMetadata;
-                preszrRep[index] = szed;
-                return ref;
-            };
-            ctx.encode(root);
-            header.push(version, [...encodingKeys.keys()], encodingSpec, metadata);
-            return preszrRep;
-        } finally {
-            this._tempSymbEncoding.clear();
+        let cache = this._encodingCache;
+        if (!cache) {
+            cache = this._encodingCache = new WorkingEncodingCache(this._store);
         }
+        const tryScalar = tryEncodeScalar(root);
+        if (tryScalar !== noResultPlaceholder) {
+            return tryScalar;
+        }
+        const ctx = new EncodeCtx(cache);
+        ctx.encode(root);
+        const result = ctx.finish();
+        return result;
     }
 }
 

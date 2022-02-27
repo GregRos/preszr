@@ -1,8 +1,30 @@
-import { Encoding, EncodingSpecifier, PrototypeEncoding, SymbolEncoding } from "../interface";
+import {
+    Encoding,
+    EncodingSpecifier,
+    fixedIndexProp,
+    PrototypeEncoding,
+    SymbolEncoding
+} from "../interface";
 import { PreszrError } from "../errors";
-import { getEncodingKey, makeFullEncoding, mustParseEncodingKey } from "./utils";
+import { getEncodingKey, makeFullEncoding, mustParseEncodingKey } from "../encodings/utils";
 import { getClassName, getSymbolName } from "../utils";
-import { WorkingEncodingCache } from "./cache";
+import { WorkingEncodingCache } from "./encoding-cache";
+import { Fixed } from "../encodings/fixed";
+
+export function expandInsert<T>(arr: (T | undefined)[], index: number, item: T) {
+    // We want a number of empty spaces so that the array's new length is
+    // index + 1. therefore we want index - arr.Length spaces.
+
+    // We do it this way to avoid actual holes in the array, which makes JS
+    // engines encode the array in unoptimized ways.
+
+    // we'll make an extra space for the place to insert the item.
+    const spaces = index - arr.length + 1;
+    for (let i = 0; i < spaces; i++) {
+        arr.push(undefined);
+    }
+    arr[index] = item;
+}
 
 export class EncodingStore {
     // We use multiple caches to speed up encoding and decoding.
@@ -25,9 +47,7 @@ export class EncodingStore {
     // ending with .S
     private _keyToEncoding = new Map<string, Encoding>();
 
-    getWorkingCopy() {
-        return new WorkingEncodingCache(this);
-    }
+    private _indexToEncoding = Array(Fixed.End);
 
     all(): Encoding[] {
         return [...this.getProtoEncodings(), ...this.getSymbolEncodings()];
@@ -58,14 +78,26 @@ export class EncodingStore {
             const encoding = makeFullEncoding(spec);
             // After adding encodings, the cache must be rebuilt.
             if ("symbol" in encoding) {
-                this.addSymbolEncoding(encoding);
+                this._addSymbolEncoding(encoding);
             } else {
-                this.addProtoEncoding(encoding);
+                this._addProtoEncoding(encoding);
+            }
+            const fixed = encoding[fixedIndexProp];
+            if (fixed != null) {
+                const existing = this._indexToEncoding[fixed];
+                if (existing) {
+                    const enc1 = getEncodingKey(encoding);
+                    const enc2 = getEncodingKey(existing);
+                    throw new PreszrError(
+                        `Configuration - Encodings '${enc1}' and '${enc2}' have identical fixed index (${fixed}).`
+                    );
+                }
+                this._indexToEncoding[fixed] = encoding;
             }
         }
     }
 
-    addProtoEncoding(encoding: PrototypeEncoding) {
+    private _addProtoEncoding(encoding: PrototypeEncoding) {
         let versioned = this._nameToProtoEncodings.get(encoding.name);
 
         if (!versioned) {
@@ -85,9 +117,6 @@ export class EncodingStore {
             versioned.set(-1, encoding);
         }
         versioned.set(encoding.version, encoding);
-        // We delete the cache as it's now out of date - some prototypes
-        // might be linked to different encodings.
-        this._cacheProtoToEncoding = undefined;
     }
 
     *getProtoEncodings(): Generator<PrototypeEncoding> {
@@ -107,7 +136,7 @@ export class EncodingStore {
         return this._symbolToEncoding.values();
     }
 
-    addSymbolEncoding(encoding: SymbolEncoding) {
+    private _addSymbolEncoding(encoding: SymbolEncoding) {
         const existingBySymbol = this._symbolToEncoding.get(encoding.symbol);
         const existingByKey = this._keyToEncoding.get(encoding.name);
         if (existingByKey) {
@@ -124,6 +153,14 @@ export class EncodingStore {
         }
         this._symbolToEncoding.set(encoding.symbol, encoding);
         this._keyToEncoding.set(encoding.name, encoding);
+    }
+
+    mayGetBySymbol(s: symbol) {
+        return this._symbolToEncoding.get(s);
+    }
+
+    mustGetByIndex(ix: number) {
+        return this._indexToEncoding[ix];
     }
 
     mustGetByKey(key: string) {

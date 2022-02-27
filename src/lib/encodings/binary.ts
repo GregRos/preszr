@@ -1,4 +1,4 @@
-import { CreateContext, EncodeContext, PrototypeEncoding } from "../interface";
+import { CreateContext, EncodeContext, fixedIndexProp, PrototypeEncoding } from "../interface";
 import { getLibraryEncodingName } from "../utils";
 import { fromByteArray, toByteArray } from "base64-js";
 import { _BigInt64Array, _BigUint64Array, _SharedArrayBuffer } from "../opt-types";
@@ -13,7 +13,8 @@ export type TypedArrayConstructor = {
 
 export const arrayBufferEncoding: PrototypeEncoding = {
     name: getLibraryEncodingName("ArrayBuffer"),
-    version: Fixed.ArrayBuffer,
+    version: 0,
+    [fixedIndexProp]: Fixed.ArrayBuffer,
     prototypes: [ArrayBuffer.prototype].filter(x => !!x),
     encode(input: ArrayBuffer, ctx: EncodeContext): any {
         const b64 = fromByteArray(new Uint8Array(input));
@@ -29,7 +30,8 @@ export const arrayBufferEncoding: PrototypeEncoding = {
 
 export const sharedArrayBufferEncoding: PrototypeEncoding = {
     name: getLibraryEncodingName("SharedArrayBuffer"),
-    version: Fixed.SharedArrayBuffer,
+    version: 0,
+    [fixedIndexProp]: Fixed.SharedArrayBuffer,
     prototypes: [_SharedArrayBuffer.prototype],
     encode: arrayBufferEncoding.encode.bind(arrayBufferEncoding),
     decoder: {
@@ -52,7 +54,7 @@ export function createBinEncoding(
     return {
         name: getLibraryEncodingName(ctor.name),
         version: 0,
-        fixedIndex: index,
+        [fixedIndexProp]: index,
         prototypes: [ctor.prototype],
         encode(input: InstanceType<TypedArrayConstructor>, ctx: EncodeContext): any {
             return arrayBufferEncoding.encode(input.buffer, ctx);

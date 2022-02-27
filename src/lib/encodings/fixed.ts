@@ -2,7 +2,7 @@
 // and access a tiny bit faster for them.
 export enum Fixed {
     /*** UNSUPPORTED BLOCK */
-    Unsupported = 0,
+    Unsupported = 1,
 
     // OBJECT BLOCK
     Object = 10,
@@ -43,6 +43,7 @@ export enum Fixed {
     SyntaxError,
     Error,
 
+    UnrecognizedSymbol = 99,
     // ... FREE BLOCK 76-99
     End = 100
     // Block end marker 100

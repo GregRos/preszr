@@ -3,7 +3,6 @@ import { getPrototypeDecoder, getPrototypeEncoder, nullPlaceholder } from "./bas
 import {
     getClassName,
     getImplicitClassEncodingName,
-    getSymbolEncodingName,
     getSymbolName,
     isNumericString
 } from "../utils";

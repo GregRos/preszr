@@ -1,4 +1,10 @@
-import { CreateContext, InitContext, EncodeContext, PrototypeEncoding } from "../interface";
+import {
+    CreateContext,
+    InitContext,
+    EncodeContext,
+    PrototypeEncoding,
+    fixedIndexProp
+} from "../interface";
 import { getLibraryEncodingName } from "../utils";
 import { EncodedEntity, ScalarValue } from "../data";
 import { Fixed } from "./fixed";
@@ -6,7 +12,7 @@ import { Fixed } from "./fixed";
 export const mapEncoding: PrototypeEncoding = {
     name: getLibraryEncodingName("Map"),
     version: 0,
-    fixedIndex: Fixed.Map,
+    [fixedIndexProp]: Fixed.Map,
     prototypes: [Map.prototype],
     encode(input: Map<any, any>, ctx: EncodeContext): any {
         const array = [] as [ScalarValue, ScalarValue][];
@@ -31,7 +37,7 @@ export const mapEncoding: PrototypeEncoding = {
 export const setEncoding: PrototypeEncoding = {
     name: getLibraryEncodingName("Set"),
     version: 0,
-    fixedIndex: Fixed.Set,
+    [fixedIndexProp]: Fixed.Set,
     prototypes: [Set.prototype],
     encode(input: Set<any>, ctx: EncodeContext): EncodedEntity {
         const outArray = [] as ScalarValue[];
