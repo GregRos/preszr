@@ -49,7 +49,7 @@ test("decoding - error when trying to decode wrong version", t => {
 });
 
 test("decoding error - unknown encoding", t => {
-    const encoded = [[pkgVersion, ["test"], { 1: 0 }, {}], 0] as any;
+    const encoded = [[pkgVersion, ["test.v0"], { 1: 0 }, {}], 0] as any;
     const err = t.throws(() => decode(encoded));
     t.regex(err.message, /not found/);
 });

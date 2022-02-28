@@ -6,7 +6,7 @@ import {
     Decoder,
     fixedIndexProp
 } from "../interface";
-import { getClassName, getLibraryEncodingName } from "../utils";
+import { getClassName, getBuiltInEncodingName } from "../utils";
 import { ScalarValue } from "../data";
 import { Fixed } from "./fixed";
 
@@ -69,7 +69,7 @@ export const objectEncoding: PrototypeEncoding = {
     version: 0,
     prototypes: [Object.prototype],
     [fixedIndexProp]: Fixed.Object,
-    name: getLibraryEncodingName("object"),
+    name: getBuiltInEncodingName("object"),
     encode(input: any, ctx: EncodeContext): any {
         return encodeObject(input, ctx, false);
     },
@@ -91,7 +91,7 @@ function encodeAsSparseArray(input: any, ctx: EncodeContext) {
 }
 
 export const arrayEncoding: PrototypeEncoding = {
-    name: getLibraryEncodingName("array"),
+    name: getBuiltInEncodingName("array"),
     version: 0,
     [fixedIndexProp]: Fixed.Array,
     prototypes: [Array.prototype],
@@ -131,7 +131,7 @@ export const arrayEncoding: PrototypeEncoding = {
 export const nullPrototypeEncoding: PrototypeEncoding = {
     version: 0,
     [fixedIndexProp]: Fixed.NullProto,
-    name: getLibraryEncodingName("null"),
+    name: getBuiltInEncodingName("null"),
     encode: getPrototypeEncoder(null),
     decoder: getPrototypeDecoder(null),
     prototypes: [nullPlaceholder]
@@ -154,7 +154,7 @@ export function getPrototypeEncoder(proto: object | null) {
     };
 }
 
-export const unsupportedEncodingKey = getLibraryEncodingName("unsupported");
+export const unsupportedEncodingKey = getBuiltInEncodingName("unsupported");
 
 export function getUnsupportedEncoding(...protos: object[]): PrototypeEncoding {
     return {

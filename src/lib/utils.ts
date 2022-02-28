@@ -52,12 +52,12 @@ export function isNumericString(input: string) {
     return +input !== parseInt(input);
 }
 
-export function getLibraryEncodingName(str: string) {
-    return `Preszr/${str}`;
+export function getBuiltInEncodingName(str: string) {
+    return `/${str}`;
 }
 
 export function getImplicitClassEncodingName(str: string) {
-    return getLibraryEncodingName(`class-${str}`);
+    return str;
 }
 
 export function getClassName(proto: any): string | null | undefined {

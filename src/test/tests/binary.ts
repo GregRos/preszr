@@ -1,6 +1,6 @@
 import test from "ava";
 import { encodeDecodeMacro, testDecodeMacro, testEncodeMacro, toBase64 } from "../utils";
-import { getLibraryEncodingName } from "../../lib/utils";
+import { getBuiltInEncodingName } from "../../lib/utils";
 
 const scalarMacros = encodeDecodeMacro({
     encode: testEncodeMacro,
@@ -27,7 +27,7 @@ test("deepEqual works on binary types", t => {
 const array1 = createArrayBuffer(1, 2, 3, 4, 5, 6, 7, 8);
 
 test("ArrayBuffer", scalarMacros, array1, [
-    [{ 1: getLibraryEncodingName("ArrayBuffer") }, {}],
+    [{ 1: getBuiltInEncodingName("ArrayBuffer") }, {}],
     toBase64(array1)
 ]);
 
@@ -46,7 +46,7 @@ for (const ctor of [
     DataView
 ]) {
     test(ctor.name, scalarMacros, new ctor(array1), [
-        [{ 1: getLibraryEncodingName(ctor.name) }, {}],
+        [{ 1: getBuiltInEncodingName(ctor.name) }, {}],
         toBase64(array1)
     ]);
 }

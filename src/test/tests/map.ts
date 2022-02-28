@@ -1,6 +1,6 @@
 import { encodeDecodeMacro, testDecodeMacro, testEncodeMacro } from "../utils";
 import test from "ava";
-import { getLibraryEncodingName } from "../../lib/utils";
+import { getBuiltInEncodingName } from "../../lib/utils";
 import { decode } from "../../lib";
 import { unsupportedEncodingKey } from "../../lib/encodings/basic";
 
@@ -9,18 +9,18 @@ const macro = encodeDecodeMacro({
     decode: testDecodeMacro
 });
 
-test("empty", macro, new Map(), [[{ 1: getLibraryEncodingName("Map") }, {}], []]);
+test("empty", macro, new Map(), [[{ 1: getBuiltInEncodingName("Map") }, {}], []]);
 
-test("one pair", macro, new Map([[1, 1]]), [[{ 1: getLibraryEncodingName("Map") }, {}], [[1, 1]]]);
+test("one pair", macro, new Map([[1, 1]]), [[{ 1: getBuiltInEncodingName("Map") }, {}], [[1, 1]]]);
 
 test("ref key", macro, new Map([[{}, 1]]), [
-    [{ 1: getLibraryEncodingName("Map") }, {}],
+    [{ 1: getBuiltInEncodingName("Map") }, {}],
     [["2", 1]],
     {}
 ]);
 
 test("ref key-value", macro, new Map([[{}, {}]]), [
-    [{ 1: getLibraryEncodingName("Map") }, {}],
+    [{ 1: getBuiltInEncodingName("Map") }, {}],
     [["2", "3"]],
     {},
     {}
@@ -38,7 +38,7 @@ test(
         }
     }),
     new Map([[o, o]]),
-    [[{ 1: getLibraryEncodingName("Map") }, {}], [["2", "2"]], {}]
+    [[{ 1: getBuiltInEncodingName("Map") }, {}], [["2", "2"]], {}]
 );
 
 test(
@@ -49,7 +49,7 @@ test(
         [2, 2]
     ]),
     [
-        [{ 1: getLibraryEncodingName("Map") }, {}],
+        [{ 1: getBuiltInEncodingName("Map") }, {}],
         [
             [1, 1],
             [2, 2]
@@ -68,7 +68,7 @@ test(
     }),
     new Map([[() => {}, 1]]),
     [
-        [{ 1: getLibraryEncodingName("Map"), 2: unsupportedEncodingKey }, { 2: "Function" }],
+        [{ 1: getBuiltInEncodingName("Map"), 2: unsupportedEncodingKey }, { 2: "Function" }],
         [["2", 1]],
         0
     ]
@@ -90,7 +90,7 @@ test(
     [
         [
             {
-                1: getLibraryEncodingName("Map"),
+                1: getBuiltInEncodingName("Map"),
                 2: unsupportedEncodingKey,
                 3: unsupportedEncodingKey
             },
@@ -106,13 +106,13 @@ test(
 );
 
 test("nested map", macro, new Map([[new Map(), 5]]), [
-    [{ 1: getLibraryEncodingName("Map"), 2: getLibraryEncodingName("Map") }, {}],
+    [{ 1: getBuiltInEncodingName("Map"), 2: getBuiltInEncodingName("Map") }, {}],
     [["2", 5]],
     []
 ]);
 
 test("string key", macro, new Map([["a", 2]]), [
-    [{ 1: getLibraryEncodingName("Map") }, {}],
+    [{ 1: getBuiltInEncodingName("Map") }, {}],
     [["2", 2]],
     "a"
 ]);

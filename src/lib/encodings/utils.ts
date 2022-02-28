@@ -81,7 +81,9 @@ export function makeFullEncoding(specifier: EncodingSpecifier): UserEncoding {
     if (typeof specifier === "function") {
         return makeProtoEncodingByCtor(specifier);
     }
-    if ("prototype" in specifier) specifier = makeProtoEncoding(specifier);
+    if ("prototype" in specifier) {
+        specifier = makeProtoEncoding(specifier);
+    }
     if (!specifier.prototypes || specifier.prototypes.length === 0) {
         throw new PreszrError("Encoding must specify prototypes.");
     }

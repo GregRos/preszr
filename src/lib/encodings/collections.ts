@@ -5,12 +5,12 @@ import {
     PrototypeEncoding,
     fixedIndexProp
 } from "../interface";
-import { getLibraryEncodingName } from "../utils";
+import { getBuiltInEncodingName } from "../utils";
 import { EncodedEntity, ScalarValue } from "../data";
 import { Fixed } from "./fixed";
 
 export const mapEncoding: PrototypeEncoding = {
-    name: getLibraryEncodingName("Map"),
+    name: getBuiltInEncodingName("Map"),
     version: 0,
     [fixedIndexProp]: Fixed.Map,
     prototypes: [Map.prototype],
@@ -35,7 +35,7 @@ export const mapEncoding: PrototypeEncoding = {
 };
 
 export const setEncoding: PrototypeEncoding = {
-    name: getLibraryEncodingName("Set"),
+    name: getBuiltInEncodingName("Set"),
     version: 0,
     [fixedIndexProp]: Fixed.Set,
     prototypes: [Set.prototype],

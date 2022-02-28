@@ -1,6 +1,6 @@
 import test from "ava";
 import { PrototypeEncoding, SymbolEncoding } from "../../lib";
-import { getImplicitClassEncodingName, getLibraryEncodingName } from "../../lib/utils";
+import { getImplicitClassEncodingName, getBuiltInEncodingName } from "../../lib/utils";
 import { getDummyCtx } from "../utils";
 import { makeFullEncoding } from "../../lib/encodings/utils";
 
@@ -19,11 +19,7 @@ TestClass.prototype.field = 5;
 TestClass2.prototype.field = 10;
 
 test("implicit class encoding name", t => {
-    t.is("test", getLibraryEncodingName("symbol-test"));
-});
-
-test("implicit symbol encoding name", t => {
-    t.is(getImplicitClassEncodingName("test"), getLibraryEncodingName("class-test"));
+    t.is(getBuiltInEncodingName("test"), "/test");
 });
 
 test("from symbol with name", t => {

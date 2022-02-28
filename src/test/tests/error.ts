@@ -1,7 +1,7 @@
 import test, { ExecutionContext } from "ava";
 import { decode } from "../../lib";
 import { encodeDecodeMacro, testEncodeMacro } from "../utils";
-import { getLibraryEncodingName } from "../../lib/utils";
+import { getBuiltInEncodingName } from "../../lib/utils";
 
 export const errorDecodeMacro: any = (t: ExecutionContext, decoded: any, encoded: any) => {
     const rDecoded = decode<any>(encoded);
@@ -25,7 +25,7 @@ const macro = encodeDecodeMacro({
 const err1 = new Error("hi");
 
 test("regular error", macro, err1, [
-    [{ 1: getLibraryEncodingName("Error") }, {}],
+    [{ 1: getBuiltInEncodingName("Error") }, {}],
     {
         stack: "2",
         name: "3",
@@ -39,7 +39,7 @@ test("regular error", macro, err1, [
 const err2 = new SyntaxError("blah");
 
 test("error subclass", macro, err2, [
-    [{ 1: getLibraryEncodingName("SyntaxError") }, {}],
+    [{ 1: getBuiltInEncodingName("SyntaxError") }, {}],
     {
         stack: "2",
         name: "3",
@@ -70,7 +70,7 @@ test(
     }),
     err3,
     [
-        [{ 1: getLibraryEncodingName("Error") }, {}],
+        [{ 1: getBuiltInEncodingName("Error") }, {}],
         {
             stack: "3",
             name: "2",

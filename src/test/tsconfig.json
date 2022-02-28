@@ -11,7 +11,7 @@
     ],
     "outDir": "../../dist/test",
     "rootDir": ".",
-    "noEmit": true
+    "allowJs": true,
   },
   "include": [
     "**/*.ts"

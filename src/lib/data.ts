@@ -1,4 +1,4 @@
-import { getLibraryEncodingName } from "./utils";
+import { getBuiltInEncodingName } from "./utils";
 import { errorNoTypeInEnv } from "./errors";
 import { _BigInt } from "./opt-types";
 
@@ -99,4 +99,4 @@ export function tryDecodeScalar(candidate: any) {
 
     return noResultPlaceholder;
 }
-export const unrecognizedSymbolKey = getLibraryEncodingName("symbol?");
+export const unrecognizedSymbolKey = getBuiltInEncodingName("symbol?");

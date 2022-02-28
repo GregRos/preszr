@@ -1,5 +1,5 @@
 import { CreateContext, EncodeContext, fixedIndexProp, PrototypeEncoding } from "../interface";
-import { getLibraryEncodingName } from "../utils";
+import { getBuiltInEncodingName } from "../utils";
 import { fromByteArray, toByteArray } from "base64-js";
 import { _BigInt64Array, _BigUint64Array, _SharedArrayBuffer } from "../opt-types";
 import { Fixed } from "./fixed";
@@ -12,7 +12,7 @@ export type TypedArrayConstructor = {
 };
 
 export const arrayBufferEncoding: PrototypeEncoding = {
-    name: getLibraryEncodingName("ArrayBuffer"),
+    name: getBuiltInEncodingName("ArrayBuffer"),
     version: 0,
     [fixedIndexProp]: Fixed.ArrayBuffer,
     prototypes: [ArrayBuffer.prototype].filter(x => !!x),
@@ -29,7 +29,7 @@ export const arrayBufferEncoding: PrototypeEncoding = {
 };
 
 export const sharedArrayBufferEncoding: PrototypeEncoding = {
-    name: getLibraryEncodingName("SharedArrayBuffer"),
+    name: getBuiltInEncodingName("SharedArrayBuffer"),
     version: 0,
     [fixedIndexProp]: Fixed.SharedArrayBuffer,
     prototypes: [_SharedArrayBuffer.prototype],
@@ -52,7 +52,7 @@ export function createBinEncoding(
 ): PrototypeEncoding | undefined {
     if (!ctor) return undefined;
     return {
-        name: getLibraryEncodingName(ctor.name),
+        name: getBuiltInEncodingName(ctor.name),
         version: 0,
         [fixedIndexProp]: index,
         prototypes: [ctor.prototype],

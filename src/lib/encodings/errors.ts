@@ -5,15 +5,19 @@ import {
     PrototypeEncoding,
     fixedIndexProp
 } from "../interface";
-import { getLibraryEncodingName } from "../utils";
+import { getBuiltInEncodingName } from "../utils";
 import { decodeObject, encodeObject } from "./basic";
 import { Fixed } from "./fixed";
 
 const errorProperties = ["stack", "name", "message"];
-export function createErrorEncoding(index: number, errorCtor: { new (): Error }) {
+export function createErrorEncoding(
+    index: number,
+    errorCtor: { new (): Error }
+): PrototypeEncoding {
     return {
         prototypes: [errorCtor.prototype],
-        name: getLibraryEncodingName(errorCtor.name),
+        version: 0,
+        name: getBuiltInEncodingName(errorCtor.name),
         [fixedIndexProp]: index,
         encode(input: any, ctx: EncodeContext): any {
             const encodedAsObject = encodeObject(input, ctx, false, errorProperties);
@@ -28,7 +32,7 @@ export function createErrorEncoding(index: number, errorCtor: { new (): Error })
                 decodeObject(target, encoded, ctx);
             }
         }
-    } as PrototypeEncoding;
+    };
 }
 
 export const errorEncodings = [

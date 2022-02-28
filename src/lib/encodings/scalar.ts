@@ -5,13 +5,13 @@ import {
     PrototypeEncoding,
     fixedIndexProp
 } from "../interface";
-import { getLibraryEncodingName } from "../utils";
+import { getBuiltInEncodingName } from "../utils";
 import { Fixed } from "./fixed";
 
 export const regexpEncoding: PrototypeEncoding = {
     prototypes: [RegExp.prototype],
     version: 0,
-    name: getLibraryEncodingName("RegExp"),
+    name: getBuiltInEncodingName("RegExp"),
     [fixedIndexProp]: Fixed.Regexp,
     encode({ source, flags }: RegExp, ctx: EncodeContext): any {
         return flags ? [source, flags] : source;
@@ -30,7 +30,7 @@ export const dateEncoding: PrototypeEncoding = {
     prototypes: [Date.prototype],
     version: 0,
     [fixedIndexProp]: Fixed.Date,
-    name: getLibraryEncodingName("Date"),
+    name: getBuiltInEncodingName("Date"),
     encode(input: Date, ctx: EncodeContext): any {
         return input.getTime();
     },
@@ -43,7 +43,7 @@ export const dateEncoding: PrototypeEncoding = {
 
 export function makeWrapperEncoding(index: number, ctor: { new (x: any): any }): PrototypeEncoding {
     return {
-        name: getLibraryEncodingName(ctor.name),
+        name: getBuiltInEncodingName(ctor.name),
         version: 0,
         [fixedIndexProp]: index,
         prototypes: [ctor.prototype],

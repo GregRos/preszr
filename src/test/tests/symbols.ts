@@ -5,7 +5,7 @@ import { createWithTitle, embedPreszrVersion, testDecodeMacro, testEncodeMacro }
 import { objectEncoding } from "../../lib/encodings/basic";
 import { unrecognizedSymbolKey } from "../../lib/data";
 import {
-    getLibraryEncodingName,
+    getBuiltInEncodingName,
     getSymbolName,
     getUnrecognizedSymbol,
     getUnrecognizedSymbolName
@@ -31,7 +31,7 @@ const unrecognizedSymbolMacro = (decodeImpl: UntitledMacro<[any]>) => {
 };
 
 test("library string function", t => {
-    t.is(getLibraryEncodingName("a"), "!@#preszr-a");
+    t.is(getBuiltInEncodingName("a"), "/a");
 });
 
 test("unrecognized symbol name generator", t => {

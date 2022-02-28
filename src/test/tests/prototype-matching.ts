@@ -147,7 +147,7 @@ test("override built-in prototype", t => {
         encodings: [
             {
                 prototype: Date.prototype,
-                name: "new-date",
+                name: "/Date",
                 encode: () => 5,
                 decoder: {
                     create: () => 5
