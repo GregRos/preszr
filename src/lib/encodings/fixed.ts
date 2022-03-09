@@ -12,7 +12,7 @@ export enum Fixed {
     Set,
 
     // SCALAR BLOCK
-    Regexp = 30,
+    RegExp = 30,
     Date,
     FundBool,
     FundString,

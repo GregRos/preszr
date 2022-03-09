@@ -1,44 +1,75 @@
 import test from "ava";
-import { decode, encode } from "../../lib";
-import { preszrDefaultHeader } from "../utils";
+import { decode, encode } from "@lib";
+import { items, preszr, using } from "../tools";
+import { defaultPreszr } from "@lib/default";
 
-test("object references same object twice", t => {
+const complexReferences = using(defaultPreszr).encodeDecodeDeepEqual();
+{
     const o = {};
-    const b = { o1: o, o2: o };
-    const encoded = encode(b);
-    t.deepEqual(encoded, preszrDefaultHeader({ o1: "2", o2: "2" }, {}));
-    const B = decode<any>(encoded);
-    t.deepEqual(B, b);
-    t.is(B.o1, B.o2);
-});
+    const siblingExample = {
+        a: o,
+        b: o
+    };
 
-test("one object, circular reference", t => {
-    const a = {} as any;
-    a.a = a;
-    const encoded = encode(a);
-    t.deepEqual(encoded, preszrDefaultHeader({ a: "1" }));
-    const decoded = decode<any>(encoded);
-    t.is(decoded.a, decoded);
-});
+    test(
+        "sibling refs - structural",
+        complexReferences,
+        siblingExample,
+        preszr(items({ a: "2", b: "2" }), items({}))
+    );
 
-test("one array, circular reference", t => {
-    const a = [] as any;
-    a.push(a);
-    const encoded = encode(a);
-    t.deepEqual(encoded, preszrDefaultHeader(["1"]));
-    const decoded = decode<any>(encoded);
-    t.is(decoded[0], decoded);
-});
+    test("sibling references - identity", t => {
+        const result = decode(encode(siblingExample)) as typeof siblingExample;
+        t.is(result.a, result.b);
+    });
+}
 
-test("two objects, circular references", t => {
-    const a = {} as any;
-    const b = {} as any;
-    a.b = b;
-    b.a = a;
-    const encoded = encode(a);
-    t.deepEqual(encoded, preszrDefaultHeader({ b: "2" }, { a: "1" }));
-    const decoded = decode(encoded);
-    t.deepEqual(decoded, a);
-    t.is(a.b, b);
-    t.is(b.a, a);
-});
+{
+    const circular = { self: undefined };
+    circular.self = circular;
+    test(
+        "self ref - structural",
+        complexReferences,
+        circular,
+        preszr(items({ self: "1" }))
+    );
+    test("self ref - identity", t => {
+        const result = decode(encode(circular)) as typeof circular;
+        t.is(result.self, result);
+    });
+}
+
+{
+    const circular = [];
+    circular.push(circular);
+    test(
+        "array self ref - structural",
+        complexReferences,
+        circular,
+        preszr(items(["1"]))
+    );
+    test("array self ref - identity", t => {
+        const r = decode(encode(circular)) as typeof circular;
+        t.is(r[0], r);
+    });
+}
+
+{
+    const mutuallyCircular1 = { other: undefined };
+    const mutuallyCircular2 = { other: undefined };
+    mutuallyCircular1.other = mutuallyCircular2;
+    mutuallyCircular2.other = mutuallyCircular1;
+    test(
+        "mutually circular refs - structure",
+        complexReferences,
+        mutuallyCircular1,
+        preszr(items({ other: "2" }, { other: "1" }))
+    );
+    test("mutually circular refs - identity", t => {
+        const first = decode(
+            encode(mutuallyCircular1)
+        ) as typeof mutuallyCircular1;
+        const other = first.other;
+        t.is(other.other, first);
+    });
+}

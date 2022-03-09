@@ -1,47 +1,89 @@
 import test from "ava";
-import {
-    infinityEncoding,
-    nanEncoding,
-    negInfinityEncoding,
-    negZeroEncoding,
-    undefinedEncoding
-} from "../../lib/data";
-import { combAttachHeader, stringify, preszrDefaultHeader } from "../utils";
-import { encode } from "../../lib";
+import { stringify } from "../utils";
+import { items, preszr, using } from "../tools";
+import { defaultPreszr } from "@lib/default";
 
-const simpleObjectTest = combAttachHeader(input => `{value: ${stringify(input.value)}}`);
+const simpleObjectEncoding = using(defaultPreszr)
+    .title(
+        ({ title, decoded }) =>
+            title ?? `single value - ${stringify(decoded.value)}`
+    )
+    .encodeDecodeDeepEqual();
 
-test(simpleObjectTest, { value: 1 }, [{ value: 1 }]);
-test(simpleObjectTest, { value: true }, [{ value: true }]);
-test(simpleObjectTest, { value: null }, [{ value: null }]);
-test(simpleObjectTest, { value: Infinity }, [{ value: infinityEncoding }]);
-test(simpleObjectTest, { value: -Infinity }, [{ value: negInfinityEncoding }]);
-test(simpleObjectTest, { value: -0 }, [{ value: negZeroEncoding }]);
-test(simpleObjectTest, { value: NaN }, [{ value: nanEncoding }]);
-test(simpleObjectTest, { value: undefined }, [{ value: undefinedEncoding }]);
-test(simpleObjectTest, { value: BigInt(4) }, [{ value: "B4" }]);
-test(simpleObjectTest, { value: "string" }, [{ value: "2" }, "string"]);
-test("strings are interned", simpleObjectTest, { value: "string", value2: "string" }, [
-    { value: "2", value2: "2" },
-    "string"
-]);
-test(simpleObjectTest, { value: [] }, [{ value: "2" }, []]);
+test(simpleObjectEncoding, { value: 1 }, preszr(items({ value: 1 })));
 
-test("string", simpleObjectTest, "abc", ["abc"]);
+test(simpleObjectEncoding, { value: true }, preszr(items({ value: true })));
 
-test("object references object", simpleObjectTest, { a: {} }, [{ a: "2" }, {}]);
-test("object references two objects", simpleObjectTest, { a: {}, b: {} }, [
-    { a: "2", b: "3" },
-    {},
-    {}
-]);
+test(simpleObjectEncoding, { value: null }, preszr(items({ value: null })));
 
-test("skips non-enumerable", t => {
-    const x = {};
-    Object.defineProperty(x, "test", {
-        enumerable: false,
-        value: "test"
+test(
+    simpleObjectEncoding,
+    { value: Infinity },
+    preszr(items({ value: "Infinity" }))
+);
+
+test(
+    simpleObjectEncoding,
+    { value: -Infinity },
+    preszr(items({ value: "-Infinity" }))
+);
+
+test(simpleObjectEncoding, { value: -0 }, preszr(items({ value: "-0" })));
+
+test(simpleObjectEncoding, { value: NaN }, preszr(items({ value: "NaN" })));
+
+test(simpleObjectEncoding, { value: undefined }, preszr(items({ value: "-" })));
+
+test(simpleObjectEncoding, { value: 4n }, preszr(items({ value: "B4" })));
+
+test(
+    simpleObjectEncoding,
+    { value: "string" },
+    preszr(items({ value: "2" }, "string"))
+);
+
+test(
+    "strings are interned",
+    simpleObjectEncoding,
+    { a: "string", b: "string" },
+    preszr(
+        items(
+            {
+                a: "2",
+                b: "2"
+            },
+            "string"
+        )
+    )
+);
+
+test(simpleObjectEncoding, { value: [] }, preszr(items({ value: "2" }, [])));
+
+test("string", simpleObjectEncoding, "abc", preszr(items("abc")));
+
+test(
+    "object ref",
+    simpleObjectEncoding,
+    { a: {} },
+    preszr(items({ a: "2" }, {}))
+);
+
+{
+    const objWithNonEnumerable = {};
+    Object.defineProperty(objWithNonEnumerable, "nonEnumerable", {
+        enumerable: false
     });
-    const encoded = encode(x);
-    t.deepEqual(encoded, preszrDefaultHeader({}));
-});
+    test("test object is set up right", t => {
+        t.false(
+            Object.getOwnPropertyDescriptor(
+                objWithNonEnumerable,
+                "nonEnumerable"
+            ).enumerable
+        );
+    });
+
+    test("skips non-enumerable", t => {
+        const realEncoded = defaultPreszr.encode(objWithNonEnumerable);
+        t.deepEqual(realEncoded, preszr(items({})));
+    });
+}

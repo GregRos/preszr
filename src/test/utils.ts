@@ -26,6 +26,20 @@ export function createSparseArray<T>(arrayLikeObj: Record<any, T>): T[] {
     return arr;
 }
 
+export function createArrayBuffer(...bytes: number[]) {
+    const arr = new Uint8Array(bytes);
+    return arr.buffer;
+}
+
+export function createSharedArrayBuffer(...bytes: number[]) {
+    const sharedArrayBuffer = new SharedArrayBuffer(bytes.length);
+    const asBytes = new Uint8Array(sharedArrayBuffer);
+    for (let i = 0; i < asBytes.length; i++) {
+        asBytes[i] = bytes[i];
+    }
+    return asBytes.buffer as SharedArrayBuffer;
+}
+
 export function embedPreszrVersion(encoded) {
     encoded = cloneDeep(encoded);
     const encodingSpec = encoded[0].shift();
@@ -111,7 +125,7 @@ export const combAttachHeader = titleFunc => {
             attachHeader,
             (title, ...args) => `decode:: ${title ?? titleFunc(...args)}`
         )
-    ] as [Macro<any>, Macro<any>];
+    ] as unknown as [Macro<any>, Macro<any>];
 };
 
 export function getDummyCtx() {

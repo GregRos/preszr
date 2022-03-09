@@ -1,118 +1,65 @@
-import { encodeDecodeMacro, testDecodeMacro, testEncodeMacro } from "../utils";
 import test from "ava";
-import { getBuiltInEncodingName } from "../../lib/utils";
-import { decode } from "../../lib";
-import { unsupportedEncodingKey } from "../../lib/encodings/basic";
+import { encoded, items, preszr, using } from "../tools";
+import { defaultPreszr } from "@lib/default";
+import { Fixed } from "@lib/encodings/fixed";
 
-const macro = encodeDecodeMacro({
-    encode: testEncodeMacro,
-    decode: testDecodeMacro
-});
+const mapEncoding = using(defaultPreszr)
+    .title(({ title }) => `Map - ${title}`)
+    .encodeDecodeDeepEqual();
 
-test("empty", macro, new Map(), [[{ 1: getBuiltInEncodingName("Map") }, {}], []]);
+test("empty", mapEncoding, new Map(), preszr(encoded([], Fixed.Map)));
 
-test("one pair", macro, new Map([[1, 1]]), [[{ 1: getBuiltInEncodingName("Map") }, {}], [[1, 1]]]);
-
-test("ref key", macro, new Map([[{}, 1]]), [
-    [{ 1: getBuiltInEncodingName("Map") }, {}],
-    [["2", 1]],
-    {}
-]);
-
-test("ref key-value", macro, new Map([[{}, {}]]), [
-    [{ 1: getBuiltInEncodingName("Map") }, {}],
-    [["2", "3"]],
-    {},
-    {}
-]);
-const o = {};
 test(
-    "same ref",
-    encodeDecodeMacro({
-        encode: testEncodeMacro,
-        decode(t, decoded, encoded) {
-            const rDecoded = decode<any>(encoded);
-            for (const [key, value] of rDecoded) {
-                t.is(key, value);
-            }
-        }
-    }),
-    new Map([[o, o]]),
-    [[{ 1: getBuiltInEncodingName("Map") }, {}], [["2", "2"]], {}]
+    "one pair",
+    mapEncoding,
+    new Map([[1, 2]]),
+    preszr(encoded([[1, 2]], Fixed.Map))
+);
+
+test(
+    "object key",
+    mapEncoding,
+    new Map([[{}, 1]]),
+    preszr(encoded([["2", 1]], Fixed.Map), items({}))
+);
+
+test(
+    "ref key-value",
+    mapEncoding,
+    new Map([[{}, {}]]),
+    preszr(encoded([["2", "3"]], Fixed.Map), items({}, {}))
 );
 
 test(
     "two items",
-    macro,
+    mapEncoding,
     new Map([
-        [1, 1],
-        [2, 2]
+        [1, 2],
+        [2, 3]
     ]),
-    [
-        [{ 1: getBuiltInEncodingName("Map") }, {}],
-        [
-            [1, 1],
-            [2, 2]
-        ]
-    ]
+    preszr(
+        encoded(
+            [
+                [1, 2],
+                [2, 3]
+            ],
+            Fixed.Map
+        )
+    )
 );
 
 test(
-    "1 unsupported key",
-    encodeDecodeMacro({
-        encode: testEncodeMacro,
-        decode(t, decoded, encoded) {
-            const rDecoded = decode(encoded);
-            t.deepEqual(rDecoded, new Map([[undefined, 1]]));
-        }
-    }),
-    new Map([[() => {}, 1]]),
-    [
-        [{ 1: getBuiltInEncodingName("Map"), 2: unsupportedEncodingKey }, { 2: "Function" }],
-        [["2", 1]],
-        0
-    ]
+    "nested map",
+    mapEncoding,
+    new Map([[new Map(), 5]]),
+    preszr(encoded([["2", 5]], Fixed.Map), encoded([], Fixed.Map))
 );
 
 test(
-    "2 unsupported keys",
-    encodeDecodeMacro({
-        encode: testEncodeMacro,
-        decode(t, decoded, encoded) {
-            const rDecoded = decode(encoded);
-            t.deepEqual(rDecoded, new Map([[undefined, 2]]));
-        }
-    }),
-    new Map([
-        [() => {}, 1],
-        [() => {}, 2]
-    ]),
-    [
-        [
-            {
-                1: getBuiltInEncodingName("Map"),
-                2: unsupportedEncodingKey,
-                3: unsupportedEncodingKey
-            },
-            { 2: "Function", 3: "Function" }
-        ],
-        [
-            ["2", 1],
-            ["3", 2]
-        ],
-        0,
-        0
-    ]
+    "string key",
+    mapEncoding,
+    new Map([["a", 2]]),
+    preszr(encoded([["2", 2]], Fixed.Map), items("a"))
 );
 
-test("nested map", macro, new Map([[new Map(), 5]]), [
-    [{ 1: getBuiltInEncodingName("Map"), 2: getBuiltInEncodingName("Map") }, {}],
-    [["2", 5]],
-    []
-]);
-
-test("string key", macro, new Map([["a", 2]]), [
-    [{ 1: getBuiltInEncodingName("Map") }, {}],
-    [["2", 2]],
-    "a"
-]);
+// Test same ref, unsupported

@@ -1,5 +1,5 @@
 import test from "ava";
-import { decode, encode } from "../../lib";
+import { decode, encode } from "@lib";
 import { version as pkgVersion } from "../../lib/utils";
 
 test("encoding - entity is array", t => {

@@ -3,13 +3,11 @@
 // noinspection JSPrimitiveTypeWrapperUsage
 
 import test from "ava";
-import { encodeDecodeMacro, testDecodeMacro, testEncodeMacro } from "../utils";
-import { getBuiltInEncodingName } from "../../lib/utils";
+import { encoded, preszr, using } from "../tools";
+import { defaultPreszr } from "@lib/default";
+import { Fixed } from "@lib/encodings/fixed";
 
-const scalarMacros = encodeDecodeMacro({
-    encode: testEncodeMacro,
-    decode: testDecodeMacro
-});
+const scalarEncodings = using(defaultPreszr).encodeDecodeDeepEqual();
 
 test("deepEqual works on object primitives", t => {
     t.deepEqual(new Number(5), new Number(5));
@@ -34,34 +32,46 @@ test("deepEqual works on regex", t => {
     t.notDeepEqual(regex, "abc" as any);
 });
 
-test("Number wrapper", scalarMacros, new Number(5), [
-    [{ 1: getBuiltInEncodingName("Number") }, {}],
-    5
-]);
+test(
+    "Number wrapper",
+    scalarEncodings,
+    new Number(5),
+    preszr(encoded(5, Fixed.FundNumber))
+);
 
-test("Boolean wrapper", scalarMacros, new Boolean(true), [
-    [{ 1: getBuiltInEncodingName("Boolean") }, {}],
-    true
-]);
+test(
+    "Boolean wrapper",
+    scalarEncodings,
+    new Boolean(5),
+    preszr(encoded(true, Fixed.FundBool))
+);
 
-test("String wrapper", scalarMacros, new String("a"), [
-    [{ 1: getBuiltInEncodingName("String") }, {}],
-    "a"
-]);
+test(
+    "String wrapper",
+    scalarEncodings,
+    new String("x"),
+    preszr(encoded("x", Fixed.FundString))
+);
 
 const date = new Date();
 
-test("Date", scalarMacros, new Date(), [
-    [{ 1: getBuiltInEncodingName("Date") }, {}],
-    date.getTime()
-]);
+test(
+    "Date",
+    scalarEncodings,
+    date,
+    preszr(encoded(date.getTime(), Fixed.Date))
+);
 
-test("regexp no flags", scalarMacros, /abc/, [
-    [{ 1: getBuiltInEncodingName("RegExp") }, {}],
-    "abc"
-]);
+test(
+    "RegExp no flags",
+    scalarEncodings,
+    /abc/,
+    preszr(encoded("abc", Fixed.RegExp))
+);
 
-test("regexp with flags", scalarMacros, /abc/gi, [
-    [{ 1: getBuiltInEncodingName("RegExp") }, {}],
-    ["abc", "gi"]
-]);
+test(
+    "RegExp with flags",
+    scalarEncodings,
+    /abc/gi,
+    preszr(encoded(["abc", "gi"], Fixed.RegExp))
+);

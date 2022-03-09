@@ -1,7 +1,12 @@
 /* eslint-disable symbol-description */
 import test, { UntitledMacro } from "ava";
 import { decode } from "../../lib";
-import { createWithTitle, embedPreszrVersion, testDecodeMacro, testEncodeMacro } from "../utils";
+import {
+    createWithTitle,
+    embedPreszrVersion,
+    testDecodeMacro,
+    testEncodeMacro
+} from "../utils";
 import { objectEncoding } from "../../lib/encodings/basic";
 import { unrecognizedSymbolKey } from "../../lib/data";
 import {
@@ -15,24 +20,6 @@ import { Preszr } from "../../lib/core";
 const testSymbol = Symbol("test");
 const testSymbol2 = Symbol("test");
 const testSymbol3 = Symbol("test");
-const unrecognizedSymbolMacro = (decodeImpl: UntitledMacro<[any]>) => {
-    return [
-        createWithTitle(
-            testEncodeMacro,
-            (decoded, encoded) => [decoded, embedPreszrVersion(encoded)],
-            title => `encode :: ${title}`
-        ),
-        createWithTitle(
-            decodeImpl,
-            (decoded, encoded) => [embedPreszrVersion(encoded)],
-            title => `decode :: ${title}`
-        )
-    ] as [any, any];
-};
-
-test("library string function", t => {
-    t.is(getBuiltInEncodingName("a"), "/a");
-});
 
 test("unrecognized symbol name generator", t => {
     t.is(getSymbolName(getUnrecognizedSymbol("x")), "preszr unknown: x");
@@ -100,7 +87,11 @@ test(
         t.is(decoded[key], 1);
     }),
     { [testSymbol]: 1 },
-    [[{ 1: objectEncoding.name, 2: unrecognizedSymbolKey }, { 2: "test" }], [{}, { 2: 1 }], 0]
+    [
+        [{ 1: objectEncoding.name, 2: unrecognizedSymbolKey }, { 2: "test" }],
+        [{}, { 2: 1 }],
+        0
+    ]
 );
 
 test(
@@ -158,12 +149,20 @@ const preszrWithSymbol = new Preszr({
 const recognizedSymbolMacro = [
     createWithTitle(
         testEncodeMacro,
-        (decoded, encoded) => [decoded, embedPreszrVersion(encoded), preszrWithSymbol],
+        (decoded, encoded) => [
+            decoded,
+            embedPreszrVersion(encoded),
+            preszrWithSymbol
+        ],
         title => `encode :: ${title}`
     ),
     createWithTitle(
         testDecodeMacro,
-        (decoded, encoded) => [decoded, embedPreszrVersion(encoded), preszrWithSymbol],
+        (decoded, encoded) => [
+            decoded,
+            embedPreszrVersion(encoded),
+            preszrWithSymbol
+        ],
         title => `decode :: ${title}`
     )
 ] as [any, any];
@@ -202,11 +201,11 @@ test("encode+decode :: one recognized symbol, one not", t => {
     t.is(getSymbolName(b), getUnrecognizedSymbolName("test"));
 });
 
-test("two recognized symbols", recognizedSymbolMacro, { a: testSymbol, b: testSymbol2 }, [
-    [{ 2: "test", 3: "test2" }, {}],
-    { a: "2", b: "3" },
-    0,
-    0
-]);
+test(
+    "two recognized symbols",
+    recognizedSymbolMacro,
+    { a: testSymbol, b: testSymbol2 },
+    [[{ 2: "test", 3: "test2" }, {}], { a: "2", b: "3" }, 0, 0]
+);
 
 // TODO: built-in symbols

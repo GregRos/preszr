@@ -1,15 +1,13 @@
 import test from "ava";
-import { encodeDecodeMacro, testDecodeMacro, testEncodeMacro, toBase64 } from "../utils";
-import { getBuiltInEncodingName } from "../../lib/utils";
+import { getClassName } from "@lib/utils";
+import { using, encoded, preszr } from "../tools";
+import { defaultPreszr } from "@lib/default";
+import { createArrayBuffer, createSharedArrayBuffer } from "../utils";
+import { Fixed } from "@lib/encodings/fixed";
 
-const scalarMacros = encodeDecodeMacro({
-    encode: testEncodeMacro,
-    decode: testDecodeMacro
-});
-function createArrayBuffer(...bytes: number[]) {
-    const arr = new Uint8Array(bytes);
-    return arr.buffer;
-}
+const binaryOutputDeepEqual = using(defaultPreszr)
+    .title(({ decoded }) => `Binary Type ${getClassName(decoded)}`)
+    .encodeDecodeDeepEqual();
 
 test("deepEqual works on binary types", t => {
     const array = createArrayBuffer(1, 2, 3, 4);
@@ -24,29 +22,88 @@ test("deepEqual works on binary types", t => {
     const typed16 = new Uint16Array(array);
     t.notDeepEqual(typed16, typed8 as any);
 });
-const array1 = createArrayBuffer(1, 2, 3, 4, 5, 6, 7, 8);
+const arrayBuffer = createArrayBuffer(1, 2, 3, 4, 5, 6, 7, 8);
+const base64 = "AQIDBAUGBwg=";
+test(
+    binaryOutputDeepEqual,
+    arrayBuffer,
+    preszr(encoded(base64, Fixed.ArrayBuffer))
+);
 
-test("ArrayBuffer", scalarMacros, array1, [
-    [{ 1: getBuiltInEncodingName("ArrayBuffer") }, {}],
-    toBase64(array1)
-]);
+test(
+    binaryOutputDeepEqual,
+    createSharedArrayBuffer(1, 2, 3, 4, 5, 6, 7, 8),
+    preszr(encoded(base64, Fixed.SharedArrayBuffer))
+);
 
-for (const ctor of [
-    Uint8Array,
-    Uint8ClampedArray,
-    Uint16Array,
-    Uint32Array,
-    BigUint64Array,
-    Int8Array,
-    Int16Array,
-    Int32Array,
-    BigInt64Array,
-    Float32Array,
-    Float64Array,
-    DataView
-]) {
-    test(ctor.name, scalarMacros, new ctor(array1), [
-        [{ 1: getBuiltInEncodingName(ctor.name) }, {}],
-        toBase64(array1)
-    ]);
-}
+test(
+    binaryOutputDeepEqual,
+    new Uint8Array(arrayBuffer),
+    preszr(encoded(base64, Fixed.Uint8Array))
+);
+
+test(
+    binaryOutputDeepEqual,
+    new Uint16Array(arrayBuffer),
+    preszr(encoded(base64, Fixed.Uint16Array))
+);
+
+test(
+    binaryOutputDeepEqual,
+    new Uint32Array(arrayBuffer),
+    preszr(encoded(base64, Fixed.Uint32Array))
+);
+
+test(
+    binaryOutputDeepEqual,
+    new Uint8ClampedArray(arrayBuffer),
+    preszr(encoded(base64, Fixed.Uint8ClampedArray))
+);
+
+test(
+    binaryOutputDeepEqual,
+    new BigUint64Array(arrayBuffer),
+    preszr(encoded(base64, Fixed.BigUint64Array))
+);
+
+test(
+    binaryOutputDeepEqual,
+    new Int8Array(arrayBuffer),
+    preszr(encoded(base64, Fixed.Int8Array))
+);
+
+test(
+    binaryOutputDeepEqual,
+    new Int16Array(arrayBuffer),
+    preszr(encoded(base64, Fixed.Int16Array))
+);
+
+test(
+    binaryOutputDeepEqual,
+    new Int32Array(arrayBuffer),
+    preszr(encoded(base64, Fixed.Int32Array))
+);
+
+test(
+    binaryOutputDeepEqual,
+    new BigInt64Array(arrayBuffer),
+    preszr(encoded(base64, Fixed.BigInt64Array))
+);
+
+test(
+    binaryOutputDeepEqual,
+    new Float32Array(arrayBuffer),
+    preszr(encoded(base64, Fixed.Float32Array))
+);
+
+test(
+    binaryOutputDeepEqual,
+    new Float64Array(arrayBuffer),
+    preszr(encoded(base64, Fixed.Float64Array))
+);
+
+test(
+    binaryOutputDeepEqual,
+    new DataView(arrayBuffer),
+    preszr(encoded(base64, Fixed.DataView))
+);

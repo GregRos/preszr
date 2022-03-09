@@ -1,5 +1,5 @@
 import test from "ava";
-import { Preszr } from "../../lib";
+import { Preszr } from "@lib";
 
 test("Preszr as constructor", t => {
     const preszr = new Preszr();

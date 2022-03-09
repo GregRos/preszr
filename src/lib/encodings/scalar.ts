@@ -12,7 +12,7 @@ export const regexpEncoding: PrototypeEncoding = {
     prototypes: [RegExp.prototype],
     version: 0,
     name: getBuiltInEncodingName("RegExp"),
-    [fixedIndexProp]: Fixed.Regexp,
+    [fixedIndexProp]: Fixed.RegExp,
     encode({ source, flags }: RegExp, ctx: EncodeContext): any {
         return flags ? [source, flags] : source;
     },
@@ -41,7 +41,10 @@ export const dateEncoding: PrototypeEncoding = {
     }
 };
 
-export function makeWrapperEncoding(index: number, ctor: { new (x: any): any }): PrototypeEncoding {
+export function makeWrapperEncoding(
+    index: number,
+    ctor: { new (x: any): any }
+): PrototypeEncoding {
     return {
         name: getBuiltInEncodingName(ctor.name),
         version: 0,

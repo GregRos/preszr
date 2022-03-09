@@ -12,8 +12,18 @@
     "outDir": "../../dist/test",
     "rootDir": ".",
     "allowJs": true,
+    "baseUrl": ".",
+    "paths": {
+      "@lib": [
+        "../lib"
+      ],
+      "@lib/*": [
+        "../lib/*"
+      ]
+    }
   },
   "include": [
-    "**/*.ts"
+    "**/*.ts",
+    "**/*.js"
   ]
 }

@@ -1,71 +1,47 @@
-import { encodeDecodeMacro, testDecodeMacro, testEncodeMacro } from "../utils";
 import test from "ava";
-import { getBuiltInEncodingName } from "../../lib/utils";
-import { decode } from "../../lib";
-import { unsupportedEncodingKey } from "../../lib/encodings/basic";
+import { encoded, items, preszr, using } from "../tools";
+import { defaultPreszr } from "@lib/default";
+import { Fixed } from "@lib/encodings/fixed";
 
-const macro = encodeDecodeMacro({
-    encode: testEncodeMacro,
-    decode: testDecodeMacro
-});
+const setEncoding = using(defaultPreszr).encodeDecodeDeepEqual();
 
-test("empty", macro, new Set(), [[{ 1: getBuiltInEncodingName("Set") }, {}], []]);
+test("empty", setEncoding, new Set(), preszr(encoded([], Fixed.Set)));
 
-test("one item", macro, new Set([1]), [[{ 1: getBuiltInEncodingName("Set") }, {}], [1]]);
-
-test("one ref item", macro, new Set([{}]), [[{ 1: getBuiltInEncodingName("Set") }, {}], ["2"], {}]);
-
-test("set two items", macro, new Set([1, 2]), [
-    [{ 1: getBuiltInEncodingName("Set") }, {}],
-    [1, 2]
-]);
+test("one item", setEncoding, new Set([1]), preszr(encoded([1], Fixed.Set)));
 
 test(
-    "1 unsupported set key",
-    encodeDecodeMacro({
-        encode: testEncodeMacro,
-        decode(t, decoded, encoded) {
-            const rDecoded = decode(encoded);
-            t.deepEqual(rDecoded, new Set([undefined]));
-        }
-    }),
-    new Set([() => {}]),
-    [[{ 1: getBuiltInEncodingName("Set"), 2: unsupportedEncodingKey }, { 2: "Function" }], ["2"], 0]
+    "two items",
+    setEncoding,
+    new Set([1, 2]),
+    preszr(encoded([1, 2], Fixed.Set))
 );
 
 test(
-    "2 unsupported set keys",
-    encodeDecodeMacro({
-        encode: testEncodeMacro,
-        decode(t, decoded, encoded) {
-            const rDecoded = decode(encoded);
-            t.deepEqual(rDecoded, new Set([undefined]));
-        }
-    }),
-    new Set([() => {}, () => {}]),
-    [
-        [
-            {
-                1: getBuiltInEncodingName("Set"),
-                2: unsupportedEncodingKey,
-                3: unsupportedEncodingKey
-            },
-            { 2: "Function", 3: "Function" }
-        ],
-        ["2", "3"],
-        0,
-        0
-    ]
+    "one ref item",
+    setEncoding,
+    new Set([{}]),
+    preszr(encoded(["2"], Fixed.Set), items({}))
 );
 
-test("nested set", macro, new Set([new Set([1])]), [
-    [{ 1: getBuiltInEncodingName("Set"), 2: getBuiltInEncodingName("Set") }, {}],
-    ["2"],
-    [1]
-]);
+test(
+    "two ref items",
+    setEncoding,
+    new Set([{}, {}]),
+    preszr(encoded(["2", "3"], Fixed.Set), items({}, {}))
+);
 
-test("string item", macro, new Set(["a"]), [
-    [{ 1: getBuiltInEncodingName("Set") }, {}],
-    ["2"],
-    "a"
-]);
+test(
+    "nested set",
+    setEncoding,
+    new Set([new Set([1])]),
+    preszr(encoded(["2"], Fixed.Set), encoded([1], Fixed.Set))
+);
+
+test(
+    "string item",
+    setEncoding,
+    new Set(["a"]),
+    preszr(encoded(["2"], Fixed.Set), items("a"))
+);
+// Test unsupported
+// Test complex refs

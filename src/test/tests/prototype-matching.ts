@@ -6,10 +6,9 @@ import {
     testEncodeMacro,
     testEncodeMacroBindPreszr
 } from "../utils";
-import { decode } from "../../lib";
-import { Preszr } from "../../lib/core";
-import { getImplicitClassEncodingName, version } from "../../lib/utils";
-import { nullPrototypeEncoding } from "../../lib/encodings/basic";
+import { decode, Preszr } from "@lib";
+import { getImplicitClassEncodingName, version } from "@lib/utils";
+import { nullPrototypeEncoding } from "@lib/encodings/basic";
 
 class TestClass {
     constructor(obj = {}) {

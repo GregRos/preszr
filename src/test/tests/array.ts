@@ -1,38 +1,35 @@
-import {
-    combAttachHeader,
-    createSparseArray,
-    encodeDecodeMacro,
-    stringify,
-    testDecodeMacro,
-    testEncodeMacro
-} from "../utils";
+import { createSparseArray, stringify } from "../utils";
 import test from "ava";
-import {
-    infinityEncoding,
-    nanEncoding,
-    negInfinityEncoding,
-    negZeroEncoding,
-    undefinedEncoding
-} from "../../lib/data";
-import { arrayEncoding } from "../../lib/encodings/basic";
 
+import { using, encoded, items, preszr } from "../tools";
+import { defaultPreszr } from "@lib/default";
+import { Fixed } from "@lib/encodings/fixed";
+
+const singleton = using(defaultPreszr)
+    .title(({ decoded, title }) => title ?? `array with ${stringify(decoded[0])} element`)
+    .encodeDecodeDeepEqual();
 {
-    const simpleArrayTest = combAttachHeader(
-        (x, input) => `array with ${stringify(input[0])} element`
-    );
+    test(singleton, [1], preszr(items([1])));
 
-    test(simpleArrayTest, [1], [[1]]);
-    test(simpleArrayTest, [true], [[true]]);
-    test(simpleArrayTest, [null], [[null]]);
-    test(simpleArrayTest, [Infinity], [[infinityEncoding]]);
-    test(simpleArrayTest, [-Infinity], [[negInfinityEncoding]]);
-    test(simpleArrayTest, [-0], [[negZeroEncoding]]);
-    test(simpleArrayTest, [NaN], [[nanEncoding]]);
-    test(simpleArrayTest, [undefined], [[undefinedEncoding]]);
-    test(simpleArrayTest, [BigInt(4)], [["B4"]]);
-    test(simpleArrayTest, ["string"], [["2"], "string"]);
-    test("array [{}]", simpleArrayTest, [{}], [["2"], {}]);
-    test("array [[]]", simpleArrayTest, [[]], [["2"], []]);
+    test(singleton, [true], preszr(items([true])));
+
+    test(singleton, [null], preszr(items([null])));
+
+    test(singleton, [Infinity], preszr(items(["Infinity"])));
+
+    test(singleton, [-Infinity], preszr(items(["-Infinity"])));
+
+    test(singleton, [-0], preszr(items(["-0"])));
+
+    test(singleton, [NaN], preszr(items(["NaN"])));
+
+    test(singleton, [4n], preszr(items(["B4"])));
+
+    test(singleton, ["string"], preszr(items(["2"], "string")));
+
+    test("Array [{}]", singleton, [{}], preszr(items(["2"], {})));
+
+    test("Array [[]]", singleton, [[]], preszr(items(["2"], [])));
 }
 
 test("deepEqual assertions work for sparse arrays", t => {
@@ -45,25 +42,24 @@ test("deepEqual assertions work for sparse arrays", t => {
 });
 
 {
-    const testSparseArrays = encodeDecodeMacro({
-        encode: testEncodeMacro,
-        decode: testDecodeMacro
-    });
+    test(
+        "sparse array",
+        singleton,
+        createSparseArray({ 1: 5, 2: 6 }),
+        preszr(encoded({ 1: 5, 2: 6 }, Fixed.Array))
+    );
 
-    test("sparse array", testSparseArrays, createSparseArray({ 1: 5, 2: 6 }), [
-        [{ 1: arrayEncoding.name }, {}],
-        { 1: 5, 2: 6 }
-    ]);
+    test(
+        "sparse array with reference",
+        singleton,
+        createSparseArray({ 1: {}, 2: {} }),
+        preszr(encoded({ 1: "2", 2: "3" }, Fixed.Array), items({}, {}))
+    );
 
-    test("sparse array with reference", testSparseArrays, createSparseArray({ 1: {}, 2: {} }), [
-        [{ 1: arrayEncoding.name }, {}],
-        { 1: "2", 2: "3" },
-        {},
-        {}
-    ]);
-
-    test("array with string keys", testSparseArrays, createSparseArray({ 1: 1, a: 2 }), [
-        [{ 1: arrayEncoding.name }, {}],
-        { 1: 1, a: 2 }
-    ]);
+    test(
+        "array with string keys",
+        singleton,
+        createSparseArray({ 1: 1, a: 2 }),
+        preszr(encoded({ 1: 1, a: 2 }, Fixed.Array))
+    );
 }

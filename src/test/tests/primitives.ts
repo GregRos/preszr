@@ -1,30 +1,19 @@
-import {
-    infinityEncoding,
-    nanEncoding,
-    negInfinityEncoding,
-    negZeroEncoding,
-    PreszrOutput,
-    undefinedEncoding
-} from "../../lib/data";
-import test, { ExecutionContext, Macro } from "ava";
-import { decode, encode } from "../../lib";
+import test from "ava";
 import { stringify } from "../utils";
+import { using } from "../tools";
+import { defaultPreszr } from "@lib/default";
 
-const primtiveTests: Macro<any> = (t: ExecutionContext, decoded: any, encoded: PreszrOutput) => {
-    const rDecoded = decode(encoded);
-    t.is(rDecoded, decoded);
-    const rEncoded = encode(decoded);
-    t.is(rEncoded, encoded);
-};
+const primtiveTests = using(defaultPreszr)
+    .title(({ decoded, title }) => title ?? `Primitive - ${stringify(decoded)}`)
+    .encodeDecodeDeepEqual();
 
-primtiveTests.title = (title, decoded) => title ?? `primitive - ${stringify(decoded)}`;
+test.failing("check test fails on mismatch", primtiveTests, 1, 2);
 
-test(primtiveTests, 1, 1);
 test(primtiveTests, true, true);
 test(primtiveTests, null, null);
-test(primtiveTests, Infinity, infinityEncoding);
-test(primtiveTests, -Infinity, negInfinityEncoding);
-test(primtiveTests, -0, negZeroEncoding);
-test(primtiveTests, NaN, nanEncoding);
-test(primtiveTests, undefined, undefinedEncoding);
-test("primitive 4n", primtiveTests, BigInt(4), "B4");
+test(primtiveTests, Infinity, "Infinity");
+test(primtiveTests, -Infinity, "-Infinity");
+test(primtiveTests, -0, "-0");
+test(primtiveTests, NaN, "NaN");
+test(primtiveTests, undefined, "-");
+test("bigint", primtiveTests, 4n, "B4");

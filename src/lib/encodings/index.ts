@@ -5,13 +5,27 @@ import {
     nullPrototypeEncoding,
     objectEncoding
 } from "./basic";
-import { makeWrapperEncoding, dateEncoding, regexpEncoding, wrapperEncodings } from "./scalar";
-import { arrayBufferEncoding, typedArrayEncodings } from "./binary";
+import {
+    makeWrapperEncoding,
+    dateEncoding,
+    regexpEncoding,
+    wrapperEncodings
+} from "./scalar";
+import {
+    arrayBufferEncoding,
+    sharedArrayBufferEncoding,
+    typedArrayEncodings
+} from "./binary";
 import { mapEncoding, setEncoding } from "./collections";
 import { errorEncodings } from "./errors";
 import { EncodingSpecifier } from "../interface";
 
-export { arrayEncoding, getUnsupportedEncoding, nullPlaceholder, objectEncoding };
+export {
+    arrayEncoding,
+    getUnsupportedEncoding,
+    nullPlaceholder,
+    objectEncoding
+};
 
 export const builtinEncodings = [
     objectEncoding,
@@ -24,5 +38,6 @@ export const builtinEncodings = [
     arrayBufferEncoding,
     mapEncoding,
     setEncoding,
-    ...errorEncodings
+    ...errorEncodings,
+    sharedArrayBufferEncoding
 ] as EncodingSpecifier[];

@@ -1,6 +1,7 @@
 import { Preszr as PreszrClass } from "./core";
 import { PreszrOutput } from "./data";
 import { DeepPartial, PreszrConfig } from "./interface";
+import { defaultPreszr } from "./default";
 
 export {
     Encoding,
@@ -15,7 +16,6 @@ export {
     PreszrConfig,
     EncodeContext
 } from "./interface";
-const defaultPreszr = new PreszrClass();
 
 /**
  * Encodes a value using preszr with the default settings.

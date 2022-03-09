@@ -1,8 +1,11 @@
 import test from "ava";
-import { PrototypeEncoding, SymbolEncoding } from "../../lib";
-import { getImplicitClassEncodingName, getBuiltInEncodingName } from "../../lib/utils";
+import { PrototypeEncoding, SymbolEncoding } from "@lib";
+import {
+    getImplicitClassEncodingName,
+    getBuiltInEncodingName
+} from "@lib/utils";
 import { getDummyCtx } from "../utils";
-import { makeFullEncoding } from "../../lib/encodings/utils";
+import { makeFullEncoding } from "@lib/encodings/utils";
 
 const testSymbol = Symbol("test");
 
@@ -41,12 +44,12 @@ test("symbol encoding with explicit name unchanged", t => {
         name: "a",
         symbol: testSymbol
     };
-    t.deepEqual(encoding, makeFullEncoding(encoding));
+    t.deepEqual(encoding, makeFullEncoding(encoding) as SymbolEncoding);
 });
 
 test("encoding from class", t => {
     const encoding = makeFullEncoding(TestClass) as PrototypeEncoding;
-    t.is(encoding.name, getImplicitClassEncodingName("TestClass"));
+    t.is(encoding.name, "TestClass");
     t.is(encoding.prototypes.length, 1);
     t.is(encoding.prototypes[0], TestClass.prototype);
     const dummyCtx = getDummyCtx();
@@ -58,7 +61,7 @@ test("encoding from prototype", t => {
     const encoding = makeFullEncoding({
         prototype: TestClass.prototype
     }) as PrototypeEncoding;
-    t.is(encoding.name, getImplicitClassEncodingName("TestClass"));
+    t.is(encoding.name, "TestClass");
     t.is(encoding.prototypes.length, 1);
     const [p1] = encoding.prototypes;
     t.is(p1, TestClass.prototype);
@@ -71,7 +74,7 @@ test("encoding with multiple prototypes", t => {
     const f = () => 1;
     const encoding = makeFullEncoding({
         prototypes: [class {}, TestClass.prototype],
-        version: 0,
+        version: 5,
         name: "blah",
         encode: f,
         decoder: {
@@ -80,6 +83,7 @@ test("encoding with multiple prototypes", t => {
     }) as PrototypeEncoding;
 
     t.is(encoding.name, "blah");
+    t.is(encoding.version, 5);
     t.is(encoding.decoder.create, f);
     t.is(encoding.encode, f);
 });
@@ -89,7 +93,10 @@ test("encoding prototype field", t => {
         prototype: TestClass.prototype
     }) as PrototypeEncoding;
     t.is(encoding.name, getImplicitClassEncodingName("TestClass"));
-    t.deepEqual(encoding.decoder.create({}, {} as any), Object.create(TestClass.prototype));
+    t.deepEqual(
+        encoding.decoder.create({}, {} as any),
+        Object.create(TestClass.prototype)
+    );
 });
 
 test("error - nameless ctor without key", t => {
