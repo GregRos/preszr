@@ -1,9 +1,10 @@
 import test from "ava";
-import { encoded, items, preszr, using } from "../tools";
+import { encoded, items, preszr } from "../tools";
 import { defaultPreszr } from "@lib/default";
 import { Fixed } from "@lib/encodings/fixed";
+import { symmetricTestUsingInner } from "../tools/macros-3";
 
-const setEncoding = using(defaultPreszr).encodeDecodeDeepEqual();
+const setEncoding = symmetricTestUsingInner(defaultPreszr).encodeDecodeDeepEqual();
 
 test("empty", setEncoding, new Set(), preszr(encoded([], Fixed.Set)));
 

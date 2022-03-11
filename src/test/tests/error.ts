@@ -66,7 +66,6 @@ const encodedError = (err: Error, type: number | string) => {
     );
 };
 {
-    class UnknownError extends Error {}
     const syntaxError = new SyntaxError("A SyntaxError");
     const typeError = new TypeError("A TypeError");
     const uriError = new URIError("A URIError");

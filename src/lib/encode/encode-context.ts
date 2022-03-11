@@ -2,7 +2,6 @@ import {
     EncodeContext,
     Encoding,
     fixedIndexProp,
-    PreszrConfig,
     SpecialEncoding,
     SymbolEncoding
 } from "../interface";
@@ -12,8 +11,7 @@ import {
     noResultPlaceholder,
     PreszrFormat,
     Reference,
-    tryEncodeScalar,
-    unrecognizedSymbolKey
+    tryEncodeScalar
 } from "../data";
 import { getEncodingKey } from "../encodings/utils";
 import { Fixed } from "../encodings/fixed";

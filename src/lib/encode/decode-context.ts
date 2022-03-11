@@ -1,4 +1,3 @@
-import { CreateContext, InitContext } from "../interface";
 import { noResultPlaceholder, ScalarValue, tryDecodeScalar } from "../data";
 import { PreszrError } from "../errors";
 

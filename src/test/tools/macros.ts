@@ -1,6 +1,7 @@
 import test, { TitleFn } from "ava";
 import { PreszrFormat } from "@lib/data";
 import { Preszr } from "@lib";
+import { symmetricTestUsingInner } from "./macros-3";
 
 export interface MacroInputs {
     decoded: any;
@@ -10,9 +11,8 @@ export interface MacroInputs {
 
 export type TitleFunc = (inputs: MacroInputs) => string;
 
-export class TestBuilder {
+export class SymmetricTestBuilder {
     private _title: TitleFunc;
-    private _projections: (...args: any[]) => any[];
     constructor(private _instance: Preszr) {}
 
     title(f: TitleFunc) {
@@ -44,6 +44,3 @@ export class TestBuilder {
     }
 }
 
-export function using(instance: Preszr) {
-    return new TestBuilder(instance);
-}

@@ -1,9 +1,10 @@
 import test from "ava";
 import { stringify } from "../utils";
-import { items, preszr, using } from "../tools";
+import { items, preszr } from "../tools";
 import { defaultPreszr } from "@lib/default";
+import { symmetricTestUsingInner } from "../tools/macros-3";
 
-const simpleObjectEncoding = using(defaultPreszr)
+const simpleObjectEncoding = symmetricTestUsingInner(defaultPreszr)
     .title(
         ({ title, decoded }) =>
             title ?? `single value - ${stringify(decoded.value)}`

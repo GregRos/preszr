@@ -1,11 +1,12 @@
 import test from "ava";
 import { getClassName } from "@lib/utils";
-import { using, encoded, preszr } from "../tools";
+import { encoded, preszr } from "../tools";
 import { defaultPreszr } from "@lib/default";
 import { createArrayBuffer, createSharedArrayBuffer } from "../utils";
 import { Fixed } from "@lib/encodings/fixed";
+import { symmetricTestUsingInner } from "../tools/macros-3";
 
-const binaryOutputDeepEqual = using(defaultPreszr)
+const binaryOutputDeepEqual = symmetricTestUsingInner(defaultPreszr)
     .title(({ decoded }) => `Binary Type ${getClassName(decoded)}`)
     .encodeDecodeDeepEqual();
 

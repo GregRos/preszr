@@ -1,9 +1,9 @@
 import test from "ava";
 import { stringify } from "../utils";
-import { using } from "../tools";
 import { defaultPreszr } from "@lib/default";
+import { symmetricTestUsingInner } from "../tools/macros-3";
 
-const primtiveTests = using(defaultPreszr)
+const primtiveTests = symmetricTestUsingInner(defaultPreszr)
     .title(({ decoded, title }) => title ?? `Primitive - ${stringify(decoded)}`)
     .encodeDecodeDeepEqual();
 

@@ -1,11 +1,12 @@
 import { createSparseArray, stringify } from "../utils";
 import test from "ava";
 
-import { using, encoded, items, preszr } from "../tools";
+import { encoded, items, preszr } from "../tools";
 import { defaultPreszr } from "@lib/default";
 import { Fixed } from "@lib/encodings/fixed";
+import { symmetricTestUsingInner } from "../tools/macros-3";
 
-const singleton = using(defaultPreszr)
+const singleton = symmetricTestUsingInner(defaultPreszr)
     .title(({ decoded, title }) => title ?? `array with ${stringify(decoded[0])} element`)
     .encodeDecodeDeepEqual();
 {

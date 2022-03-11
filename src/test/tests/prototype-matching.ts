@@ -24,6 +24,11 @@ test("deepEqual distinguishes prototypes", t => {
     t.notDeepEqual(new TestClass(), new TestSubclass());
 });
 
+// DECODED -> BADLY_ENCODED -> BADLY_DECODED
+
+
+
+
 test(
     "unknown prototype",
     encodeDecodeMacro({
