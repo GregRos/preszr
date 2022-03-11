@@ -1,3 +1,3 @@
 export * from "./builder";
-export * from "./macros";
+export * from "./test-builder";
 export * from "./inspector";

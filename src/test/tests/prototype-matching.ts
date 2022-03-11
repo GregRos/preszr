@@ -9,6 +9,9 @@ import {
 import { decode, Preszr } from "@lib";
 import { getImplicitClassEncodingName, version } from "@lib/utils";
 import { nullPrototypeEncoding } from "@lib/encodings/basic";
+import { assymetricTest } from "../tools/special-assertion-test-builder";
+
+
 
 class TestClass {
     constructor(obj = {}) {

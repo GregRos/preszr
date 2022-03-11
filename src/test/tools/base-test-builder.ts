@@ -1,12 +1,9 @@
 import test, { TitleFn } from "ava";
-import { PreszrFormat } from "@lib/data";
+import { PreszrFormat, PreszrOutput } from "@lib/data";
 import { Preszr } from "@lib";
 import { ExecutionContext } from "ava/types/test-fn";
 
 
-export interface TitleArgs extends TestArgs {
-    title: string;
-}
 
 export interface TestArgs {
 
@@ -16,11 +13,23 @@ export type TitleFunc<TArgs extends TestArgs> = (inputs: TArgs & {title: string}
 
 export abstract class TestBuilder<TArgs extends TestArgs> {
     private _title: TitleFunc<TArgs>;
-    constructor(private _instance: Preszr) {}
+    private _instance: Preszr
+    with(partial: any): this {
+        const builder = Object.create(Object.getPrototypeOf(this));
+        Object.assign(builder, this, partial);
+        return builder;
+    }
+
+    instance(instance: Preszr) {
+        return this.with({
+            _instance: instance
+        })
+    }
 
     title(f: TitleFunc<TArgs>) {
-        this._title = f;
-        return this;
+        return this.with({
+            _title: f
+        })
     }
 
     protected abstract _test(t: ExecutionContext, args: TArgs & {instance: Preszr}): void | Promise<void>;

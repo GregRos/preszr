@@ -1,15 +1,14 @@
 import test from "ava";
 import { stringify } from "../utils";
-import { items, preszr } from "../tools";
+import { items, preszr, testBuilder } from "../tools";
 import { defaultPreszr } from "@lib/default";
-import { symmetricTestUsingInner } from "../tools/macros-3";
 
-const simpleObjectEncoding = symmetricTestUsingInner(defaultPreszr)
+const simpleObjectEncoding = testBuilder(defaultPreszr)
     .title(
-        ({ title, decoded }) =>
-            title ?? `single value - ${stringify(decoded.value)}`
+        ({ title, original }) =>
+            title ?? `single value - ${stringify(original.value)}`
     )
-    .encodeDecodeDeepEqual();
+    .getSimple();
 
 test(simpleObjectEncoding, { value: 1 }, preszr(items({ value: 1 })));
 

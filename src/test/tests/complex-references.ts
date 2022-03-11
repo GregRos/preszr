@@ -1,10 +1,9 @@
 import test from "ava";
 import { decode, encode } from "@lib";
-import { items, preszr } from "../tools";
+import { items, preszr, testBuilder } from "../tools";
 import { defaultPreszr } from "@lib/default";
-import { symmetricTestUsingInner } from "../tools/macros-3";
 
-const complexReferences = symmetricTestUsingInner(defaultPreszr).encodeDecodeDeepEqual();
+const complexReferences = testBuilder(defaultPreszr).getSimple();
 {
     const o = {};
     const siblingExample = {

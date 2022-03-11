@@ -1,14 +1,13 @@
 import test from "ava";
 import { getClassName } from "@lib/utils";
-import { encoded, preszr } from "../tools";
+import { encoded, preszr, testBuilder } from "../tools";
 import { defaultPreszr } from "@lib/default";
 import { createArrayBuffer, createSharedArrayBuffer } from "../utils";
 import { Fixed } from "@lib/encodings/fixed";
-import { symmetricTestUsingInner } from "../tools/macros-3";
 
-const binaryOutputDeepEqual = symmetricTestUsingInner(defaultPreszr)
-    .title(({ decoded }) => `Binary Type ${getClassName(decoded)}`)
-    .encodeDecodeDeepEqual();
+const binaryOutputDeepEqual = testBuilder(defaultPreszr)
+    .title(({ original }) => `Binary Type ${getClassName(original)}`)
+    .getSimple();
 
 test("deepEqual works on binary types", t => {
     const array = createArrayBuffer(1, 2, 3, 4);

@@ -4,35 +4,25 @@ import { PreszrFormat } from "@lib/data";
 import { encoded, items, preszr } from "../tools";
 import { Fixed } from "@lib/encodings/fixed";
 import { defaultPreszr } from "@lib/default";
+import { assymetricTest } from "../tools/special-assertion-test-builder";
 
-export const errorEqualityTest = (prs: Preszr) =>
-    test.macro({
-        exec(t, decoded: any, encoded: PreszrFormat) {
-            const realEncoded = prs.encode(decoded);
-            t.deepEqual(realEncoded, encoded, "Encoded Mismatch");
-            const realDecoded = prs.decode(encoded);
-            // deepEqual ignores some error properties.
+export const fullErrorEquality = p => assymetricTest(p)
+.title(({ original }) => `Error Equality: ${original.constructor.name}`)
+        .eqAssertion((t, decoded, original) => {
+            t.deepEqual(decoded, original, "DECODED != ORIGINAL");
             t.like(
-                realDecoded,
+                decoded,
                 {
-                    message: decoded.message,
-                    stack: decoded.stack,
-                    name: decoded.name
+                    message: original.message,
+                    stack: original.stack,
+                    name: original.name
                 },
-                "Decoded Mismatch"
+                "DECODED != ORIGINAL"
             );
-            t.is(
-                Object.getPrototypeOf(realDecoded),
-                Object.getPrototypeOf(decoded),
-                "Decoded Prototype Mismatch"
-            );
-        },
-        title(title, decoded) {
-            return decoded.constructor.name;
-        }
-    });
 
-const checkErrorMacro = errorEqualityTest(defaultPreszr);
+        }).getSimple()
+
+const checkErrorMacro = fullErrorEquality(defaultPreszr);
 {
     const regularError = new Error("hi");
 

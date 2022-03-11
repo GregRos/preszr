@@ -1,11 +1,11 @@
 import test from "ava";
 import { stringify } from "../utils";
 import { defaultPreszr } from "@lib/default";
-import { symmetricTestUsingInner } from "../tools/macros-3";
+import { testBuilder } from "../tools";
 
-const primtiveTests = symmetricTestUsingInner(defaultPreszr)
-    .title(({ decoded, title }) => title ?? `Primitive - ${stringify(decoded)}`)
-    .encodeDecodeDeepEqual();
+const primtiveTests = testBuilder(defaultPreszr)
+    .title(({ original, title }) => title ?? `Primitive - ${stringify(original)}`)
+    .getSimple();
 
 test.failing("check test fails on mismatch", primtiveTests, 1, 2);
 

@@ -1,12 +1,11 @@
 import test from "ava";
-import { encoded, items, preszr } from "../tools";
+import { encoded, items, preszr, testBuilder } from "../tools";
 import { defaultPreszr } from "@lib/default";
 import { Fixed } from "@lib/encodings/fixed";
-import { symmetricTestUsingInner } from "../tools/macros-3";
 
-const mapEncoding = symmetricTestUsingInner(defaultPreszr)
+const mapEncoding = testBuilder(defaultPreszr)
     .title(({ title }) => `Map - ${title}`)
-    .encodeDecodeDeepEqual();
+    .getSimple();
 
 test("empty", mapEncoding, new Map(), preszr(encoded([], Fixed.Map)));
 

@@ -3,12 +3,11 @@
 // noinspection JSPrimitiveTypeWrapperUsage
 
 import test from "ava";
-import { encoded, preszr } from "../tools";
+import { encoded, preszr, testBuilder } from "../tools";
 import { defaultPreszr } from "@lib/default";
 import { Fixed } from "@lib/encodings/fixed";
-import { symmetricTestUsingInner } from "../tools/macros-3";
 
-const scalarEncodings = symmetricTestUsingInner(defaultPreszr).encodeDecodeDeepEqual();
+const scalarEncodings = testBuilder(defaultPreszr).getSimple();
 
 test("deepEqual works on object primitives", t => {
     t.deepEqual(new Number(5), new Number(5));
