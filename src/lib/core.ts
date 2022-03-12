@@ -1,28 +1,17 @@
 import {
     DeepPartial,
-    EncodeContext,
     Encoding,
-    EncodingSpecifier,
-    InitContext,
     PreszrConfig,
-    PrototypeEncoding,
-    SymbolEncoding
+    PrototypeEncoding
 } from "./interface";
-import { defaultsDeep, getSymbolName, getUnrecognizedSymbol, version } from "./utils";
+import { defaultsDeep, getUnrecognizedSymbol, version } from "./utils";
 import {
     EncodedEntity,
-    EncodingSpec,
-    Entity,
-    Header,
-    Metadata,
     noResultPlaceholder,
     PreszrFormat,
     PreszrOutput,
-    Reference,
-    ScalarValue,
     tryDecodeScalar,
-    tryEncodeScalar,
-    unrecognizedSymbolKey
+    tryEncodeScalar
 } from "./data";
 import {
     arrayEncoding,
@@ -50,7 +39,11 @@ export class Preszr {
             ...unsupportedTypes,
             ...this.config.unsupported
         );
-        this._store.add(...builtinEncodings, unsupportedEncoding, ...this.config.encodings);
+        this._store.add(
+            ...builtinEncodings,
+            unsupportedEncoding,
+            ...this.config.encodings
+        );
     }
 
     private _checkInputHeader(input: PreszrFormat) {
@@ -80,9 +73,11 @@ export class Preszr {
                 } else if (!Array.isArray(header[1])) {
                     reason = "no encoding keys or encoding keys not an array";
                 } else if (typeof header[2] !== "object" || !header[1]) {
-                    reason = "no encoding data or encoding data is not an object";
+                    reason =
+                        "no encoding data or encoding data is not an object";
                 } else if (typeof header[3] !== "object" || !header[2]) {
-                    reason = "no custom metadata or custom metadata is not an object";
+                    reason =
+                        "no custom metadata or custom metadata is not an object";
                 } else if (input.length === 1) {
                     reason = "input must have at least 2 elements";
                 }
@@ -153,7 +148,11 @@ export class Preszr {
         for (const key of needToInit.keys()) {
             const encoding = needToInit.get(key)!;
             ctx.metadata = metadata[key];
-            encoding.decoder.init!(targetArray[key], input[key] as EncodedEntity, ctx);
+            encoding.decoder.init!(
+                targetArray[key],
+                input[key] as EncodedEntity,
+                ctx
+            );
         }
         return targetArray[1];
     }

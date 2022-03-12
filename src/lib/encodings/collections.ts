@@ -26,7 +26,11 @@ export const mapEncoding: PrototypeEncoding = {
         create(encodedValue: any, ctx: CreateContext): any {
             return new Map();
         },
-        init(target: Map<any, any>, encoded: [ScalarValue, ScalarValue][], ctx: InitContext) {
+        init(
+            target: Map<any, any>,
+            encoded: [ScalarValue, ScalarValue][],
+            ctx: InitContext
+        ) {
             for (const [key, value] of encoded) {
                 target.set(ctx.decode(key), ctx.decode(value));
             }

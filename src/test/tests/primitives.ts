@@ -4,7 +4,9 @@ import { defaultPreszr } from "@lib/default";
 import { testBuilder } from "../tools";
 
 const primtiveTests = testBuilder(defaultPreszr)
-    .title(({ original, title }) => title ?? `Primitive - ${stringify(original)}`)
+    .title(
+        ({ original, title }) => title ?? `Primitive - ${stringify(original)}`
+    )
     .getSimple();
 
 test.failing("check test fails on mismatch", primtiveTests, 1, 2);

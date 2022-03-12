@@ -125,7 +125,7 @@ export type SimpleEncodingSpecifier = symbol | Function;
  * if you want to be more explicit.
  */
 export type EncodingSpecifier =
-    SimpleEncodingSpecifier
+    | SimpleEncodingSpecifier
     | PrototypeEncodingSpecifier
     | PrototypeEncoding
     | SymbolEncoding;

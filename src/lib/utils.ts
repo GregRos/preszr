@@ -1,4 +1,3 @@
-import { PreszrError } from "./errors";
 import { SimpleEncodingSpecifier } from "./interface";
 
 let packageObj;
@@ -77,7 +76,9 @@ export function getUnrecognizedSymbol(name: string) {
     return Symbol(getUnrecognizedSymbolName(name));
 }
 
-export function isSimpleEncodingSpec(candidate: unknown): candidate is SimpleEncodingSpecifier {
+export function isSimpleEncodingSpec(
+    candidate: unknown
+): candidate is SimpleEncodingSpecifier {
     return typeof candidate === "symbol" || typeof candidate === "function";
 }
 

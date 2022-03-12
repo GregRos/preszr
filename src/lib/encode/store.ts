@@ -6,12 +6,20 @@ import {
     SymbolEncoding
 } from "../interface";
 import { PreszrError } from "../errors";
-import { getEncodingKey, makeFullEncoding, mustParseEncodingKey } from "../encodings/utils";
+import {
+    getEncodingKey,
+    makeFullEncoding,
+    mustParseEncodingKey
+} from "../encodings/utils";
 import { getClassName, getSymbolName } from "../utils";
 import { Fixed } from "../encodings/fixed";
 import { nullPlaceholder } from "../encodings";
 
-export function expandInsert<T>(arr: (T | undefined)[], index: number, item: T) {
+export function expandInsert<T>(
+    arr: (T | undefined)[],
+    index: number,
+    item: T
+) {
     // We want a number of empty spaces so that the array's new length is
     // index + 1. therefore we want index - arr.Length spaces.
 
@@ -32,7 +40,10 @@ export class EncodingStore {
 
     // This maintains a full list of all versions of all prototype encodings.
     // it's used for various checks and to built the caches.
-    private _nameToProtoEncodings = new Map<string, Map<number, PrototypeEncoding>>();
+    private _nameToProtoEncodings = new Map<
+        string,
+        Map<number, PrototypeEncoding>
+    >();
 
     // This maintains all symbol encodings and is also used when encoding.
     private _symbolToEncoding = new Map<symbol, SymbolEncoding>();
@@ -54,7 +65,9 @@ export class EncodingStore {
     // Used and updated during operation, and needs to be rebuilt whenever encodings are added.
     // This will have the protos referenced by encodings, and also their descendants.
     // whenever the proto encoding list is updated, this becomes outdated.
-    private _cacheProtoToEncoding: WeakMap<object, PrototypeEncoding> | undefined;
+    private _cacheProtoToEncoding:
+        | WeakMap<object, PrototypeEncoding>
+        | undefined;
 
     all(): Encoding[] {
         return [...this.getProtoEncodings(), ...this.getSymbolEncodings()];
@@ -68,13 +81,18 @@ export class EncodingStore {
                 throw new PreszrError(
                     `Prototype collision - ${getEncodingKey(
                         encoding
-                    )} references prototype ${getClassName(proto)}, but encoding ${getEncodingKey(
+                    )} references prototype ${getClassName(
+                        proto
+                    )}, but encoding ${getEncodingKey(
                         existingEncoding
                     )} also refers that prototype.`
                 );
             }
             // However, it's okay to have the same encoding with different versions reference different prototypes.
-            if (!existingEncoding || existingEncoding.version < encoding.version) {
+            if (
+                !existingEncoding ||
+                existingEncoding.version < encoding.version
+            ) {
                 this._protoToEncoding.set(proto, encoding);
             }
         }
@@ -120,7 +138,10 @@ export class EncodingStore {
         this._registerProtos(encoding);
         // The latest encoding version is kept under -1 for easy access.
         const maxVersionEncoding = versioned.get(-1);
-        if (!maxVersionEncoding || maxVersionEncoding.version < encoding.version) {
+        if (
+            !maxVersionEncoding ||
+            maxVersionEncoding.version < encoding.version
+        ) {
             versioned.set(-1, encoding);
             // If the max version was set, that means the proto cache is obsolete
             this._cacheProtoToEncoding = undefined;
@@ -156,9 +177,13 @@ export class EncodingStore {
         }
         if (existingBySymbol) {
             throw new PreszrError(
-                `Configuration - ${encoding.name} references symbol ${getSymbolName(
+                `Configuration - ${
+                    encoding.name
+                } references symbol ${getSymbolName(
                     encoding.symbol
-                )}, but encoding ${existingBySymbol.name} also references that symbol.`
+                )}, but encoding ${
+                    existingBySymbol.name
+                } also references that symbol.`
             );
         }
         this._symbolToEncoding.set(encoding.symbol, encoding);
@@ -190,9 +215,13 @@ export class EncodingStore {
         // info as possible.
         const info = mustParseEncodingKey(key);
         if (info.type === "symbol") {
-            throw new PreszrError(`Decoding - no symbol encoding for name ${info.name}.`);
+            throw new PreszrError(
+                `Decoding - no symbol encoding for name ${info.name}.`
+            );
         } else {
-            const namedProtoEncoding = this._nameToProtoEncodings.get(info.name)?.get(-1);
+            const namedProtoEncoding = this._nameToProtoEncodings
+                .get(info.name)
+                ?.get(-1);
             if (!namedProtoEncoding) {
                 throw new PreszrError(
                     `Missing encoding - no prototype encoding named ${info.name}, for any version.`
@@ -231,14 +260,20 @@ export class EncodingStore {
         }
         let foundEncoding: PrototypeEncoding;
         const chain = [] as object[];
-        for (let proto = obj; ; proto = Object.getPrototypeOf(proto) ?? nullPlaceholder) {
+        for (
+            let proto = obj;
+            ;
+            proto = Object.getPrototypeOf(proto) ?? nullPlaceholder
+        ) {
             const cached = this._cacheProtoToEncoding.get(proto);
             if (cached !== undefined) {
                 foundEncoding = cached;
                 break;
             }
             if (proto === nullPlaceholder) {
-                throw new PreszrError("Invariant failed - mustGetByProto failed to find anything.");
+                throw new PreszrError(
+                    "Invariant failed - mustGetByProto failed to find anything."
+                );
             }
             chain.push(proto);
         }

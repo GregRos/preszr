@@ -28,7 +28,9 @@ export function makeSymbolEncoding(x: SymbolEncoding | symbol): SymbolEncoding {
     }
     const name = getSymbolName(x);
     if (!name) {
-        throw new PreszrError(`Configuration - Symbol has no name. You must specify a 'key'.`);
+        throw new PreszrError(
+            `Configuration - Symbol has no name. You must specify a 'key'.`
+        );
     }
     return {
         name: name,

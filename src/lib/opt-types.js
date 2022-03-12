@@ -31,19 +31,26 @@ function getSpeculative(name, code, map) {
 const generatorFunction = function* () {};
 
 // Node 4.x
-exports._GeneratorFunction = Object.getPrototypeOf(generatorFunction).constructor;
+exports._GeneratorFunction =
+    Object.getPrototypeOf(generatorFunction).constructor;
 
 // Node 4.x
 exports._Generator = Object.getPrototypeOf(generatorFunction()).constructor;
 
 // Node 7.x
 /** @type {{new(x): any}} */
-exports._AsyncFunction = getSpeculative("AsyncFunction", "async function(){}", f => f.constructor);
+exports._AsyncFunction = getSpeculative(
+    "AsyncFunction",
+    "async function(){}",
+    f => f.constructor
+);
 
 // Node 8.10
 /** @type {{new(x): any}} */
 exports._SharedArrayBuffer =
-    typeof SharedArrayBuffer !== "undefined" ? SharedArrayBuffer : missingCtor("SharedArrayBuffer");
+    typeof SharedArrayBuffer !== "undefined"
+        ? SharedArrayBuffer
+        : missingCtor("SharedArrayBuffer");
 
 // Node 10.x
 /** @type {{new(x): any}} */
@@ -63,21 +70,27 @@ exports._AsyncGenerator = getSpeculative(
 
 // Node 10.4
 /** @type {(x: any) => any} */
-exports._BigInt = typeof BigInt !== "undefined" ? BigInt : missingCtor("BigInt");
+exports._BigInt =
+    typeof BigInt !== "undefined" ? BigInt : missingCtor("BigInt");
 
 // Node 10.4
 /** @type {{new(x): any}} */
 exports._BigInt64Array =
-    typeof BigInt64Array !== "undefined" ? BigInt64Array : missingCtor("BigInt64Array");
+    typeof BigInt64Array !== "undefined"
+        ? BigInt64Array
+        : missingCtor("BigInt64Array");
 
 // Node 10.4
 /** @type {{new(x): any}} */
 exports._BigUint64Array =
-    typeof BigUint64Array !== "undefined" ? BigUint64Array : missingCtor("BigUint64Array");
+    typeof BigUint64Array !== "undefined"
+        ? BigUint64Array
+        : missingCtor("BigUint64Array");
 
 // Node 14.6
 /** @type {{new(x): any}} */
-exports._WeakRef = typeof WeakRef !== "undefined" ? WeakRef : missingCtor("WeakRef");
+exports._WeakRef =
+    typeof WeakRef !== "undefined" ? WeakRef : missingCtor("WeakRef");
 
 // Node 14.6
 /** @type {{new(x): any}} */

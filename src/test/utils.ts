@@ -1,9 +1,9 @@
-import { Header, PreszrFormat } from "../lib/data";
-import { version } from "../lib/utils";
+import { Header, PreszrFormat } from "@lib/data";
+import { version } from "@lib/utils";
 import { ExecutionContext, Macro } from "ava";
 import { cloneDeep } from "lodash";
-import { Preszr } from "../lib/core";
-import { InitContext, EncodeContext } from "../lib";
+import { Preszr } from "@lib/core";
+import { InitContext, EncodeContext } from "@lib";
 
 export function stringify(value: any) {
     if (typeof value === "object") {
@@ -76,7 +76,11 @@ export function simplifyEncoding(encoding: PreszrFormat) {
 }
 
 export function createPreszrRep([encodingSpec, meta], ...arr): PreszrFormat {
-    const header = [version, ...getEncodingComponent(encodingSpec), meta] as Header;
+    const header = [
+        version,
+        ...getEncodingComponent(encodingSpec),
+        meta
+    ] as Header;
     return [header, ...arr];
 }
 
@@ -112,12 +116,17 @@ export const testDecodeMacro: any = (
     t.deepEqual(rDecoded, decoded);
 };
 
-export const testEncodeMacroBindPreszr = preszr => (a, b, c) => testEncodeMacro(a, b, c, preszr);
+export const testEncodeMacroBindPreszr = preszr => (a, b, c) =>
+    testEncodeMacro(a, b, c, preszr);
 
-export const testDecodeMacroBindPreszr = preszr => (a, b, c) => testDecodeMacro(a, b, c, preszr);
+export const testDecodeMacroBindPreszr = preszr => (a, b, c) =>
+    testDecodeMacro(a, b, c, preszr);
 
 export const combAttachHeader = titleFunc => {
-    const attachHeader = (decoded, encoded) => [decoded, preszrDefaultHeader(...encoded)];
+    const attachHeader = (decoded, encoded) => [
+        decoded,
+        preszrDefaultHeader(...encoded)
+    ];
     return [
         createWithTitle(
             testEncodeMacro,
@@ -149,12 +158,20 @@ export const encodeDecodeMacro = (args: EncodeDecodeMacros) => {
     return [
         createWithTitle(
             args.encode,
-            (decoded, encoded, preszr) => [decoded, embedPreszrVersion(encoded), preszr],
+            (decoded, encoded, preszr) => [
+                decoded,
+                embedPreszrVersion(encoded),
+                preszr
+            ],
             title => `encode :: ${title}`
         ),
         createWithTitle(
             args.decode,
-            (decoded, encoded, preszr) => [decoded, embedPreszrVersion(encoded), preszr],
+            (decoded, encoded, preszr) => [
+                decoded,
+                embedPreszrVersion(encoded),
+                preszr
+            ],
             title => `decode :: ${title}`
         )
     ] as [any, any];

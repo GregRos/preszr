@@ -1,5 +1,4 @@
 import { getBuiltInEncodingName } from "./utils";
-import { errorNoTypeInEnv } from "./errors";
 import { _BigInt } from "./opt-types";
 
 export type Version = string;

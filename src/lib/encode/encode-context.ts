@@ -1,6 +1,18 @@
-import { EncodeContext, Encoding, fixedIndexProp, SpecialEncoding, SymbolEncoding } from "../interface";
+import {
+    EncodeContext,
+    Encoding,
+    fixedIndexProp,
+    SpecialEncoding,
+    SymbolEncoding
+} from "../interface";
 import { version } from "../utils";
-import { Entity, noResultPlaceholder, PreszrFormat, Reference, tryEncodeScalar } from "../data";
+import {
+    Entity,
+    noResultPlaceholder,
+    PreszrFormat,
+    Reference,
+    tryEncodeScalar
+} from "../data";
 import { getEncodingKey } from "../encodings/utils";
 import { Fixed } from "../encodings/fixed";
 import { EncodingStore } from "./store";
@@ -39,7 +51,13 @@ export class EncodeCtx implements EncodeContext {
     }
 
     private _createNewRef(value: Entity): Reference {
-        const { _workingMessage: msg, _objectToRef, _encodingSpec, _metadata, _store, _encodingKeys } = this;
+        const {
+            _workingMessage: msg,
+            _objectToRef,
+            _encodingSpec,
+            _metadata,
+            _store
+        } = this;
         const index = msg.length;
         const ref = `${index}`;
         _objectToRef.set(value, ref);
@@ -50,7 +68,8 @@ export class EncodeCtx implements EncodeContext {
         msg.push(0);
         if (typeof value === "symbol") {
             const encoding = this._mustGetBySymbol(value);
-            this._encodingSpec[index] = this._getEncodingIndexAndRegister(encoding);
+            this._encodingSpec[index] =
+                this._getEncodingIndexAndRegister(encoding);
             if (encoding.metadata) {
                 this._metadata[index] = encoding.metadata;
             }
@@ -95,7 +114,12 @@ export class EncodeCtx implements EncodeContext {
 
     finish() {
         const wm = this._workingMessage;
-        wm[0] = [version, this._makeEncodingKeys(), this._encodingSpec, this._metadata];
+        wm[0] = [
+            version,
+            this._makeEncodingKeys(),
+            this._encodingSpec,
+            this._metadata
+        ];
         return wm;
     }
 }

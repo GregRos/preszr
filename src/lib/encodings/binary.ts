@@ -1,7 +1,16 @@
-import { CreateContext, EncodeContext, fixedIndexProp, PrototypeEncoding } from "../interface";
+import {
+    CreateContext,
+    EncodeContext,
+    fixedIndexProp,
+    PrototypeEncoding
+} from "../interface";
 import { getBuiltInEncodingName } from "../utils";
 import { fromByteArray, toByteArray } from "base64-js";
-import { _BigInt64Array, _BigUint64Array, _SharedArrayBuffer } from "../opt-types";
+import {
+    _BigInt64Array,
+    _BigUint64Array,
+    _SharedArrayBuffer
+} from "../opt-types";
 import { Fixed } from "./fixed";
 
 /**
@@ -56,12 +65,18 @@ export function createBinEncoding(
         version: 0,
         [fixedIndexProp]: index,
         prototypes: [ctor.prototype],
-        encode(input: InstanceType<TypedArrayConstructor>, ctx: EncodeContext): any {
+        encode(
+            input: InstanceType<TypedArrayConstructor>,
+            ctx: EncodeContext
+        ): any {
             return arrayBufferEncoding.encode(input.buffer, ctx);
         },
         decoder: {
             create(encodedValue: any, ctx: CreateContext): any {
-                const buffer = arrayBufferEncoding.decoder.create(encodedValue, ctx) as ArrayBuffer;
+                const buffer = arrayBufferEncoding.decoder.create(
+                    encodedValue,
+                    ctx
+                ) as ArrayBuffer;
                 return new ctor(buffer);
             }
         }

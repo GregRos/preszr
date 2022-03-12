@@ -6,7 +6,10 @@ import { defaultPreszr } from "@lib/default";
 import { Fixed } from "@lib/encodings/fixed";
 
 const singleton = testBuilder(defaultPreszr)
-    .title(({ original, title }) => title ?? `array with ${stringify(original[0])} element`)
+    .title(
+        ({ original, title }) =>
+            title ?? `array with ${stringify(original[0])} element`
+    )
     .getSimple();
 {
     test(singleton, [1], preszr(items([1])));
