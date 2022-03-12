@@ -24,7 +24,9 @@ If you're curious about how `preszr` works, refer to the <u>Preszr Output</u>.
 
 🔢 Compatible with arbitrary serializers!
 
-🕵️ Lots of error messages and eas(ier) debugging!
+🕵️ Many error cases and descriptive messages that make for better debugging!
+
+:sweat_smile: Pain-painstakingly unit-tested for many, many possible inputs.
 
 ## Non-features
 
@@ -102,7 +104,7 @@ yarn add preszr
 
 ❌ `Generator`
 
-If you really want to see the list of supported types, see <u>supported.md</u>. You can also generate the list from any `Preszr` instance, as described in the `In-depth Configuration` section below.A	
+If you really want to see the list of supported types, see <u>supported.md</u>. You can also generate the list from any `Preszr` instance, as described in the `In-depth Configuration` section below.
 
 When `preszr` encounters a value it unsupports, it won't error - it will instead replace it with a marker that indicates an unsupported value was encountered. This is because it aims to reproduce the input object as closely as possible, and just ignoring some of the data doesn't do that.
 

@@ -36,7 +36,7 @@ test("from symbol with name", t => {
 test("error when trying with symbol without name", t => {
     // eslint-disable-next-line symbol-description
     const err = t.throws(() => makeFullEncoding(Symbol()));
-    t.true(err.message.includes(`Failed to detect symbol name`));
+    t.true(err.message.includes(`no name`));
 });
 
 test("symbol encoding with explicit name unchanged", t => {

@@ -26,28 +26,28 @@ export abstract class TestBuilder<TArgs extends TestArgs> {
         })
     }
 
-    title(f: TitleFunc<TArgs>) {
+    title(f: TitleFunc<TArgs> | string) {
         return this.with({
-            _title: f
+            _title: typeof f === "string" ? (() => f) : f
         })
     }
 
-    protected abstract _test(t: ExecutionContext, args: TArgs & {instance: Preszr}): void | Promise<void>;
+    protected abstract _test(t: ExecutionContext, args: TArgs & {instance: Preszr}): void;
 
     get() {
         const self = this;
         return test.macro({
-            async exec(t, args: TArgs){
+            exec(t, args: TArgs){
                 return self._test(t, {
                     ...args,
-                    instance: self._instance
+                    instance: self._instance ?? Preszr()
                 });
             },
             title(title, args: TArgs) {
-                return self._title({
+                return self._title?.({
                     ...args,
                     title
-                })
+                }) ?? title
             }
         })
     }

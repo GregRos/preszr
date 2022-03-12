@@ -1,4 +1,5 @@
 import { PreszrError } from "./errors";
+import { SimpleEncodingSpecifier } from "./interface";
 
 let packageObj;
 try {
@@ -49,7 +50,7 @@ export function defaultsDeep(target: any, ...sources: any[]) {
 }
 
 export function isNumericString(input: string) {
-    return +input !== parseInt(input);
+    return +input === parseInt(input);
 }
 
 export function getBuiltInEncodingName(str: string) {
@@ -74,6 +75,10 @@ export function getUnrecognizedSymbolName(name: string) {
 
 export function getUnrecognizedSymbol(name: string) {
     return Symbol(getUnrecognizedSymbolName(name));
+}
+
+export function isSimpleEncodingSpec(candidate: unknown): candidate is SimpleEncodingSpecifier {
+    return typeof candidate === "symbol" || typeof candidate === "function";
 }
 
 export const version = packageObj.version.split(".")[0];

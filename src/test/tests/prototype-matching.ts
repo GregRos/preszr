@@ -1,169 +1,126 @@
 /* tslint:disable:no-construct */
 import test from "ava";
 import {
-    encodeDecodeMacro,
-    testDecodeMacroBindPreszr,
-    testEncodeMacro,
-    testEncodeMacroBindPreszr
+    encodeDecodeMacro, getImplicitClassEncodingKey,
+    testEncodeMacro
 } from "../utils";
 import { decode, Preszr } from "@lib";
 import { getImplicitClassEncodingName, version } from "@lib/utils";
-import { nullPrototypeEncoding } from "@lib/encodings/basic";
-import { assymetricTest } from "../tools/special-assertion-test-builder";
+import { nullPrototypeEncoding } from "@lib/encodings/objects";
+import { encoded, items, preszr, testBuilder } from "../tools";
+import { Fixed } from "@lib/encodings/fixed";
 
 
 
-class TestClass {
+class ParentClass {
     constructor(obj = {}) {
         Object.assign(this, obj);
     }
 }
 
-class TestSubclass extends TestClass {}
-
+class ChildClass extends ParentClass {}
+const parentClassEncodingName = getImplicitClassEncodingKey("ParentClass")
+const childClassEncodingName = getImplicitClassEncodingKey("ChildClass")
 test("deepEqual distinguishes prototypes", t => {
-    t.notDeepEqual(new TestClass(), {});
-    t.notDeepEqual(new TestSubclass(), {});
-    t.notDeepEqual(new TestClass(), new TestSubclass());
+    t.notDeepEqual(new ParentClass(), {});
+    t.notDeepEqual(new ChildClass(), {});
+    t.notDeepEqual(new ParentClass(), new ChildClass());
 });
 
-// DECODED -> BADLY_ENCODED -> BADLY_DECODED
 
+const builder = testBuilder()
 
-
-
+// Unknown TestClass encoded as regular object
 test(
-    "unknown prototype",
-    encodeDecodeMacro({
-        decode(t, decoded, encoded) {
-            const rDecoded = decode(encoded);
-            t.deepEqual(rDecoded, {});
-        },
-        encode: testEncodeMacro
-    }),
-    new TestClass(),
-    [[{}, {}], {}]
-);
-
-const preszrWithTestClass = new Preszr({
-    encodings: [TestClass]
-});
-test(
-    "known prototype",
-    encodeDecodeMacro({
-        encode: testEncodeMacroBindPreszr(preszrWithTestClass),
-        decode: testEncodeMacroBindPreszr(preszrWithTestClass)
-    }),
-    new TestClass({ a: 1 }),
-    [[{ 1: getImplicitClassEncodingName("TestClass") }, {}], { a: 1 }]
-);
-
-test(
-    "subclass of known prototype",
-    encodeDecodeMacro({
-        encode: testEncodeMacroBindPreszr(preszrWithTestClass),
-        decode(t, decoded, encoded) {
-            const rDecoded = preszrWithTestClass.decode(encoded);
-            t.deepEqual(rDecoded, new TestClass({ a: 1 }));
-            t.is(Object.getPrototypeOf(rDecoded), TestClass.prototype);
-        }
-    }),
-    new TestSubclass({ a: 1 }),
-    [[{ 1: getImplicitClassEncodingName("TestClass") }, {}], { a: 1 }]
-);
-
-const preszrWithSubclass = new Preszr({
-    encodings: [TestClass, TestSubclass]
-});
-
-class TestSubSubclass extends TestSubclass {}
-
-test(
-    "unknown class matches nearest subclass",
-    encodeDecodeMacro({
-        encode: testEncodeMacroBindPreszr(preszrWithSubclass),
-        decode(t, decoded, encoded) {
-            const rDecoded = preszrWithSubclass.decode(encoded);
-            t.deepEqual(rDecoded, new TestSubclass());
-        }
-    }),
-    new TestSubSubclass(),
-    [[{ 1: getImplicitClassEncodingName(`TestSubclass`) }, {}], {}]
-);
-
-test(
-    "two different classes",
-    encodeDecodeMacro({
-        encode: testEncodeMacroBindPreszr(preszrWithSubclass),
-        decode: testDecodeMacroBindPreszr(preszrWithSubclass)
-    }),
+    "Unknown prototype",
+    builder.get(),
     {
-        a: new TestClass({ b: new TestSubclass() })
-    },
-    [
-        [
-            {
-                2: getImplicitClassEncodingName("TestClass"),
-                3: getImplicitClassEncodingName("TestSubclass")
-            },
-            {}
-        ],
-        { a: "2" },
-        { b: "3" },
-        {}
-    ]
-);
+        original: new ParentClass(),
+        encoded: preszr(
+            items({})
+        ),
+        // Decoded output expected to be different from original:
+        decoded: { }
+    }
+)
 
-test(
-    "null prototype object",
-    encodeDecodeMacro({
-        encode: testEncodeMacro,
-        decode(t, decoded, encoded) {
-            const rDecoded = decode(encoded);
-            t.is(Object.getPrototypeOf(rDecoded), null);
-            t.deepEqual(rDecoded, {});
+{
+    const testWithParent = builder.instance(Preszr(ParentClass)).get();
+
+    test(
+        "known prototype",
+        testWithParent,
+        {
+            original: new ParentClass({a: 1}),
+            encoded: preszr(
+                encoded({a: 1}, parentClassEncodingName)
+            )
+            // Here decoded output is supposed to be the same
         }
-    }),
-    Object.create(null),
-    [[{ 1: nullPrototypeEncoding.name }, {}], {}]
-);
+    )
 
-test("override prototype", t => {
-    const preszr = new Preszr({
-        encodings: [
-            TestClass,
-            {
-                name: "override",
-                prototype: TestClass.prototype,
-                encode: () => 5,
-                decoder: {
-                    create: () => 5
-                }
-            }
-        ]
+    test(
+        "subclass of known prototype",
+        testWithParent,
+        {
+            original: new ChildClass({a: 2}),
+            encoded: preszr(
+                encoded({a: 2}, parentClassEncodingName)
+            ),
+            decoded: new ParentClass({a: 2})
+        }
+    )
+}
+
+{
+    const testWithBoth = builder.instance(Preszr(ParentClass, ChildClass)).get();
+
+    test(
+        "both classes",
+        testWithBoth,
+        {
+            original: {a: new ParentClass({a: 1}), b: new ChildClass({a: 2})},
+            encoded: preszr(
+                items({a: "2", b: "3"}),
+                encoded({a: 1}, parentClassEncodingName),
+                encoded({a: 2}, childClassEncodingName)
+            )
+        }
+    )
+
+    class ChildChildClass extends ChildClass {}
+
+    test(
+        "unknown child child class matches nearest",
+        testWithBoth,
+        {
+            original: new ChildChildClass({a: 3}),
+            encoded: preszr(encoded({a: 3}, childClassEncodingName)),
+            decoded: new ChildClass({a: 3})
+        }
+    )
+}
+
+{
+    const testForNullProtoObject = builder.eqAssertion((t, decoded, original) => {
+        t.deepEqual(decoded, original);
+        t.is(Object.getPrototypeOf(decoded), null);
     });
 
-    const encoded = preszr.encode(new TestClass());
-    t.deepEqual(encoded, [[version, ["override"], { 1: 0 }, {}], 5]);
-    const decoded = preszr.decode(encoded);
-    t.is(decoded, 5);
-});
-
-test("override built-in prototype", t => {
-    const preszr = new Preszr({
-        encodings: [
-            {
-                prototype: Date.prototype,
-                name: "/Date",
-                encode: () => 5,
-                decoder: {
-                    create: () => 5
+    test(
+        "null prototype object",
+        testForNullProtoObject.get(),
+        {
+            original: Object.create(null, {
+                a: {
+                    value: 5,
+                    enumerable: true
                 }
-            }
-        ]
-    });
+            }),
+            encoded: preszr(
+                encoded({a: 5}, Fixed.NullProto)
+            )
+        }
+    )
+}
 
-    const encoded = preszr.encode(new Date());
-    t.deepEqual(encoded, [[version, ["new-date"], { 1: 0 }, {}], 5]);
-    t.is(preszr.decode(encoded), 5);
-});

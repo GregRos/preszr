@@ -10,7 +10,7 @@ export type TestArgs = {
     decoded?: any;
 }
 
-export type EqualityAssertion = (t: ExecutionContext, decoded: any, original: any) => void | Promise<void>;
+export type EqualityAssertion = (t: ExecutionContext, decoded: any, original: any) => void;
 
 
 export class GenericTestBuilder extends TestBuilder<TestArgs> {
@@ -22,14 +22,14 @@ export class GenericTestBuilder extends TestBuilder<TestArgs> {
         })
     }
 
-    protected async _test(t: ExecutionContext, args): Promise<void> {
+    protected _test(t: ExecutionContext, args): void {
         const {instance} = args;
         const toEncoded = instance.encode(args.original);
         t.deepEqual(toEncoded, args.encoded, "REAL_ENCODED != EXPECTED_ENCODED");
         const decoded = "decoded" in args ? args.decoded : args.original;
         const realDecoded = instance.decode(toEncoded);
         if (this._equalityAssertion) {
-            await this._equalityAssertion(t, realDecoded, decoded);
+            this._equalityAssertion(t, realDecoded, decoded);
         } else {
             t.deepEqual(realDecoded, decoded, "REAL_DECODED != EXPECTED_DECODED");
         }
@@ -39,7 +39,12 @@ export class GenericTestBuilder extends TestBuilder<TestArgs> {
         const self = this;
         const originalMacro = self.get();
         return test.macro({
-            title: originalMacro.title,
+            title(title, original: any, encoded: PreszrOutput) {
+                return originalMacro.title(title, {
+                    original,
+                    encoded
+                })
+            },
             exec(t, original: any, encoded: PreszrOutput) {
                 return originalMacro.exec(t, {
                     encoded,

@@ -35,7 +35,7 @@ export enum Fixed {
     BigInt64Array,
 
     // ERROR BLOCK
-    EvalError = 70,
+    EvalError = 80,
     RangeError,
     ReferenceError,
     TypeError,
@@ -47,4 +47,5 @@ export enum Fixed {
     // ... FREE BLOCK 76-99
     End = 100
     // Block end marker 100
+    // Custom encodings start at index 100.
 }

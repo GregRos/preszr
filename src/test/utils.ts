@@ -18,6 +18,10 @@ export function stringify(value: any) {
     return `${value}`;
 }
 
+export function getImplicitClassEncodingKey(cls: string) {
+    return `${cls}.v0`;
+}
+
 export function createSparseArray<T>(arrayLikeObj: Record<any, T>): T[] {
     const arr = [] as T[];
     for (const [key, value] of Object.entries(arrayLikeObj)) {

@@ -1,211 +1,116 @@
 /* eslint-disable symbol-description */
-import test, { UntitledMacro } from "ava";
-import { decode } from "../../lib";
+import test from "ava";
 import {
-    createWithTitle,
-    embedPreszrVersion,
-    testDecodeMacro,
-    testEncodeMacro
-} from "../utils";
-import { objectEncoding } from "../../lib/encodings/basic";
-import { unrecognizedSymbolKey } from "../../lib/data";
-import {
-    getBuiltInEncodingName,
     getSymbolName,
-    getUnrecognizedSymbol,
-    getUnrecognizedSymbolName
+    getUnrecognizedSymbol
 } from "../../lib/utils";
-import { Preszr } from "../../lib/core";
+import { Preszr } from "@lib";
+import { encoded, items, preszr, testBuilder } from "../tools";
+import { Fixed } from "@lib/encodings/fixed";
 
-const testSymbol = Symbol("test");
-const testSymbol2 = Symbol("test");
-const testSymbol3 = Symbol("test");
+function getSymbolKey(s: symbol) {
+    return `${s.description}.S`;
+}
+
+const symb1 = Symbol("symbol1");
+const symb2 = Symbol("symbol2");
+const symb3 = Symbol("symbol3");
 
 test("unrecognized symbol name generator", t => {
     t.is(getSymbolName(getUnrecognizedSymbol("x")), "preszr unknown: x");
 });
 
-test(
-    "unrecognized symbol input",
-    unrecognizedSymbolMacro((t, encoded) => {
-        const decoded = decode<symbol>(encoded);
-        t.is(typeof decoded, "symbol");
-        t.is(getSymbolName(decoded), getUnrecognizedSymbolName("test"));
-    }),
-    testSymbol,
-    [[{ 1: unrecognizedSymbolKey }, { 1: "test" }], 0]
-);
-
-test(
-    "unrecognized symbol no name",
-    unrecognizedSymbolMacro((t, encoded) => {
-        const decoded = decode<symbol>(encoded);
-        t.is(typeof decoded, "symbol");
-        t.is(getSymbolName(decoded), getUnrecognizedSymbolName("#1"));
-    }),
-    Symbol(),
-    [[{ 1: unrecognizedSymbolKey }, { 1: "#1" }], 0]
-);
-
-test(
-    "unrecognized symbol property value",
-    unrecognizedSymbolMacro((t, encoded) => {
-        const decoded = decode<any>(encoded);
-        t.is(typeof decoded.a, "symbol");
-        t.is(decoded.a.description, getUnrecognizedSymbolName("test"));
-    }),
-    { a: testSymbol },
-    [[{ 2: unrecognizedSymbolKey }, { 2: "test" }], { a: "2" }, 0]
-);
-
-test(
-    "two unrecognized symbol values",
-    unrecognizedSymbolMacro((t, encoded) => {
-        const decoded = decode<any>(encoded);
-        t.is(typeof decoded.a, "symbol");
-        t.is(decoded.a.description, getUnrecognizedSymbolName("test"));
-    }),
-    { a: testSymbol, b: testSymbol2 },
-    [
-        [
-            { 2: unrecognizedSymbolKey, 3: unrecognizedSymbolKey },
-            { 2: "test", 3: "test" }
-        ],
-        { a: "2", b: "3" },
-        0,
-        0
-    ]
-);
-
-test(
-    "unrecognized symbol key",
-    unrecognizedSymbolMacro((t, encoded) => {
-        const decoded = decode<any>(encoded);
-        const [key] = Reflect.ownKeys(decoded);
-        t.is(typeof key, "symbol");
-        t.is((key as any).description, getUnrecognizedSymbolName("test"));
-        t.is(decoded[key], 1);
-    }),
-    { [testSymbol]: 1 },
-    [
-        [{ 1: objectEncoding.name, 2: unrecognizedSymbolKey }, { 2: "test" }],
-        [{}, { 2: 1 }],
-        0
-    ]
-);
-
-test(
-    "two different unrecognized symbol properties",
-    unrecognizedSymbolMacro((t, encoded) => {
-        const decoded = decode(encoded);
-        const [key1, key2] = Reflect.ownKeys(decoded as object);
-        t.is(typeof key1, "symbol");
-        t.is(typeof key2, "symbol");
-        t.not(key1, key2);
-        t.is(getSymbolName(key1 as any), getUnrecognizedSymbolName("test"));
-        t.is(getSymbolName(key2 as any), getUnrecognizedSymbolName("test"));
-    }),
-    { [testSymbol]: 1, [testSymbol2]: 2 },
-    [
-        [
-            {
-                1: objectEncoding.name,
-                2: unrecognizedSymbolKey,
-                3: unrecognizedSymbolKey
-            },
-            { 2: "test", 3: "test" }
-        ],
-        [{}, { 2: 1, 3: 2 }],
-        0,
-        0
-    ]
-);
-
-test("deep equal works symbol values and keys", t => {
-    const o = () => {
-        return { [Symbol("a")]: 1 };
-    };
-    t.notDeepEqual(o(), o());
-    const z = o();
-    t.deepEqual(z, z);
-    const justValues = () => {
-        return {
-            a: Symbol("a")
-        };
-    };
-    t.notDeepEqual(justValues(), justValues());
+const symbolTest = testBuilder().eqAssertion((t, decoded, original) => {
+    t.is(decoded, original);
 });
 
-const preszrWithSymbol = new Preszr({
-    encodings: [
-        testSymbol,
-        {
-            symbol: testSymbol2,
-            name: "test2"
+// First let's check recognized symbols only...
+{
+    const knows1 = Preszr(symb1);
+
+    const stdTest = testBuilder(knows1).get();
+
+    const symbolEncName = getSymbolKey(symb1);
+    test(
+        "symbol input",
+        stdTest, {
+            original: symb1,
+            encoded: preszr(
+                encoded(0, symbolEncName)
+            )
         }
-    ]
-});
-
-const recognizedSymbolMacro = [
-    createWithTitle(
-        testEncodeMacro,
-        (decoded, encoded) => [
-            decoded,
-            embedPreszrVersion(encoded),
-            preszrWithSymbol
-        ],
-        title => `encode :: ${title}`
-    ),
-    createWithTitle(
-        testDecodeMacro,
-        (decoded, encoded) => [
-            decoded,
-            embedPreszrVersion(encoded),
-            preszrWithSymbol
-        ],
-        title => `decode :: ${title}`
-    )
-] as [any, any];
-
-test(
-    "recognized symbol",
-    recognizedSymbolMacro,
-    testSymbol,
-    [[{ 1: "test" }, {}], 0],
-    preszrWithSymbol
-);
-
-test("encode+decode :: one recognized symbol, one not", t => {
-    const encoded = preszrWithSymbol.encode({
-        a: testSymbol,
-        b: testSymbol3
-    });
-    t.deepEqual(
-        encoded,
-        embedPreszrVersion([
-            [
-                {
-                    2: "test",
-                    3: unrecognizedSymbolKey
-                },
-                { 3: "test" }
-            ],
-            { a: "2", b: "3" },
-            0,
-            0
-        ])
     );
-    const result = preszrWithSymbol.decode(encoded);
-    const { a, b } = result;
-    t.is(a, testSymbol);
-    t.is(getSymbolName(b), getUnrecognizedSymbolName("test"));
-});
 
-test(
-    "two recognized symbols",
-    recognizedSymbolMacro,
-    { a: testSymbol, b: testSymbol2 },
-    [[{ 2: "test", 3: "test2" }, {}], { a: "2", b: "3" }, 0, 0]
-);
+    test(
+        "symbol value",
+        stdTest, {
+            original: { x: symb1 },
+            encoded: preszr(
+                items({ x: "2" }),
+                encoded(0, symbolEncName)
+            )
+        }
+    );
 
-// TODO: built-in symbols
+    test(
+        "symbol key",
+        stdTest, {
+            original: { [symb1]: 10 },
+            encoded: preszr(
+                encoded([{ "2": 10 }, {}], Fixed.Object),
+                encoded(0, symbolEncName)
+            )
+        }
+    );
+}
+{
+    const knows2 = Preszr(symb1, symb2);
+    const stdTest = testBuilder(knows2).get();
+
+    test(
+        "two symbol keys",
+        stdTest, {
+            original: {
+                [symb1]: 1,
+                [symb2]: 2
+            },
+            encoded: preszr(
+                encoded([{ "2": 1, "3": 2 }, {}], Fixed.Object),
+                encoded(0, getSymbolKey(symb1)),
+                encoded(0, getSymbolKey(symb2))
+            )
+        }
+    );
+
+    test(
+        "two symbol keys, values",
+        stdTest, {
+            original: {
+                [symb1]: symb2,
+                [symb2]: symb1
+            },
+            encoded: preszr(
+                encoded([{"2": "3", "3": "2"}, {}], Fixed.Object),
+                encoded(0, getSymbolKey(symb1)),
+                encoded(0, getSymbolKey(symb2))
+            )
+        }
+    )
+
+    test(
+        "symbol keys + regular keys",
+        stdTest, {
+            original: {
+                [symb1]: 2,
+                "a": 3
+            },
+            encoded: preszr(
+                encoded([{2: 2}, {a: 3}], Fixed.Object),
+                encoded(0, getSymbolKey(symb1))
+            )
+        }
+    )
+}
+
+
+

@@ -4,7 +4,7 @@ import {
     nullPlaceholder,
     nullPrototypeEncoding,
     objectEncoding
-} from "./basic";
+} from "./objects";
 import {
     makeWrapperEncoding,
     dateEncoding,

@@ -1,18 +1,6 @@
-import {
-    EncodeContext,
-    Encoding,
-    fixedIndexProp,
-    SpecialEncoding,
-    SymbolEncoding
-} from "../interface";
+import { EncodeContext, Encoding, fixedIndexProp, SpecialEncoding, SymbolEncoding } from "../interface";
 import { version } from "../utils";
-import {
-    Entity,
-    noResultPlaceholder,
-    PreszrFormat,
-    Reference,
-    tryEncodeScalar
-} from "../data";
+import { Entity, noResultPlaceholder, PreszrFormat, Reference, tryEncodeScalar } from "../data";
 import { getEncodingKey } from "../encodings/utils";
 import { Fixed } from "../encodings/fixed";
 import { EncodingStore } from "./store";
@@ -23,13 +11,13 @@ export class EncodeCtx implements EncodeContext {
     private _objectToRef = new Map<object | symbol | string, Reference>();
     private _encodingSpec = Object.create(null);
     private _metadata = Object.create(null);
-    private _workingMessage = [{}] as unknown as PreszrFormat;
+    private _workingMessage = [0] as unknown as PreszrFormat;
 
     _isImplicit = false;
     metadata = undefined;
     constructor(private _store: EncodingStore) {}
 
-    private _getEncodingIndex(encoding: Encoding) {
+    private _getEncodingIndexAndRegister(encoding: Encoding) {
         if (encoding[fixedIndexProp] != null) {
             return encoding[fixedIndexProp];
         }
@@ -51,7 +39,7 @@ export class EncodeCtx implements EncodeContext {
     }
 
     private _createNewRef(value: Entity): Reference {
-        const { _workingMessage: msg, _objectToRef, _encodingSpec, _metadata, _store } = this;
+        const { _workingMessage: msg, _objectToRef, _encodingSpec, _metadata, _store, _encodingKeys } = this;
         const index = msg.length;
         const ref = `${index}`;
         _objectToRef.set(value, ref);
@@ -62,7 +50,7 @@ export class EncodeCtx implements EncodeContext {
         msg.push(0);
         if (typeof value === "symbol") {
             const encoding = this._mustGetBySymbol(value);
-            this._encodingSpec[index] = this._getEncodingIndex(encoding);
+            this._encodingSpec[index] = this._getEncodingIndexAndRegister(encoding);
             if (encoding.metadata) {
                 this._metadata[index] = encoding.metadata;
             }
@@ -72,8 +60,9 @@ export class EncodeCtx implements EncodeContext {
         const oldMetadata = this.metadata;
         const preszed = encoding.encode(value, this);
         if (!this._isImplicit) {
-            _encodingSpec[index] = this._getEncodingIndex(encoding);
+            _encodingSpec[index] = this._getEncodingIndexAndRegister(encoding);
         }
+
         this._isImplicit = false;
         if (this.metadata !== undefined) {
             _metadata[index] = this.metadata;

@@ -3,7 +3,7 @@ import {
     getPrototypeDecoder,
     getPrototypeEncoder,
     nullPlaceholder
-} from "./basic";
+} from "./objects";
 import {
     getClassName,
     getImplicitClassEncodingName,
@@ -28,7 +28,7 @@ export function makeSymbolEncoding(x: SymbolEncoding | symbol): SymbolEncoding {
     }
     const name = getSymbolName(x);
     if (!name) {
-        throw new PreszrError(`Configuration - Symbol's name was empty.`);
+        throw new PreszrError(`Configuration - Symbol has no name. You must specify a 'key'.`);
     }
     return {
         name: name,
@@ -167,7 +167,7 @@ export function mustParseEncodingKey(key: string): EncodingKeyInfo {
             `Bad format - in encoding key ${key}, version wasn't numeric.`
         );
     }
-    if (strPostfix.trim() === "") {
+    if (!name) {
         throw new PreszrError(
             `Bad format - in encoding key ${key}, name was empty.`
         );
@@ -175,6 +175,6 @@ export function mustParseEncodingKey(key: string): EncodingKeyInfo {
     return {
         type: "prototype",
         name,
-        version: +strPostfix
+        version: +strVersion
     };
 }

@@ -1,4 +1,5 @@
 import { PreszrFormat } from "../../lib/data";
+import { Fixed } from "@lib/encodings/fixed";
 
 export class Inspector {
     constructor(private _inner?: PreszrFormat) {
@@ -26,7 +27,7 @@ export class Inspector {
         const ix = this.keys.indexOf(encodingKey);
         if (ix < 0) {
             this.keys.push(encodingKey);
-            this.spec[newIndex] = this.keys.length - 1;
+            this.spec[newIndex] = Fixed.End + this.keys.length - 1;
         } else {
             this.spec[newIndex] = ix;
         }

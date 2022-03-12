@@ -114,13 +114,18 @@ export type UserEncoding = PrototypeEncoding | SymbolEncoding;
 export type Encoding = PrototypeEncoding | SymbolEncoding | SpecialEncoding;
 
 /**
+ * These encodings specifiers can't be confused for configuration objects or
+ * prototypes.
+ */
+export type SimpleEncodingSpecifier = symbol | Function;
+
+/**
  * An encoding specifier. Can be a symbol or constructor for a shorthand
  * symbol or prototype encoding. You can also give symbol or prototype encoding specifier
  * if you want to be more explicit.
  */
 export type EncodingSpecifier =
-    | symbol
-    | Function
+    SimpleEncodingSpecifier
     | PrototypeEncodingSpecifier
     | PrototypeEncoding
     | SymbolEncoding;

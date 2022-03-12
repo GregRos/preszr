@@ -1,7 +1,8 @@
 import { Preszr as PreszrClass } from "./core";
 import { PreszrOutput } from "./data";
-import { DeepPartial, PreszrConfig } from "./interface";
+import { DeepPartial, EncodingSpecifier, PreszrConfig, SimpleEncodingSpecifier } from "./interface";
 import { defaultPreszr } from "./default";
+import { isSimpleEncodingSpec } from "./utils";
 
 export {
     Encoding,
@@ -34,9 +35,18 @@ export const decode = <T = unknown>(encoded: PreszrOutput): T => defaultPreszr.d
  * @param config The configuration. Should be the same in the source and destination.
  * @constructor
  */
-export const Preszr = function Preszr(config?: DeepPartial<PreszrConfig>) {
-    return new PreszrClass(config);
+export const Preszr = function Preszr(...args: any[]) {
+    if (args.length === 0) {
+        return new PreszrClass()
+    }
+    if (isSimpleEncodingSpec(args[0])) {
+        return new PreszrClass({
+            encodings: args
+        })
+    }
+    return new PreszrClass(args[0]);
 } as unknown as {
+    new(...simpleSpecifiers: SimpleEncodingSpecifier[]): Preszr;
     /**
      * Creates a new `Preszr` instance. Can be called with or without `new`.
      * @param config The configuration. Should be the same in the source and destination.
@@ -50,6 +60,8 @@ export const Preszr = function Preszr(config?: DeepPartial<PreszrConfig>) {
      * @constructor
      */
     (config?: DeepPartial<PreszrConfig>): Preszr;
+
+    (...simpleSpecifiers: SimpleEncodingSpecifier[]): Preszr;
 };
 
 /**

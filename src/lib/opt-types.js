@@ -19,12 +19,7 @@ function getSpeculative(name, code, map) {
     try {
         map = map == null ? x => x : map;
         const result = new Function(`return ${code}`);
-        // If the result is a polyfill, it might act in unexpected ways
-        // So let's try to make sure it's a built-in. This isn't a perfect check
-        // but only things that REALLY want to appear native objects will pass.
-        if (result && result.toString().includes("[native code]")) {
-            return map(result);
-        }
+        return map(result);
     } catch (e) {
         // if it errors, the expression must not be valid in this env
         // or there was a CSP error, in which case I dunno.

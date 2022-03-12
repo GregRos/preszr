@@ -6,7 +6,7 @@ import {
     fixedIndexProp
 } from "../interface";
 import { getBuiltInEncodingName } from "../utils";
-import { decodeObject, encodeObject } from "./basic";
+import { decodeObject, encodeObject } from "./objects";
 import { Fixed } from "./fixed";
 
 const errorProperties = ["stack", "name", "message"];

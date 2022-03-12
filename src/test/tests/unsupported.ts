@@ -1,5 +1,5 @@
 import { createPreszrRep, testEncodeMacro } from "../utils";
-import { unsupportedEncodingKey } from "../../lib/encodings/basic";
+import { unsupportedEncodingKey } from "@lib/encodings/objects";
 import test from "ava";
 import { decode } from "../../lib";
 

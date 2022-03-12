@@ -28,7 +28,7 @@
     "lint:check": "run-s -c prettier eslint",
     "lint:fix": "run-s prettier:fix eslint:fix",
     "test": "nyc ava",
-    "test:no-cover": "node node_modules/ava/cli.js",
+    "test:no-cover": "ava",
     "docs": "node dist/generate-docs/run.js"
   },
   "dependencies": {
@@ -68,13 +68,13 @@
     "sourceMap": true
   },
   "ava": {
+    "workerThreads": false,
     "typescript": {
       "rewritePaths": {
         "src/": "dist/"
       },
       "compile": false
     },
-    "verbose": true,
     "extensions": [],
     "files": [
       "src/test/tests/**/*.ts"

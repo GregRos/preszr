@@ -47,6 +47,7 @@ export class EncodingStore {
     // ending with .S
     private _keyToEncoding = new Map<string, Encoding>();
 
+    // A "map" of index to built-in encoding. Has empty indexes.
     private _indexToEncoding = Array(Fixed.End);
 
     // Quickly matches a prototype to an encoding. Weak map to avoid memory leaks.
@@ -125,6 +126,7 @@ export class EncodingStore {
             this._cacheProtoToEncoding = undefined;
         }
         versioned.set(encoding.version, encoding);
+        this._keyToEncoding.set(getEncodingKey(encoding), encoding);
     }
 
     *getProtoEncodings(): Generator<PrototypeEncoding> {
@@ -146,21 +148,21 @@ export class EncodingStore {
 
     private _addSymbolEncoding(encoding: SymbolEncoding) {
         const existingBySymbol = this._symbolToEncoding.get(encoding.symbol);
-        const existingByKey = this._keyToEncoding.get(encoding.name);
+        const existingByKey = this._keyToEncoding.get(getEncodingKey(encoding));
         if (existingByKey) {
             throw new PreszrError(
-                `Name collision - encoding with the name ${encoding.name} already exists in this instance.`
+                `Configuration - encoding with the name ${encoding.name} already exists in this instance.`
             );
         }
         if (existingBySymbol) {
             throw new PreszrError(
-                `Symbol collision - ${encoding.name} references symbol ${getSymbolName(
+                `Configuration - ${encoding.name} references symbol ${getSymbolName(
                     encoding.symbol
                 )}, but encoding ${existingBySymbol.name} also references that symbol.`
             );
         }
         this._symbolToEncoding.set(encoding.symbol, encoding);
-        this._keyToEncoding.set(encoding.name, encoding);
+        this._keyToEncoding.set(getEncodingKey(encoding), encoding);
     }
 
     mayGetBySymbol(s: symbol) {
@@ -188,7 +190,7 @@ export class EncodingStore {
         // info as possible.
         const info = mustParseEncodingKey(key);
         if (info.type === "symbol") {
-            throw new PreszrError(`Missing encoding - no symbol encoding for name ${info.name}.`);
+            throw new PreszrError(`Decoding - no symbol encoding for name ${info.name}.`);
         } else {
             const namedProtoEncoding = this._nameToProtoEncodings.get(info.name)?.get(-1);
             if (!namedProtoEncoding) {
@@ -197,7 +199,7 @@ export class EncodingStore {
                 );
             }
             throw new PreszrError(
-                `Missing encoding - prototype encoding ${info.name} exists, but not for version ${info.version}.`
+                `Missing encoding - prototype encoding ${info.name} exists, but not for version ${info.version}, such as for ${namedProtoEncoding.version}`
             );
         }
     }
@@ -230,7 +232,6 @@ export class EncodingStore {
         let foundEncoding: PrototypeEncoding;
         const chain = [] as object[];
         for (let proto = obj; ; proto = Object.getPrototypeOf(proto) ?? nullPlaceholder) {
-            chain.push(proto);
             const cached = this._cacheProtoToEncoding.get(proto);
             if (cached !== undefined) {
                 foundEncoding = cached;
@@ -239,6 +240,7 @@ export class EncodingStore {
             if (proto === nullPlaceholder) {
                 throw new PreszrError("Invariant failed - mustGetByProto failed to find anything.");
             }
+            chain.push(proto);
         }
         for (const proto of chain) {
             this._cacheProtoToEncoding.set(proto, foundEncoding);

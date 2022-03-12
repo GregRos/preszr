@@ -23,7 +23,7 @@ export function decodeObject(target: any, input: any, ctx: InitContext) {
     let stringKeys = input;
     if (Array.isArray(input)) {
         let symbolKeys;
-        [stringKeys, symbolKeys] = input;
+        [symbolKeys, stringKeys] = input;
         for (const key of Object.keys(symbolKeys)) {
             const value = symbolKeys[key];
             target[ctx.decode(key) as symbol] = ctx.decode(value as ScalarValue);
@@ -59,7 +59,7 @@ export function encodeObject(
         }
     }
     if (symbKeyObject) {
-        return [strKeyObject, symbKeyObject];
+        return [symbKeyObject, strKeyObject];
     }
     (ctx as any)._isImplicit = true;
     return strKeyObject;
