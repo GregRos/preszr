@@ -43,18 +43,15 @@ export const decode = <T = unknown>(encoded: PreszrOutput): T =>
  * @param config The configuration. Should be the same in the source and destination.
  * @constructor
  */
-export const Preszr = function Preszr(...args: any[]) {
-    if (args.length === 0) {
-        return new PreszrClass();
-    }
-    if (isSimpleEncodingSpec(args[0])) {
+export const Preszr = function Preszr(arg: any) {
+    if (Array.isArray(arg)) {
         return new PreszrClass({
-            encodings: args
+            encodes: arg
         });
     }
-    return new PreszrClass(args[0]);
+    return new PreszrClass(arg);
 } as unknown as {
-    new (...simpleSpecifiers: SimpleEncodingSpecifier[]): Preszr;
+    new (specs: EncodingSpecifier[]): Preszr;
     /**
      * Creates a new `Preszr` instance. Can be called with or without `new`.
      * @param config The configuration. Should be the same in the source and destination.
@@ -69,7 +66,7 @@ export const Preszr = function Preszr(...args: any[]) {
      */
     (config?: DeepPartial<PreszrConfig>): Preszr;
 
-    (...simpleSpecifiers: SimpleEncodingSpecifier[]): Preszr;
+    (specs: EncodingSpecifier[]): Preszr;
 };
 
 /**

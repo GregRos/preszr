@@ -31,7 +31,7 @@ test("Unknown prototype", builder.get(), {
 });
 
 {
-    const testWithParent = builder.instance(Preszr(ParentClass)).get();
+    const testWithParent = builder.instance(Preszr([ParentClass])).get();
 
     test("known prototype", testWithParent, {
         original: new ParentClass({ a: 1 }),
@@ -48,7 +48,7 @@ test("Unknown prototype", builder.get(), {
 
 {
     const testWithBoth = builder
-        .instance(Preszr(ParentClass, ChildClass))
+        .instance(Preszr([ParentClass, ChildClass]))
         .get();
 
     test("both classes", testWithBoth, {

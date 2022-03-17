@@ -42,7 +42,7 @@ export class Preszr {
         this._store.add(
             ...builtinEncodings,
             unsupportedEncoding,
-            ...this.config.encodings
+            ...this.config.encodes
         );
     }
 
@@ -170,6 +170,6 @@ export class Preszr {
 }
 
 export const defaultConfig: PreszrConfig = {
-    encodings: [],
+    encodes: [],
     unsupported: []
 };

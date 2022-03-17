@@ -138,7 +138,7 @@ export interface PreszrConfig {
      * An array of encoding specifiers. If you put your constructors and symbols here,
      * the Preszr will recognize them.
      */
-    encodings: EncodingSpecifier[];
+    encodes: EncodingSpecifier[];
     /**
      * An array of constructors that will be marked as unsupported.
      * Objects with these constructors will not be encoded.

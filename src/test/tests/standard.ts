@@ -50,7 +50,7 @@ test("custom class", t => {
         }
     }
     const preszr = Preszr({
-        encodings: [MyCustomClass]
+        encodes: [MyCustomClass]
     });
     const instance = new MyCustomClass();
     const decoded = preszr.decode(
