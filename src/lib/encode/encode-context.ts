@@ -70,7 +70,7 @@ export class EncodeCtx implements EncodeContext {
             const encoding = this._mustGetBySymbol(value);
             this._encodingSpec[index] =
                 this._getEncodingIndexAndRegister(encoding);
-            if (encoding.metadata) {
+            if ("metadata" in encoding && encoding.metadata) {
                 this._metadata[index] = encoding.metadata;
             }
             return ref;
@@ -78,6 +78,9 @@ export class EncodeCtx implements EncodeContext {
         const encoding = _store.mustGetByProto(value);
         const oldMetadata = this.metadata;
         const preszed = encoding.encode(value, this);
+        // _isImplicit will be set only on specific library encodings.
+        // For example `object`. This is to make sure regular objects don't get the extra
+        // characters needed to mark their encodings.
         if (!this._isImplicit) {
             _encodingSpec[index] = this._getEncodingIndexAndRegister(encoding);
         }
@@ -113,6 +116,7 @@ export class EncodeCtx implements EncodeContext {
     }
 
     finish() {
+        // This returns a message we have so far.
         const wm = this._workingMessage;
         wm[0] = [
             version,

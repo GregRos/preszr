@@ -5,7 +5,7 @@ import { cloneDeep } from "lodash";
 import { Preszr } from "@lib/core";
 import { InitContext, EncodeContext } from "@lib";
 
-export function stringify(value: any) {
+export const stringify = (value: any) => {
     if (typeof value === "object") {
         return JSON.stringify(value);
     }
@@ -16,7 +16,7 @@ export function stringify(value: any) {
         return "-0";
     }
     return `${value}`;
-}
+};
 
 export function getImplicitClassEncodingKey(cls: string) {
     return `${cls}.v0`;

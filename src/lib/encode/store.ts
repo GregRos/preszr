@@ -15,25 +15,6 @@ import { getClassName, getSymbolName } from "../utils";
 import { Fixed } from "../encodings/fixed";
 import { nullPlaceholder } from "../encodings";
 
-export function expandInsert<T>(
-    arr: (T | undefined)[],
-    index: number,
-    item: T
-) {
-    // We want a number of empty spaces so that the array's new length is
-    // index + 1. therefore we want index - arr.Length spaces.
-
-    // We do it this way to avoid actual holes in the array, which makes JS
-    // engines encode the array in unoptimized ways.
-
-    // we'll make an extra space for the place to insert the item.
-    const spaces = index - arr.length + 1;
-    for (let i = 0; i < spaces; i++) {
-        arr.push(undefined);
-    }
-    arr[index] = item;
-}
-
 export class EncodingStore {
     // We use multiple caches to speed up encoding and decoding.
     // It's a space/time trade-off, but it'll barely take any space.
@@ -59,7 +40,7 @@ export class EncodingStore {
     private _keyToEncoding = new Map<string, Encoding>();
 
     // A "map" of index to built-in encoding. Has empty indexes.
-    private _indexToEncoding = Array(Fixed.End);
+    private _indexToEncoding = Array(Fixed.End) as Encoding[];
 
     // Quickly matches a prototype to an encoding. Weak map to avoid memory leaks.
     // Used and updated during operation, and needs to be rebuilt whenever encodings are added.
@@ -79,7 +60,8 @@ export class EncodingStore {
             // It's illegal to have two different encodings for the same prototype, since it becomes ambiguous.
             if (existingEncoding && existingEncoding.name !== encoding.name) {
                 throw new PreszrError(
-                    `Prototype collision - ${getEncodingKey(
+                    "Configuration",
+                    `Encoding ${getEncodingKey(
                         encoding
                     )} references prototype ${getClassName(
                         proto
@@ -110,11 +92,12 @@ export class EncodingStore {
             const fixed = encoding[fixedIndexProp];
             if (fixed != null) {
                 const existing = this._indexToEncoding[fixed];
-                if (existing) {
+                if (existing && existing.name !== encoding.name) {
                     const enc1 = getEncodingKey(encoding);
                     const enc2 = getEncodingKey(existing);
                     throw new PreszrError(
-                        `Configuration - Encodings '${enc1}' and '${enc2}' have identical fixed index (${fixed}).`
+                        "Configuration",
+                        `Encodings '${enc1}' and '${enc2}' have identical fixed index (${fixed}).`
                     );
                 }
                 this._indexToEncoding[fixed] = encoding;
@@ -132,7 +115,8 @@ export class EncodingStore {
         }
         if (versioned.has(encoding.version)) {
             throw new PreszrError(
-                `Version collision - encoding ${encoding.name} with version ${encoding.version} already exists in this instance.`
+                "Configuration",
+                `Encoding ${encoding.name} with version ${encoding.version} already exists in this instance.`
             );
         }
         this._registerProtos(encoding);
@@ -155,8 +139,9 @@ export class EncodingStore {
             // get latest version encoding
             const maxVersionEncoding = versions.get(-1);
             if (!maxVersionEncoding) {
-                throw new Error(
-                    `Invariant failed - expected there to be a maximum version encoding for ${name}.`
+                throw new PreszrError(
+                    "Bug",
+                    `Expected there to be a maximum version encoding for ${name}.`
                 );
             }
             yield maxVersionEncoding;
@@ -172,14 +157,14 @@ export class EncodingStore {
         const existingByKey = this._keyToEncoding.get(getEncodingKey(encoding));
         if (existingByKey) {
             throw new PreszrError(
-                `Configuration - encoding with the name ${encoding.name} already exists in this instance.`
+                "Configuration",
+                `Encoding with the name ${encoding.name} already exists in this instance.`
             );
         }
         if (existingBySymbol) {
             throw new PreszrError(
-                `Configuration - ${
-                    encoding.name
-                } references symbol ${getSymbolName(
+                "Configuration",
+                `${encoding.name} references symbol ${getSymbolName(
                     encoding.symbol
                 )}, but encoding ${
                     existingBySymbol.name
@@ -198,7 +183,8 @@ export class EncodingStore {
         const encoding = this._indexToEncoding[ix];
         if (!encoding) {
             throw new PreszrError(
-                `Missing Encoding - Index ${ix} doesn't refer to any known encoding.`
+                "Decoding",
+                `Encoding index ${ix} doesn't refer to any known encoding.`
             );
         }
         return encoding;
@@ -210,13 +196,14 @@ export class EncodingStore {
             return encoding;
         }
 
-        // The above was the happy path. If it failed, this is going to be an error
+        // If it failed, this is going to be an error
         // which means there are no performance considerations. Let's gather as much
         // info as possible.
         const info = mustParseEncodingKey(key);
         if (info.type === "symbol") {
             throw new PreszrError(
-                `Decoding - no symbol encoding for name ${info.name}.`
+                "Decoding",
+                `No symbol encoding for name ${info.name}.`
             );
         } else {
             const namedProtoEncoding = this._nameToProtoEncodings
@@ -224,11 +211,13 @@ export class EncodingStore {
                 ?.get(-1);
             if (!namedProtoEncoding) {
                 throw new PreszrError(
-                    `Missing encoding - no prototype encoding named ${info.name}, for any version.`
+                    "Decoding",
+                    `No prototype encoding named ${info.name}, for any version.`
                 );
             }
             throw new PreszrError(
-                `Missing encoding - prototype encoding ${info.name} exists, but not for version ${info.version}, such as for ${namedProtoEncoding.version}`
+                "Decoding",
+                `Prototype encoding ${info.name} doesn't exist for version ${info.version}. There is an encoding for ${namedProtoEncoding.version}`
             );
         }
     }
@@ -239,8 +228,9 @@ export class EncodingStore {
         const cache = new WeakMap<object, PrototypeEncoding>();
         for (const encoding of this.getProtoEncodings()) {
             if (!(encoding as any)) {
-                throw new Error(
-                    `Invariant failed - expected there to be a maximum version encoding for ${encoding.name}.`
+                throw new PreszrError(
+                    "Bug",
+                    `Expected there to be a maximum version encoding for ${encoding.name}.`
                 );
             }
             for (const proto of encoding.prototypes) {
@@ -272,7 +262,8 @@ export class EncodingStore {
             }
             if (proto === nullPlaceholder) {
                 throw new PreszrError(
-                    "Invariant failed - mustGetByProto failed to find anything."
+                    "Bug",
+                    "mustGetByProto failed to find anything."
                 );
             }
             chain.push(proto);

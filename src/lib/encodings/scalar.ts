@@ -21,6 +21,7 @@ export const regexpEncoding: PrototypeEncoding = {
             if (typeof input === "string") {
                 return new RegExp(input);
             } else {
+                // A bit wasteful, but these shouldn't be common and this avoids having to do parsing.
                 return new RegExp(input[0], input[1]);
             }
         }

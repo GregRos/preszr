@@ -7,8 +7,22 @@ try {
     packageObj = require("./package.json");
 }
 
+export function cloneDeep<T>(source: T): T {
+    if (typeof source !== "object") {
+        return source;
+    }
+    if (Array.isArray(source)) {
+        return source.map(x => cloneDeep(x)) as any;
+    }
+    const newObj = Object.create(Object.getPrototypeOf(source));
+    for (const key of Object.keys(source)) {
+        newObj[key] = cloneDeep(newObj[key]);
+    }
+    return newObj;
+}
+
 // Based on lodash's implementation: https://github.com/lodash/lodash
-export function _defaultsDeep(target: any, source: any) {
+function _defaultsDeep(target: any, source: any) {
     target = Object(target);
     if (!source) return target;
     source = Object(source);
@@ -46,6 +60,10 @@ export function defaultsDeep(target: any, ...sources: any[]) {
         target = _defaultsDeep(target, source);
     }
     return target;
+}
+
+export function flatten<T>(arrs: T[][]) {
+    return ([] as T[]).concat(...arrs);
 }
 
 export function isNumericString(input: string) {

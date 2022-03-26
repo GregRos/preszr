@@ -4,7 +4,12 @@ import {
     PreszrConfig,
     PrototypeEncoding
 } from "./interface";
-import { defaultsDeep, getUnrecognizedSymbol, version } from "./utils";
+import {
+    cloneDeep,
+    defaultsDeep,
+    getUnrecognizedSymbol,
+    version
+} from "./utils";
 import {
     EncodedEntity,
     noResultPlaceholder,
@@ -34,7 +39,7 @@ export class Preszr {
     private _store = new EncodingStore();
 
     constructor(config?: DeepPartial<PreszrConfig>) {
-        this.config = defaultsDeep({}, config, defaultConfig);
+        this.config = defaultsDeep(cloneDeep(config), defaultConfig);
         const unsupportedEncoding = getUnsupportedEncoding(
             ...unsupportedTypes,
             ...this.config.unsupported
@@ -68,6 +73,7 @@ export class Preszr {
                     reason = "version is not numeric";
                 } else if (versionInfo !== version) {
                     throw new PreszrError(
+                        "Decoding",
                         `Input was encoded using version ${versionInfo}, but preszr is version ${version}. Set skipValidateVersion to allow this.`
                     );
                 } else if (!Array.isArray(header[1])) {
@@ -84,7 +90,10 @@ export class Preszr {
             }
         }
         if (reason) {
-            throw new PreszrError(`Input is not preszr-encoded: ${reason}`);
+            throw new PreszrError(
+                "Decoding",
+                `Input is not preszr-encoded: ${reason}`
+            );
         }
     }
 

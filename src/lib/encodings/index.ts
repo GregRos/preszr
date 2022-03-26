@@ -5,12 +5,7 @@ import {
     nullPrototypeEncoding,
     objectEncoding
 } from "./objects";
-import {
-    makeWrapperEncoding,
-    dateEncoding,
-    regexpEncoding,
-    wrapperEncodings
-} from "./scalar";
+import { dateEncoding, regexpEncoding, wrapperEncodings } from "./scalar";
 import {
     arrayBufferEncoding,
     sharedArrayBufferEncoding,
@@ -18,7 +13,8 @@ import {
 } from "./binary";
 import { mapEncoding, setEncoding } from "./collections";
 import { errorEncodings } from "./errors";
-import { EncodingSpecifier } from "../interface";
+import { EncodingSpecifier, PrototypeEncoding } from "../interface";
+import { flatten } from "../utils";
 
 export {
     arrayEncoding,
@@ -27,7 +23,7 @@ export {
     objectEncoding
 };
 
-export const builtinEncodings = [
+export const builtinEncodings: PrototypeEncoding[] = [
     objectEncoding,
     arrayEncoding,
     nullPrototypeEncoding,
@@ -40,4 +36,21 @@ export const builtinEncodings = [
     setEncoding,
     ...errorEncodings,
     sharedArrayBufferEncoding
-] as EncodingSpecifier[];
+];
+
+const builtInEncodingByProto = new Map(
+    flatten(
+        builtinEncodings.map(encoding =>
+            encoding.prototypes.map(
+                proto => [proto, encoding] as [object, PrototypeEncoding]
+            )
+        )
+    )
+);
+
+export function getBuiltInEncoding(obj: object | null) {
+    if (obj == null) {
+        return builtInEncodingByProto.get(nullPlaceholder);
+    }
+    return builtInEncodingByProto.get(obj);
+}

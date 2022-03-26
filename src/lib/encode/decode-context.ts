@@ -16,7 +16,8 @@ export class DecodeContext {
     decode(value: ScalarValue): unknown {
         if (this._stage === DecodeStage.Create) {
             throw new PreszrError(
-                `Decode Error - Illegal call to 'decode' in the Create stage.`
+                "Decoding",
+                `Illegal call to 'decode' in the Create stage. You can only do that during the Init stage.`
             );
         }
         const decodedPrimitive = tryDecodeScalar(value);

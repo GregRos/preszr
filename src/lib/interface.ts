@@ -62,7 +62,7 @@ export interface Decoder {
 export interface PrototypeEncodingSpecifier {
     // The key of the encoding. Must be unique. Will be inferred from the prototype if missing.
     name?: string;
-    // Optionally, a 1-based version number. If not supplied, defaults to 0.
+    // Optionally, a 0-based version number. If not supplied, defaults to 0.
     version?: number;
     // The prototype. Required.
     prototype: object | null;
@@ -74,6 +74,9 @@ export interface PrototypeEncodingSpecifier {
     encode?(input: any, ctx: EncodeContext): EncodedEntity;
 }
 
+/**
+ * This special encoding is used to encode missing symbols.
+ */
 export interface SpecialEncoding {
     name: string;
     [fixedIndexProp]?: number;
@@ -86,7 +89,7 @@ export interface SpecialEncoding {
 export interface SymbolEncoding {
     name: string;
     symbol: symbol;
-    metadata?: any;
+
     [fixedIndexProp]?: number;
 }
 
@@ -99,9 +102,11 @@ export interface PrototypeEncoding {
     // If this is set, the encoding has a fixed index and doesn't need
     // to appear in the encoding keys list. It only needs to appear in the
     // encoding spec map. It makes referencing it faster and message size smaller
-    // but makes it position-dependent and fragile.
+    // but makes it position-dependent, fragile, and unusable for versioning.
     // This is only suitable for core encodings.
     [fixedIndexProp]?: number;
+    // Encodings can be for several different prototypes, but this is mostly undocumented and
+    // should only be used internally.
     prototypes: object[];
     decoder: Decoder;
     encode(input: any, ctx: EncodeContext): EncodedEntity;
