@@ -12,7 +12,6 @@ tsconfigPaths.register({
 });
 
 function formatPathForOut(x: any) {
-    return "z";
     if (typeof x === "string") {
         return x.replace(/\((src\/.*?)\)/g, (_, pth) =>
             pathToFileURL(pth).toString()

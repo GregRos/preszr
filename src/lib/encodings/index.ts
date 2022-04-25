@@ -13,7 +13,7 @@ import {
 } from "./binary";
 import { mapEncoding, setEncoding } from "./collections";
 import { errorEncodings } from "./errors";
-import { EncodingSpecifier, PrototypeEncoding } from "../interface";
+import { PrototypeEncoding } from "../interface";
 import { flatten } from "../utils";
 
 export {

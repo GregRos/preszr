@@ -4,11 +4,9 @@ import {
     DeepPartial,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     EncodingSpecifier,
-    PreszrConfig,
-    SimpleEncodingSpecifier
+    PreszrConfig
 } from "./interface";
 import { defaultPreszr } from "./default";
-import { isSimpleEncodingSpec } from "./utils";
 
 export {
     Encoding,

@@ -20,7 +20,6 @@ import {
     UserEncoding
 } from "../interface";
 import { getBuiltInEncoding } from "./index";
-import { Fixed } from "./fixed";
 
 const MAX_VERSION = 999;
 const MIN_VERSION = 0;

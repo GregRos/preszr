@@ -1,7 +1,6 @@
 import test from "ava";
 import { Preszr } from "@lib";
 import { encoded, preszr, testBuilder } from "../tools";
-import { EncodedEntity } from "@lib/data";
 
 class TestClass {}
 class TestClass2 {}

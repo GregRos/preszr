@@ -11,14 +11,9 @@ function getSymbolKey(s: symbol) {
 
 const symb1 = Symbol("symbol1");
 const symb2 = Symbol("symbol2");
-const symb3 = Symbol("symbol3");
 
 test("unrecognized symbol name generator", t => {
     t.is(getSymbolName(getUnrecognizedSymbol("x")), "preszr unknown: x");
-});
-
-const symbolTest = testBuilder().eqAssertion((t, decoded, original) => {
-    t.is(decoded, original);
 });
 
 // First let's check recognized symbols only...
