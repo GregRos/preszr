@@ -14,7 +14,9 @@ export const nullPlaceholder = {};
 function getAllOwnKeys(obj: object, onlyEnumerable: boolean): PropertyKey[] {
     const keys = Reflect.ownKeys(obj);
     if (onlyEnumerable) {
-        return keys.filter(x => Object.prototype.propertyIsEnumerable.call(obj, x));
+        return keys.filter(x =>
+            Object.prototype.propertyIsEnumerable.call(obj, x)
+        );
     }
     return keys;
 }
@@ -26,7 +28,9 @@ export function decodeObject(target: any, input: any, ctx: InitContext) {
         [symbolKeys, stringKeys] = input;
         for (const key of Object.keys(symbolKeys)) {
             const value = symbolKeys[key];
-            target[ctx.decode(key) as symbol] = ctx.decode(value as ScalarValue);
+            target[ctx.decode(key) as symbol] = ctx.decode(
+                value as ScalarValue
+            );
         }
     }
     for (const key of Object.keys(stringKeys)) {
@@ -67,7 +71,7 @@ export function encodeObject(
 
 export const objectEncoding: PrototypeEncoding = {
     version: 0,
-    prototypes: [Object.prototype],
+    protos: [Object.prototype],
     [fixedIndexProp]: Fixed.Object,
     name: getBuiltInEncodingName("object"),
     encode(input: any, ctx: EncodeContext): any {
@@ -94,7 +98,7 @@ export const arrayEncoding: PrototypeEncoding = {
     name: getBuiltInEncodingName("array"),
     version: 0,
     [fixedIndexProp]: Fixed.Array,
-    prototypes: [Array.prototype],
+    protos: [Array.prototype],
     encode(input: any, ctx: EncodeContext): any {
         const keys = Object.keys(input);
         const isSparseCanFalseNegative = input.length !== keys.length;
@@ -134,7 +138,7 @@ export const nullPrototypeEncoding: PrototypeEncoding = {
     name: getBuiltInEncodingName("null"),
     encode: getPrototypeEncoder(null),
     decoder: getPrototypeDecoder(null),
-    prototypes: [nullPlaceholder]
+    protos: [nullPlaceholder]
 };
 
 export function getPrototypeDecoder(proto: object | null) {
@@ -161,7 +165,7 @@ export function getUnsupportedEncoding(...protos: object[]): PrototypeEncoding {
         name: unsupportedEncodingKey,
         version: 0,
         [fixedIndexProp]: Fixed.Unsupported,
-        prototypes: protos,
+        protos: protos,
         encode(input: any, ctx: EncodeContext): any {
             ctx.metadata = getClassName(input);
             return 0;

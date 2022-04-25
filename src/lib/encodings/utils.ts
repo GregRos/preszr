@@ -50,7 +50,7 @@ export function makeProtoEncodingByCtor(ctor: Function) {
         );
     }
     return makeProtoEncoding({
-        prototype: ctor.prototype,
+        proto: ctor.prototype,
         version: 0
     });
 }
@@ -59,13 +59,13 @@ export function makeProtoEncoding(
     specifier: PrototypeEncodingSpecifier
 ): PrototypeEncoding {
     // protype CAN be `null`.
-    if (specifier.prototype === undefined) {
+    if (specifier.proto === undefined) {
         throw new PreszrError(
             "Configuration",
             "Encoding must specify a prototype."
         );
     }
-    if (typeof specifier.prototype === "function") {
+    if (typeof specifier.proto === "function") {
         throw new PreszrError(
             "Configuration",
             "Prototype can't be a function. Did you mean to supply a constructor instead?"
@@ -81,7 +81,7 @@ export function makeProtoEncoding(
             `Version for encoding ${specifier.name} must be an safe, positive integer, but was: ${v}.`
         );
     }
-    const builtInEncoding = getBuiltInEncoding(specifier.prototype);
+    const builtInEncoding = getBuiltInEncoding(specifier.proto);
     const encoding = {} as PrototypeEncoding;
 
     if (builtInEncoding) {
@@ -100,7 +100,7 @@ export function makeProtoEncoding(
         specifier.name = builtInEncoding.name;
         encoding[fixedIndexProp] = builtInEncoding[fixedIndexProp];
     }
-    const proto = specifier.prototype ?? nullPlaceholder;
+    const proto = specifier.proto ?? nullPlaceholder;
     const className = getClassName(proto);
     if (!className && !specifier.name) {
         throw new PreszrError(
@@ -109,7 +109,7 @@ export function makeProtoEncoding(
         );
     }
 
-    encoding.prototypes = [proto];
+    encoding.protos = [proto];
     encoding.name = specifier.name ?? getImplicitClassEncodingName(className!);
     encoding.encode = specifier.encode ?? getPrototypeEncoder(proto);
     encoding.decoder = specifier.decoder ?? getPrototypeDecoder(proto);
@@ -126,10 +126,10 @@ export function makeFullEncoding(specifier: EncodingSpecifier): UserEncoding {
     if (typeof specifier === "function") {
         return makeProtoEncodingByCtor(specifier);
     }
-    if ("prototype" in specifier) {
+    if ("proto" in specifier) {
         specifier = makeProtoEncoding(specifier);
     }
-    if (!specifier.prototypes || specifier.prototypes.length === 0) {
+    if (!specifier.protos || specifier.protos.length === 0) {
         throw new PreszrError(
             "Configuration",
             "Encoding must specify prototypes."
@@ -164,7 +164,7 @@ export function makeFullEncoding(specifier: EncodingSpecifier): UserEncoding {
 }
 
 export function getEncodingKey(enc: Encoding) {
-    if ("prototypes" in enc) {
+    if ("protos" in enc) {
         return `${enc.name}.v${enc.version}`;
     }
     return `${enc.name}.S`;

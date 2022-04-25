@@ -27,6 +27,7 @@ export class EncodeCtx implements EncodeContext {
 
     _isImplicit = false;
     metadata = undefined;
+
     constructor(private _store: EncodingStore) {}
 
     private _getEncodingIndexAndRegister(encoding: Encoding) {

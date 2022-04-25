@@ -13,7 +13,7 @@ export const mapEncoding: PrototypeEncoding = {
     name: getBuiltInEncodingName("Map"),
     version: 0,
     [fixedIndexProp]: Fixed.Map,
-    prototypes: [Map.prototype],
+    protos: [Map.prototype],
     encode(input: Map<any, any>, ctx: EncodeContext): any {
         const array = [] as [ScalarValue, ScalarValue][];
         for (const key of input.keys()) {
@@ -42,7 +42,7 @@ export const setEncoding: PrototypeEncoding = {
     name: getBuiltInEncodingName("Set"),
     version: 0,
     [fixedIndexProp]: Fixed.Set,
-    prototypes: [Set.prototype],
+    protos: [Set.prototype],
     encode(input: Set<any>, ctx: EncodeContext): EncodedEntity {
         const outArray = [] as ScalarValue[];
         for (const item of input) {

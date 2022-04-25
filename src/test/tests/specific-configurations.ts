@@ -26,7 +26,7 @@ class TestClass {}
 {
     const thisInst = Preszr([
         {
-            prototype: TestClass.prototype
+            proto: TestClass.prototype
         }
     ]);
     const thisBuilder = testBuilder(thisInst);
@@ -35,10 +35,11 @@ class TestClass {}
         encoded: preszr(encoded({}, "TestClass.v0"))
     });
 }
+
 {
     const thisInst = Preszr([
         {
-            prototype: nameless.prototype,
+            proto: nameless.prototype,
             name: "TestClass"
         }
     ]);
@@ -51,7 +52,7 @@ class TestClass {}
 {
     const thisInst = Preszr([
         {
-            prototype: TestClass.prototype,
+            proto: TestClass.prototype,
             version: 5
         }
     ]);

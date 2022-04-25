@@ -41,7 +41,7 @@ export const builtinEncodings: PrototypeEncoding[] = [
 const builtInEncodingByProto = new Map(
     flatten(
         builtinEncodings.map(encoding =>
-            encoding.prototypes.map(
+            encoding.protos.map(
                 proto => [proto, encoding] as [object, PrototypeEncoding]
             )
         )

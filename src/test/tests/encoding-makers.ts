@@ -50,8 +50,8 @@ test("symbol encoding with explicit name unchanged", t => {
 test("encoding from class", t => {
     const encoding = makeFullEncoding(TestClass) as PrototypeEncoding;
     t.is(encoding.name, "TestClass");
-    t.is(encoding.prototypes.length, 1);
-    t.is(encoding.prototypes[0], TestClass.prototype);
+    t.is(encoding.protos.length, 1);
+    t.is(encoding.protos[0], TestClass.prototype);
     const dummyCtx = getDummyCtx();
     const result = encoding.encode(new TestClass(), dummyCtx);
     t.deepEqual(result, { field: 5 });
@@ -59,11 +59,11 @@ test("encoding from class", t => {
 
 test("encoding from prototype", t => {
     const encoding = makeFullEncoding({
-        prototype: TestClass.prototype
+        proto: TestClass.prototype
     }) as PrototypeEncoding;
     t.is(encoding.name, "TestClass");
-    t.is(encoding.prototypes.length, 1);
-    const [p1] = encoding.prototypes;
+    t.is(encoding.protos.length, 1);
+    const [p1] = encoding.protos;
     t.is(p1, TestClass.prototype);
     const dummyCtx = getDummyCtx();
     const result = encoding.encode(new TestClass(), dummyCtx);
@@ -73,7 +73,7 @@ test("encoding from prototype", t => {
 test("encoding with multiple prototypes", t => {
     const f = () => 1;
     const encoding = makeFullEncoding({
-        prototypes: [class {}, TestClass.prototype],
+        protos: [class {}, TestClass.prototype],
         version: 5,
         name: "blah",
         encode: f,
@@ -90,7 +90,7 @@ test("encoding with multiple prototypes", t => {
 
 test("encoding prototype field", t => {
     const encoding = makeFullEncoding({
-        prototype: TestClass.prototype
+        proto: TestClass.prototype
     }) as PrototypeEncoding;
     t.is(encoding.name, getImplicitClassEncodingName("TestClass"));
     t.deepEqual(

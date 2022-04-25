@@ -65,7 +65,7 @@ export interface PrototypeEncodingSpecifier {
     // Optionally, a 0-based version number. If not supplied, defaults to 0.
     version?: number;
     // The prototype. Required.
-    prototype: object | null;
+    proto: object | null;
     // The decoding logic. If missing, the default decoding will be used, which will fill in
     // the object's properties and attach the correct prototype.
     decoder?: Decoder;
@@ -107,7 +107,7 @@ export interface PrototypeEncoding {
     [fixedIndexProp]?: number;
     // Encodings can be for several different prototypes, but this is mostly undocumented and
     // should only be used internally.
-    prototypes: object[];
+    protos: object[];
     decoder: Decoder;
     encode(input: any, ctx: EncodeContext): EncodedEntity;
 }

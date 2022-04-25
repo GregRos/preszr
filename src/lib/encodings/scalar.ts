@@ -9,7 +9,7 @@ import { getBuiltInEncodingName } from "../utils";
 import { Fixed } from "./fixed";
 
 export const regexpEncoding: PrototypeEncoding = {
-    prototypes: [RegExp.prototype],
+    protos: [RegExp.prototype],
     version: 0,
     name: getBuiltInEncodingName("RegExp"),
     [fixedIndexProp]: Fixed.RegExp,
@@ -28,7 +28,7 @@ export const regexpEncoding: PrototypeEncoding = {
     }
 };
 export const dateEncoding: PrototypeEncoding = {
-    prototypes: [Date.prototype],
+    protos: [Date.prototype],
     version: 0,
     [fixedIndexProp]: Fixed.Date,
     name: getBuiltInEncodingName("Date"),
@@ -50,7 +50,7 @@ export function makeWrapperEncoding(
         name: getBuiltInEncodingName(ctor.name),
         version: 0,
         [fixedIndexProp]: index,
-        prototypes: [ctor.prototype],
+        protos: [ctor.prototype],
         encode(input: any, ctx: EncodeContext): any {
             return input.valueOf();
         },

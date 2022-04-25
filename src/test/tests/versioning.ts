@@ -10,12 +10,12 @@ class TestClass2 {}
         Preszr([
             {
                 name: "test",
-                prototype: TestClass.prototype,
+                proto: TestClass.prototype,
                 version: 0
             },
             {
                 name: "test",
-                prototype: TestClass2.prototype,
+                proto: TestClass2.prototype,
                 version: 3
             }
         ])

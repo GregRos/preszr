@@ -55,7 +55,7 @@ export class EncodingStore {
     }
 
     private _registerProtos(encoding: PrototypeEncoding) {
-        for (const proto of encoding.prototypes) {
+        for (const proto of encoding.protos) {
             const existingEncoding = this._protoToEncoding.get(proto);
             // It's illegal to have two different encodings for the same prototype, since it becomes ambiguous.
             if (existingEncoding && existingEncoding.name !== encoding.name) {
@@ -233,7 +233,7 @@ export class EncodingStore {
                     `Expected there to be a maximum version encoding for ${encoding.name}.`
                 );
             }
-            for (const proto of encoding.prototypes) {
+            for (const proto of encoding.protos) {
                 cache.set(proto, encoding);
             }
         }

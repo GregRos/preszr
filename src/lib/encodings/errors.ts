@@ -15,12 +15,17 @@ export function createErrorEncoding(
     errorCtor: { new (): Error }
 ): PrototypeEncoding {
     return {
-        prototypes: [errorCtor.prototype],
+        protos: [errorCtor.prototype],
         version: 0,
         name: getBuiltInEncodingName(errorCtor.name),
         [fixedIndexProp]: index,
         encode(input: any, ctx: EncodeContext): any {
-            const encodedAsObject = encodeObject(input, ctx, false, errorProperties);
+            const encodedAsObject = encodeObject(
+                input,
+                ctx,
+                false,
+                errorProperties
+            );
             (ctx as any)._isImplicit = false;
             return encodedAsObject;
         },

@@ -13,19 +13,19 @@ import { Fixed } from "@lib/encodings/fixed";
 test("invalid definition - has name", t => {
     t.throws(() =>
         Preszr([
-            { prototype: Date.prototype, name: "should_be_empty", version: 100 }
+            { proto: Date.prototype, name: "should_be_empty", version: 100 }
         ])
     );
 });
 
 test("Invalid definition version is 0", t => {
     t.throws(() => {
-        Preszr([{ prototype: Date.prototype, version: 0 }]);
+        Preszr([{ proto: Date.prototype, version: 0 }]);
     });
 });
 
 test("Passes when valid", t => {
-    t.notThrows(() => Preszr([{ prototype: Date.prototype }]));
+    t.notThrows(() => Preszr([{ proto: Date.prototype }]));
 });
 
 test("modified Date is detected", t => {
@@ -40,7 +40,7 @@ test("modified Date is detected", t => {
 
 function getNewDateEncoding(version: number, magicKey: string) {
     return {
-        prototype: Date.prototype,
+        proto: Date.prototype,
         version,
         encode(input: any, ctx: EncodeContext): EncodedEntity {
             const arr = [input.getTime()];
