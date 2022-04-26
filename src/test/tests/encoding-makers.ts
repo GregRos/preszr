@@ -22,7 +22,7 @@ TestClass.prototype.field = 5;
 TestClass2.prototype.field = 10;
 
 test("implicit class encoding name", t => {
-    t.is(getBuiltInEncodingName("test"), "/test");
+    t.is(getBuiltInEncodingName("test"), "test");
 });
 
 test("from symbol with name", t => {
@@ -114,7 +114,7 @@ test("error - cannot get prototype from ctor", t => {
 test("error - multiple prototypes provide key", t => {
     const err = t.throws(() =>
         makeFullEncoding({
-            prototypes: [{}, {}],
+            protos: [{}, {}],
             encode: (() => {}) as any,
             decoder: {} as any
         } as any)
@@ -125,7 +125,7 @@ test("error - multiple prototypes provide key", t => {
 test("error - multiple prototypes, provide encoder/decoder", t => {
     const err = t.throws(() =>
         makeFullEncoding({
-            prototypes: [{}, {}],
+            protos: [{}, {}],
             key: "blah"
         } as any)
     );

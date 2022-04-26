@@ -10,7 +10,7 @@ class TestClass2 {}
             {
                 name: "test",
                 proto: TestClass.prototype,
-                version: 0
+                version: 1
             },
             {
                 name: "test",
@@ -19,7 +19,7 @@ class TestClass2 {}
             }
         ])
     );
-    test(
+    test.skip(
         "custom types - two versions - use latest version",
         versionedTest.get(),
         {
@@ -28,5 +28,5 @@ class TestClass2 {}
         }
     );
 
-    test("read previous version", t => {});
+    test.skip("read previous version", t => {});
 }

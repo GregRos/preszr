@@ -3,7 +3,7 @@ import { Fixed } from "@lib/encodings/fixed";
 
 export class Inspector {
     constructor(private _inner?: PreszrFormat) {
-        this._inner = [["1", [], {}, {}]];
+        this._inner = [["0", [], {}, {}]];
     }
 
     get(): PreszrFormat;

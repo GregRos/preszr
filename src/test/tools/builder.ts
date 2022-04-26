@@ -6,7 +6,7 @@ export class BuilderToken {
 }
 
 export function preszr(...tokens: BuilderToken[]) {
-    const msg: PreszrFormat = [["1" as const, [], {}, {}]];
+    const msg: PreszrFormat = [["0" as const, [], {}, {}]];
     const wrapper = new Inspector(msg);
     for (const tk of tokens) {
         tk.apply(wrapper);

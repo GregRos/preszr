@@ -158,11 +158,11 @@ export function getPrototypeEncoder(proto: object | null) {
     };
 }
 
-export const unsupportedEncodingKey = getBuiltInEncodingName("unsupported");
+export const unsupportedEncodingName = getBuiltInEncodingName("unsupported");
 
 export function getUnsupportedEncoding(...protos: object[]): PrototypeEncoding {
     return {
-        name: unsupportedEncodingKey,
+        name: unsupportedEncodingName,
         version: 0,
         [fixedIndexProp]: Fixed.Unsupported,
         protos: protos,

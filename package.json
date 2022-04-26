@@ -1,6 +1,6 @@
 {
   "name": "preszr",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "A lightweight library for encoding complex objects so they can be serialized.",
   "main": "dist/lib/index.js",
   "repository": {

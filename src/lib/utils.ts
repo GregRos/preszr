@@ -16,7 +16,7 @@ export function cloneDeep<T>(source: T): T {
     }
     const newObj = Object.create(Object.getPrototypeOf(source));
     for (const key of Object.keys(source)) {
-        newObj[key] = cloneDeep(newObj[key]);
+        newObj[key] = cloneDeep((source as any)[key]);
     }
     return newObj;
 }
@@ -71,7 +71,7 @@ export function isNumericString(input: string) {
 }
 
 export function getBuiltInEncodingName(str: string) {
-    return `/${str}`;
+    return `${str}`;
 }
 
 export function getImplicitClassEncodingName(str: string) {

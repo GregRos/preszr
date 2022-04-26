@@ -49,8 +49,7 @@ export function makeProtoEncodingByCtor(ctor: Function) {
         );
     }
     return makeProtoEncoding({
-        proto: ctor.prototype,
-        version: 0
+        proto: ctor.prototype
     });
 }
 
@@ -198,7 +197,7 @@ export function mustParseEncodingKey(key: string): EncodingKeyInfo {
             name
         };
     }
-    if (strPostfix !== "v") {
+    if (!strPostfix.startsWith("v")) {
         throw new PreszrError("Decoding", `Unknown postfix ${strPostfix}.`);
     }
     const strVersion = strPostfix.slice(1);
