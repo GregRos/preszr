@@ -1,8 +1,10 @@
 import {
     DeepPartial,
     Encoding,
+    EncodingSpecifier,
     PreszrConfig,
-    PrototypeEncoding
+    PrototypeEncoding,
+    SymbolEncoding
 } from "./interface";
 import {
     cloneDeep,
@@ -35,19 +37,18 @@ import { DecodeContext } from "./encode/decode-context";
  * The class used to encode and decode things in the preszr format.
  */
 export class Preszr {
-    readonly config = defaultConfig;
     private _store = new EncodingStore();
 
-    constructor(config?: DeepPartial<PreszrConfig>) {
-        this.config = defaultsDeep(cloneDeep(config), defaultConfig);
+    constructor(config?: PreszrConfig) {
+        config ??= defaultConfig;
         const unsupportedEncoding = getUnsupportedEncoding(
             ...unsupportedTypes,
-            ...this.config.unsupported
+            ...config.unsupported
         );
         this._store.add(
             ...builtinEncodings,
             unsupportedEncoding,
-            ...this.config.encodes
+            ...config.encodes
         );
     }
 

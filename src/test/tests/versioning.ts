@@ -19,7 +19,7 @@ class TestClass2 {}
             }
         ])
     );
-    test.skip(
+    test(
         "custom types - two versions - use latest version",
         versionedTest.get(),
         {
@@ -28,5 +28,5 @@ class TestClass2 {}
         }
     );
 
-    test.skip("read previous version", t => {});
+    test("read previous version", t => {});
 }

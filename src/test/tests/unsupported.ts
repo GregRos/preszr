@@ -7,19 +7,19 @@ const unsKey = `${unsupportedEncodingName}.v0`;
 const unsupportedObjectProperty = name =>
     createPreszrRep([{ 2: unsKey }, { 2: name }], { a: "2" }, 0);
 
-test.skip(
+test(
     "unsupported - {a: function}",
     testEncodeMacro,
     { a() {} },
     unsupportedObjectProperty("Function")
 );
-test.skip(
+test(
     "unsupported - {a: WeakMap}",
     testEncodeMacro,
     { a: new WeakMap() },
     unsupportedObjectProperty("WeakMap")
 );
-test.skip(
+test(
     "unsupported - {a: WeakSet}",
     testEncodeMacro,
     { a: new WeakSet() },
@@ -29,26 +29,26 @@ test.skip(
 const unsupported = name =>
     createPreszrRep([{ 1: unsupportedEncodingName }, { 1: name }], 0);
 
-test.skip(
+test(
     "unsupported - function",
     testEncodeMacro,
     () => {},
     unsupported("Function")
 );
-test.skip(
+test(
     "unsupported - WeakMap",
     testEncodeMacro,
     new WeakMap(),
     unsupported("WeakMap")
 );
-test.skip(
+test(
     "unsupported - WeakSet",
     testEncodeMacro,
     new WeakSet(),
     unsupported("WeakSet")
 );
 
-test.skip("decode unsupported", t => {
+test("decode unsupported", t => {
     const unsupported = unsupportedObjectProperty("Function");
     const result = decode(unsupported);
     t.deepEqual(result, { a: undefined });

@@ -1,4 +1,6 @@
 import { EncodedEntity, ScalarValue } from "./data";
+import { PreszrError } from "./errors";
+import { makeWrapperEncoding } from "./encodings/scalar";
 
 export const fixedIndexProp = Symbol("fixedIndex");
 
@@ -41,6 +43,7 @@ export interface CreateContext {
  */
 export interface InitContext {
     metadata: any;
+
     // Resolves references and decodes encoded scalars. This isn't a recursive call.
     decode(value: ScalarValue): unknown;
 }
@@ -57,15 +60,30 @@ export interface Decoder {
 }
 
 /**
+ * Specifies an override for a built-in encoding.
+ */
+export interface OverrideSpecifier {
+    // The prototype or constructor of the built-in JS type. Can be null to override
+    // the encoding for null prototype objects.
+    overrides: Function | object | null;
+    // The version of the override. Must be higher than 0.
+    version: number;
+    // The decoder object to use.
+    decoder: Decoder;
+    // The encode function to use.
+    encode(input: any, ctx: EncodeContext): EncodedEntity;
+}
+
+/**
  * Specifies a prototype encoding. Missing fields will be filled in automatically.
  */
-export interface PrototypeEncodingSpecifier {
+export interface PrototypeSpecifier {
     // The key of the encoding. Must be unique. Will be inferred from the prototype if missing.
     name?: string;
     // Optionally, a 0-based version number. If not supplied, defaults to 0.
     version?: number;
-    // The prototype. Required.
-    proto: object | null;
+    // The prototype or constructor.
+    encodes: object | Function;
     // The decoding logic. If missing, the default decoding will be used, which will fill in
     // the object's properties and attach the correct prototype.
     decoder?: Decoder;
@@ -89,7 +107,6 @@ export interface SpecialEncoding {
 export interface SymbolEncoding {
     name: string;
     symbol: symbol;
-
     [fixedIndexProp]?: number;
 }
 
@@ -97,22 +114,20 @@ export interface SymbolEncoding {
  * A full prototype encoding.
  */
 export interface PrototypeEncoding {
-    name: string;
     version: number;
+    // Encodings can be for several different prototypes, but this is mostly undocumented and
+    // should only be used internally.
+    protos: object[];
+    decoder: Decoder;
+    encode(input: any, ctx: EncodeContext): EncodedEntity;
     // If this is set, the encoding has a fixed index and doesn't need
     // to appear in the encoding keys list. It only needs to appear in the
     // encoding spec map. It makes referencing it faster and message size smaller
     // but makes it position-dependent, fragile, and unusable for versioning.
     // This is only suitable for core encodings.
     [fixedIndexProp]?: number;
-    // Encodings can be for several different prototypes, but this is mostly undocumented and
-    // should only be used internally.
-    protos: object[];
-    decoder: Decoder;
-    encode(input: any, ctx: EncodeContext): EncodedEntity;
+    name: string;
 }
-
-export type UserEncoding = PrototypeEncoding | SymbolEncoding;
 /**
  * A full preszr encoding of any type.
  */
@@ -122,7 +137,13 @@ export type Encoding = PrototypeEncoding | SymbolEncoding | SpecialEncoding;
  * These encodings specifiers can't be confused for configuration objects or
  * prototypes.
  */
-export type SimpleEncodingSpecifier = symbol | Function;
+export type BasicSpecifier = symbol | Function;
+
+export type NonOverrideSpecifier =
+    | BasicSpecifier
+    | PrototypeSpecifier
+    | PrototypeEncoding
+    | SymbolEncoding;
 
 /**
  * An encoding specifier. Can be a symbol or constructor for a shorthand
@@ -130,10 +151,11 @@ export type SimpleEncodingSpecifier = symbol | Function;
  * if you want to be more explicit.
  */
 export type EncodingSpecifier =
-    | SimpleEncodingSpecifier
-    | PrototypeEncodingSpecifier
+    | BasicSpecifier
+    | PrototypeSpecifier
     | PrototypeEncoding
-    | SymbolEncoding;
+    | SymbolEncoding
+    | OverrideSpecifier;
 
 /**
  * Configuration for an Preszr instance.

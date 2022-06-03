@@ -12,7 +12,7 @@ export {
     Encoding,
     EncodingSpecifier,
     PrototypeEncoding,
-    PrototypeEncodingSpecifier,
+    PrototypeSpecifier,
     Decoder,
     SymbolEncoding,
     CreateContext,
@@ -44,7 +44,8 @@ export const decode = <T = unknown>(encoded: PreszrOutput): T =>
 export const Preszr = function Preszr(arg: any) {
     if (Array.isArray(arg)) {
         return new PreszrClass({
-            encodes: arg
+            encodes: arg,
+            unsupported: []
         });
     }
     return new PreszrClass(arg);

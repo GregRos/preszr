@@ -1,4 +1,4 @@
-import { SimpleEncodingSpecifier } from "./interface";
+import { BasicSpecifier } from "./interface";
 
 let packageObj;
 try {
@@ -78,8 +78,22 @@ export function getImplicitClassEncodingName(str: string) {
     return str;
 }
 
-export function getClassName(proto: any): string | null | undefined {
-    return proto[Symbol.toStringTag] ?? proto.constructor?.name;
+export function getClass(protoOrCtor: Function | object) {
+    return typeof protoOrCtor === "function"
+        ? protoOrCtor
+        : protoOrCtor.constructor;
+}
+
+export function getProto(protoOrCtor: Function | object) {
+    return typeof protoOrCtor === "function"
+        ? protoOrCtor.prototype
+        : protoOrCtor;
+}
+
+export function getClassName(
+    protoOrCtor: Function | object | null
+): string | null | undefined {
+    return protoOrCtor === null ? "null" : getClass(protoOrCtor)?.name ?? "???";
 }
 
 export function getSymbolName(symb: symbol) {
@@ -96,7 +110,7 @@ export function getUnrecognizedSymbol(name: string) {
 
 export function isSimpleEncodingSpec(
     candidate: unknown
-): candidate is SimpleEncodingSpecifier {
+): candidate is BasicSpecifier {
     return typeof candidate === "symbol" || typeof candidate === "function";
 }
 

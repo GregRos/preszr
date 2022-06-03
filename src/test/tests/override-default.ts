@@ -4,13 +4,13 @@ import {
     EncodeContext,
     InitContext,
     Preszr,
-    PrototypeEncodingSpecifier
+    PrototypeSpecifier
 } from "@lib";
 import { encoded, preszr, testBuilder } from "../tools";
 import { EncodedEntity } from "@lib/data";
 import { Fixed } from "@lib/encodings/fixed";
 
-test.skip("invalid definition - has name", t => {
+test("invalid definition - has name", t => {
     t.throws(() =>
         Preszr([
             { proto: Date.prototype, name: "should_be_empty", version: 100 }
@@ -18,17 +18,17 @@ test.skip("invalid definition - has name", t => {
     );
 });
 
-test.skip("Invalid definition version is 0", t => {
+test("Invalid definition version is 0", t => {
     t.throws(() => {
         Preszr([{ proto: Date.prototype, version: 0 }]);
     });
 });
 
-test.skip("Passes when valid", t => {
-    t.notThrows(() => Preszr([{ proto: Date.prototype }]));
+test("Passes when valid", t => {
+    t.notThrows(() => Preszr([{ proto: Date.prototype, version: 1 }]));
 });
 
-test.skip("modified Date is detected", t => {
+test("modified Date is detected", t => {
     const time = Date.now();
     const a = new Date(time);
     const b = new Date(time);
@@ -58,10 +58,7 @@ function getNewDateEncoding(version: number, magicKey: string) {
         }
     };
 }
-const modifiedDateEncoding: PrototypeEncodingSpecifier = getNewDateEncoding(
-    1,
-    "a"
-);
+const modifiedDateEncoding: PrototypeSpecifier = getNewDateEncoding(1, "a");
 const refDate = new Date();
 
 {
@@ -72,7 +69,7 @@ const refDate = new Date();
         a: 100
     });
 
-    test.skip("Override is used instead of default", testWithModifiedDates, {
+    test("Override is used instead of default", testWithModifiedDates, {
         original: testObject,
         encoded: preszr(encoded(testObject.getTime(), Fixed.Date))
     });
@@ -84,7 +81,7 @@ const modifiedDateEnc2 = getNewDateEncoding(2, "b");
         Preszr([modifiedDateEnc2, modifiedDateEncoding])
     ).get();
 
-    test.skip("2nd override used", testWith2Overrides, {
+    test("2nd override used", testWith2Overrides, {
         original: Object.assign(new Date(refDate), { b: 100 }),
         encoded: preszr(encoded(refDate.getTime(), Fixed.Date))
     });

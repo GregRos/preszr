@@ -2,18 +2,22 @@ import {
     Encoding,
     EncodingSpecifier,
     fixedIndexProp,
+    OverrideSpecifier,
     PrototypeEncoding,
     SymbolEncoding
 } from "../interface";
 import { PreszrError } from "../errors";
 import {
     getEncodingKey,
-    makeFullEncoding,
+    makeOverrideEncoding,
+    mustHaveValidVersion,
+    mustMakeEncoding,
     mustParseEncodingKey
 } from "../encodings/utils";
-import { getClassName, getSymbolName } from "../utils";
+import { getClassName, getProto, getSymbolName } from "../utils";
 import { Fixed } from "../encodings/fixed";
 import { nullPlaceholder } from "../encodings";
+import { EncodingSpec } from "../data";
 
 export class EncodingStore {
     // We use multiple caches to speed up encoding and decoding.
@@ -80,15 +84,25 @@ export class EncodingStore {
         }
     }
 
+    private _addSpecificEncoding(spec: EncodingSpecifier) {
+        if (typeof spec === "object" && "overrides" in spec) {
+            spec = this._makeOverrideEncoding(spec);
+        }
+        const fullEncoding = mustMakeEncoding(spec);
+        // After adding encodings, the cache must be rebuilt.
+        if ("symbol" in fullEncoding) {
+            this._addSymbolEncoding(fullEncoding);
+        } else if ("encodes" in fullEncoding) {
+            this._addProtoEncoding(fullEncoding);
+        } else {
+            throw new PreszrError("Configuration", "Unknown encoding format.");
+        }
+        return fullEncoding;
+    }
+
     add(...specs: EncodingSpecifier[]) {
         for (const spec of specs) {
-            const encoding = makeFullEncoding(spec);
-            // After adding encodings, the cache must be rebuilt.
-            if ("symbol" in encoding) {
-                this._addSymbolEncoding(encoding);
-            } else {
-                this._addProtoEncoding(encoding);
-            }
+            const encoding = this._addSpecificEncoding(spec);
             const fixed = encoding[fixedIndexProp];
             if (fixed != null) {
                 const existing = this._indexToEncoding[fixed];
@@ -152,6 +166,16 @@ export class EncodingStore {
         return this._symbolToEncoding.values();
     }
 
+    private _makeOverrideEncoding(override: OverrideSpecifier) {
+        const original = this._protoToEncoding.get(
+            override.overrides === null
+                ? nullPlaceholder
+                : getProto(override.overrides)
+        );
+        const newProtoEncoding = makeOverrideEncoding(original, override);
+        return newProtoEncoding;
+    }
+
     private _addSymbolEncoding(encoding: SymbolEncoding) {
         const existingBySymbol = this._symbolToEncoding.get(encoding.symbol);
         const existingByKey = this._keyToEncoding.get(getEncodingKey(encoding));
@@ -173,6 +197,7 @@ export class EncodingStore {
         }
         this._symbolToEncoding.set(encoding.symbol, encoding);
         this._keyToEncoding.set(getEncodingKey(encoding), encoding);
+        return encoding;
     }
 
     mayGetBySymbol(s: symbol) {

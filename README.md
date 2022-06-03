@@ -12,21 +12,17 @@ If you're curious about how `preszr` works, refer to the <u>Preszr Output</u>.
 
 ## Features
 
-🔗 Preserves **all** references!
+🔗 Preserves references and prototypes!
 
-✨ Preserves prototypes!
-
-🐐 Encodes *almost all* primitives and built-in object types!
+🐐 Encodes all primitives and built-in object types!*
 
 🐤 Space-efficient format!
 
 🛠️ Easily modifiable to support custom objects!
 
-🔢 Compatible with arbitrary serializers!
-
 🕵️ Many error cases and descriptive messages that make for better debugging!
 
-:sweat_smile: Pain-painstakingly unit-tested for many, many possible inputs.
+:sweat_smile: Pain-painstakingly unit-tested for many possible inputs!
 
 ## Non-features
 
@@ -171,7 +167,7 @@ This function should return simple data that can be represented in JSON. So that
 1. JSON-compatible scalars, like numbers, strings, and so on.
 2. Objects and arrays with no meaningful references or prototypes.
 
-`preszr` will not check your output *by default*, but can be configured to do so. See *In-depth Configuration* below.
+`preszr` will not check your output due to performance concerns.
 
 `encode` takes two parameters:
 
