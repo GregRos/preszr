@@ -13,34 +13,19 @@ import { Fixed } from "@lib/encodings/fixed";
 test("invalid definition - has name", t => {
     t.throws(() =>
         Preszr([
-            { proto: Date.prototype, name: "should_be_empty", version: 100 }
+            { encodes: Date.prototype, name: "should_be_empty", version: 100 }
         ])
     );
 });
 
 test("Invalid definition version is 0", t => {
     t.throws(() => {
-        Preszr([{ proto: Date.prototype, version: 0 }]);
+        Preszr([{ encodes: Date.prototype, version: 0 }]);
     });
 });
-
-test("Passes when valid", t => {
-    t.notThrows(() => Preszr([{ proto: Date.prototype, version: 1 }]));
-});
-
-test("modified Date is detected", t => {
-    const time = Date.now();
-    const a = new Date(time);
-    const b = new Date(time);
-    Object.assign(a, { a: 1 });
-    t.notDeepEqual(a, b);
-    Object.assign(b, { a: 1 });
-    t.deepEqual(a, b);
-});
-
 function getNewDateEncoding(version: number, magicKey: string) {
     return {
-        proto: Date.prototype,
+        encodes: Date.prototype,
         version,
         encode(input: any, ctx: EncodeContext): EncodedEntity {
             const arr = [input.getTime()];
@@ -58,7 +43,21 @@ function getNewDateEncoding(version: number, magicKey: string) {
         }
     };
 }
-const modifiedDateEncoding: PrototypeSpecifier = getNewDateEncoding(1, "a");
+test("Passes when valid", t => {
+    t.notThrows(() => Preszr([getNewDateEncoding(1, "x")]));
+});
+
+test("modified Date is detected", t => {
+    const time = Date.now();
+    const a = new Date(time);
+    const b = new Date(time);
+    Object.assign(a, { a: 1 });
+    t.notDeepEqual(a, b);
+    Object.assign(b, { a: 1 });
+    t.deepEqual(a, b);
+});
+
+const modifiedDateEncoding = getNewDateEncoding(1, "a");
 const refDate = new Date();
 
 {
@@ -71,7 +70,7 @@ const refDate = new Date();
 
     test("Override is used instead of default", testWithModifiedDates, {
         original: testObject,
-        encoded: preszr(encoded(testObject.getTime(), Fixed.Date))
+        encoded: preszr(encoded([testObject.getTime(), 100], Fixed.Date))
     });
 }
 
@@ -83,6 +82,6 @@ const modifiedDateEnc2 = getNewDateEncoding(2, "b");
 
     test("2nd override used", testWith2Overrides, {
         original: Object.assign(new Date(refDate), { b: 100 }),
-        encoded: preszr(encoded(refDate.getTime(), Fixed.Date))
+        encoded: preszr(encoded([refDate.getTime(), 100], Fixed.Date))
     });
 }

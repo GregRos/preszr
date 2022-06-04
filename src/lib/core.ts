@@ -39,16 +39,16 @@ import { DecodeContext } from "./encode/decode-context";
 export class Preszr {
     private _store = new EncodingStore();
 
-    constructor(config?: PreszrConfig) {
+    constructor(config?: Partial<PreszrConfig>) {
         config ??= defaultConfig;
         const unsupportedEncoding = getUnsupportedEncoding(
             ...unsupportedTypes,
-            ...config.unsupported
+            ...(config.unsupported ?? [])
         );
         this._store.add(
             ...builtinEncodings,
             unsupportedEncoding,
-            ...config.encodes
+            ...(config.encodes ?? [])
         );
     }
 

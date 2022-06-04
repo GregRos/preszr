@@ -60,26 +60,11 @@ export interface Decoder {
 }
 
 /**
- * Specifies an override for a built-in encoding.
- */
-export interface OverrideSpecifier {
-    // The prototype or constructor of the built-in JS type. Can be null to override
-    // the encoding for null prototype objects.
-    overrides: Function | object | null;
-    // The version of the override. Must be higher than 0.
-    version: number;
-    // The decoder object to use.
-    decoder: Decoder;
-    // The encode function to use.
-    encode(input: any, ctx: EncodeContext): EncodedEntity;
-}
-
-/**
  * Specifies a prototype encoding. Missing fields will be filled in automatically.
  */
 export interface PrototypeSpecifier {
     // The key of the encoding. Must be unique. Will be inferred from the prototype if missing.
-    name?: string;
+    name?: string | null;
     // Optionally, a 0-based version number. If not supplied, defaults to 0.
     version?: number;
     // The prototype or constructor.
@@ -128,6 +113,7 @@ export interface PrototypeEncoding {
     [fixedIndexProp]?: number;
     name: string;
 }
+
 /**
  * A full preszr encoding of any type.
  */
@@ -154,8 +140,7 @@ export type EncodingSpecifier =
     | BasicSpecifier
     | PrototypeSpecifier
     | PrototypeEncoding
-    | SymbolEncoding
-    | OverrideSpecifier;
+    | SymbolEncoding;
 
 /**
  * Configuration for an Preszr instance.

@@ -141,11 +141,11 @@ export const nullPrototypeEncoding: PrototypeEncoding = {
     protos: [nullPlaceholder]
 };
 
-export function getPrototypeDecoder(proto: object | null) {
+export function getPrototypeDecoder(encodes: object | null) {
     return {
         init: objectEncoding.decoder.init,
         create(encodedValue: any, ctx: CreateContext): any {
-            return Object.create(proto);
+            return Object.create(encodes);
         }
     } as Decoder;
 }

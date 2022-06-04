@@ -26,7 +26,7 @@ class TestClass {}
 {
     const thisInst = Preszr([
         {
-            proto: TestClass.prototype
+            encodes: TestClass.prototype
         }
     ]);
     const thisBuilder = testBuilder(thisInst);
@@ -39,7 +39,7 @@ class TestClass {}
 {
     const thisInst = Preszr([
         {
-            proto: nameless.prototype,
+            encodes: nameless.prototype,
             name: "TestClass"
         }
     ]);
@@ -52,7 +52,7 @@ class TestClass {}
 {
     const thisInst = Preszr([
         {
-            proto: TestClass.prototype,
+            encodes: TestClass.prototype,
             version: 5
         }
     ]);

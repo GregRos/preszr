@@ -71,7 +71,7 @@ export function isNumericString(input: string) {
 }
 
 export function getBuiltInEncodingName(str: string) {
-    return `${str}`;
+    return `/${str}`;
 }
 
 export function getImplicitClassEncodingName(str: string) {

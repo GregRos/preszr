@@ -5,7 +5,6 @@ import {
     getBuiltInEncodingName
 } from "@lib/utils";
 import { getDummyCtx } from "../utils";
-import { makeFullEncoding } from "@lib/encodings/utils";
 
 const testSymbol = Symbol("test");
 
@@ -22,11 +21,11 @@ TestClass.prototype.field = 5;
 TestClass2.prototype.field = 10;
 
 test("implicit class encoding name", t => {
-    t.is(getBuiltInEncodingName("test"), "test");
+    t.is(getBuiltInEncodingName("test"), "Preszr/test");
 });
 
 test("from symbol with name", t => {
-    const encoding = makeFullEncoding(testSymbol);
+    const encoding = mustMakeEncoding(testSymbol);
     t.deepEqual(encoding, {
         name: "test",
         symbol: testSymbol
@@ -35,7 +34,7 @@ test("from symbol with name", t => {
 
 test("error when trying with symbol without name", t => {
     // eslint-disable-next-line symbol-description
-    const err = t.throws(() => makeFullEncoding(Symbol()));
+    const err = t.throws(() => mustMakeEncoding(Symbol()));
     t.true(err.message.includes(`no name`));
 });
 
@@ -44,11 +43,11 @@ test("symbol encoding with explicit name unchanged", t => {
         name: "a",
         symbol: testSymbol
     };
-    t.deepEqual(encoding, makeFullEncoding(encoding) as SymbolEncoding);
+    t.deepEqual(encoding, mustMakeEncoding(encoding) as SymbolEncoding);
 });
 
 test("encoding from class", t => {
-    const encoding = makeFullEncoding(TestClass) as PrototypeEncoding;
+    const encoding = mustMakeEncoding(TestClass) as PrototypeEncoding;
     t.is(encoding.name, "TestClass");
     t.is(encoding.protos.length, 1);
     t.is(encoding.protos[0], TestClass.prototype);
@@ -58,8 +57,8 @@ test("encoding from class", t => {
 });
 
 test("encoding from prototype", t => {
-    const encoding = makeFullEncoding({
-        proto: TestClass.prototype
+    const encoding = mustMakeEncoding({
+        encodes: TestClass.prototype
     }) as PrototypeEncoding;
     t.is(encoding.name, "TestClass");
     t.is(encoding.protos.length, 1);
@@ -72,7 +71,7 @@ test("encoding from prototype", t => {
 
 test("encoding with multiple prototypes", t => {
     const f = () => 1;
-    const encoding = makeFullEncoding({
+    const encoding = mustMakeEncoding({
         protos: [class {}, TestClass.prototype],
         version: 5,
         name: "blah",
@@ -89,8 +88,8 @@ test("encoding with multiple prototypes", t => {
 });
 
 test("encoding prototype field", t => {
-    const encoding = makeFullEncoding({
-        proto: TestClass.prototype
+    const encoding = mustMakeEncoding({
+        encodes: TestClass.prototype
     }) as PrototypeEncoding;
     t.is(encoding.name, getImplicitClassEncodingName("TestClass"));
     t.deepEqual(
@@ -100,31 +99,33 @@ test("encoding prototype field", t => {
 });
 
 test("error - nameless ctor without key", t => {
-    const err = t.throws(() => makeFullEncoding(class {}));
-    t.true(err.message.includes("no name"));
+    const err = t.throws(() => mustMakeEncoding(class {}));
+    t.true(err.message.includes("get the prototype's name"));
 });
 
 test("error - cannot get prototype from ctor", t => {
     const brokenCtor = function () {};
     brokenCtor.prototype = null;
-    const err = t.throws(() => makeFullEncoding(brokenCtor));
+    const err = t.throws(() => mustMakeEncoding(brokenCtor));
     t.regex(err.message, /prototype from constructor/);
 });
 
 test("error - multiple prototypes provide key", t => {
     const err = t.throws(() =>
-        makeFullEncoding({
+        mustMakeEncoding({
+            version: 0,
             protos: [{}, {}],
             encode: (() => {}) as any,
             decoder: {} as any
         } as any)
     );
-    t.regex(err.message, /provide a key/);
+    t.regex(err.message, /provide a name/);
 });
 
 test("error - multiple prototypes, provide encoder/decoder", t => {
     const err = t.throws(() =>
-        makeFullEncoding({
+        mustMakeEncoding({
+            version: 1,
             protos: [{}, {}],
             key: "blah"
         } as any)
@@ -133,7 +134,7 @@ test("error - multiple prototypes, provide encoder/decoder", t => {
 });
 
 test("error - no prototype(s)", t => {
-    const err = t.throws(() => makeFullEncoding({} as any));
+    const err = t.throws(() => mustMakeEncoding({} as any));
 
-    t.regex(err.message, /specify prototypes/);
+    t.regex(err.message, /one of the properties/);
 });
