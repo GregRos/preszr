@@ -3,7 +3,7 @@ import {
     Encoding,
     fixedIndexProp,
     SpecialEncoding,
-    SymbolEncoding
+    SymbolSpecifier
 } from "../interface";
 import { version } from "../utils";
 import {
@@ -13,7 +13,6 @@ import {
     Reference,
     tryEncodeScalar
 } from "../data";
-import { getEncodingKey } from "../encodings/utils";
 import { Fixed } from "../encodings/fixed";
 import { EncodingStore } from "./store";
 import { getUnrecSymbolEncoding } from "../encodings/unrec-symbol";
@@ -31,8 +30,8 @@ export class EncodeCtx implements EncodeContext {
     constructor(private _store: EncodingStore) {}
 
     private _getEncodingIndexAndRegister(encoding: Encoding) {
-        if (encoding[fixedIndexProp] != null) {
-            return encoding[fixedIndexProp];
+        if (encoding.fixedIndex != null) {
+            return encoding.fixedIndex;
         }
         const encodingKeys = this._encodingKeys;
         let encodingIndex = encodingKeys.get(encoding);
@@ -43,7 +42,7 @@ export class EncodeCtx implements EncodeContext {
         return encodingIndex;
     }
 
-    private _mustGetBySymbol(s: symbol): SymbolEncoding | SpecialEncoding {
+    private _mustGetBySymbol(s: symbol): Encoding {
         const inner = this._store.mayGetBySymbol(s);
         if (!inner) {
             return getUnrecSymbolEncoding(s);
@@ -99,7 +98,7 @@ export class EncodeCtx implements EncodeContext {
         const encodingKeys = [];
         // We're just using the fact Maps are sorted by insertion order
         for (const encoding of this._encodingKeys.keys()) {
-            encodingKeys.push(getEncodingKey(encoding));
+            encodingKeys.push(encoding.key);
         }
         return encodingKeys;
     }

@@ -1,13 +1,11 @@
 import { PreszrError } from "../errors";
-import { isNumericString } from "../utils";
-import { Encoding } from "../interface";
-
-export function getEncodingKey(enc: Encoding) {
-    if ("protos" in enc) {
-        return `${enc.name}.v${enc.version}`;
-    }
-    return `${enc.name}.S`;
-}
+import { getSymbolName, isNumericString } from "../utils";
+import {
+    Encoding,
+    fixedIndexProp,
+    PrototypeEncoding,
+    SymbolSpecifier
+} from "../interface";
 
 export interface ProtoEncodingKeyInfo {
     type: "prototype";

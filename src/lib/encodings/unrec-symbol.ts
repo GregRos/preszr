@@ -6,9 +6,9 @@ import { Fixed } from "./fixed";
 // is handled by the library.
 // In the future I'll implement it differently, but for now this is how it is.
 export function getUnrecSymbolEncoding(s: symbol): SpecialEncoding {
-    return {
-        name: getBuiltInEncodingName("unrecognizedSymbol"),
-        [fixedIndexProp]: Fixed.UnrecognizedSymbol,
-        metadata: getSymbolName(s)
-    };
+    return new SpecialEncoding(
+        getBuiltInEncodingName("unrecognizedSymbol"),
+        getSymbolName(s),
+        Fixed.UnrecognizedSymbol
+    );
 }

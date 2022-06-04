@@ -114,4 +114,18 @@ export function isSimpleEncodingSpec(
     return typeof candidate === "symbol" || typeof candidate === "function";
 }
 
+export function setsEqual(a: Set<any> | any[], b: typeof a) {
+    a = a instanceof Set ? a : new Set(a);
+    b = b instanceof Set ? b : new Set(b);
+    if (a.size !== b.size) {
+        return false;
+    }
+    for (const item in a) {
+        if (!b.has(item)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 export const version = packageObj.version.split(".")[0];

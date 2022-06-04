@@ -19,7 +19,7 @@ export enum Fixed {
     FundNumber,
 
     // BINARY BLOCK
-    ArrayBuffer = 50,
+    ArrayBuffer = 40,
     SharedArrayBuffer,
     Uint8Array,
     Uint8ClampedArray,
@@ -35,7 +35,7 @@ export enum Fixed {
     BigInt64Array,
 
     // ERROR BLOCK
-    EvalError = 80,
+    EvalError = 70,
     RangeError,
     ReferenceError,
     TypeError,
@@ -43,6 +43,18 @@ export enum Fixed {
     SyntaxError,
     Error,
 
+    // UNSUPPORTED BLOCK
+    Function = 80,
+    GeneratorFunction,
+    Generator,
+    Promise,
+    WeakSet,
+    WeakMap,
+    AsyncGenerator,
+    AsyncGeneratorFunction,
+    FinalizationRegistry,
+    AsyncFunction,
+    WeakRef,
     UnrecognizedSymbol = 99,
     // ... FREE BLOCK 76-99
     End = 100

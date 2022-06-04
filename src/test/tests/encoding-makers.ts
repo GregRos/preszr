@@ -1,5 +1,5 @@
 import test from "ava";
-import { PrototypeEncoding, SymbolEncoding } from "@lib";
+import { PrototypeEncoding, SymbolSpecifier } from "@lib";
 import {
     getImplicitClassEncodingName,
     getBuiltInEncodingName
@@ -39,11 +39,11 @@ test("error when trying with symbol without name", t => {
 });
 
 test("symbol encoding with explicit name unchanged", t => {
-    const encoding: SymbolEncoding = {
+    const encoding: SymbolSpecifier = {
         name: "a",
         symbol: testSymbol
     };
-    t.deepEqual(encoding, mustMakeEncoding(encoding) as SymbolEncoding);
+    t.deepEqual(encoding, mustMakeEncoding(encoding) as SymbolSpecifier);
 });
 
 test("encoding from class", t => {

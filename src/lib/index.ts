@@ -14,7 +14,7 @@ export {
     PrototypeEncoding,
     PrototypeSpecifier,
     Decoder,
-    SymbolEncoding,
+    SymbolSpecifier,
     CreateContext,
     InitContext,
     DeepPartial,

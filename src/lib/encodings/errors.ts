@@ -2,8 +2,7 @@ import {
     CreateContext,
     InitContext,
     EncodeContext,
-    PrototypeEncoding,
-    fixedIndexProp
+    PrototypeEncoding
 } from "../interface";
 import { getBuiltInEncodingName } from "../utils";
 import { decodeObject, encodeObject } from "./objects";
@@ -13,12 +12,12 @@ const errorProperties = ["stack", "name", "message"];
 export function createErrorEncoding(
     index: number,
     errorCtor: { new (): Error }
-): PrototypeEncoding {
-    return {
-        protos: [errorCtor.prototype],
-        version: 0,
-        name: getBuiltInEncodingName(errorCtor.name),
-        [fixedIndexProp]: index,
+): PrototypeEncoding<any> {
+    return new (class ErrorSubtypeEncoding extends PrototypeEncoding<Error> {
+        fixedIndex = index;
+        encodes = [errorCtor.prototype];
+        version = 0;
+        name = getBuiltInEncodingName(errorCtor.name);
         encode(input: any, ctx: EncodeContext): any {
             const encodedAsObject = encodeObject(
                 input,
@@ -28,16 +27,16 @@ export function createErrorEncoding(
             );
             (ctx as any)._isImplicit = false;
             return encodedAsObject;
-        },
-        decoder: {
+        }
+        decoder = {
             create(encodedValue: any, ctx: CreateContext): any {
                 return new errorCtor();
             },
             init(target: any, encoded: any, ctx: InitContext) {
                 decodeObject(target, encoded, ctx);
             }
-        }
-    };
+        };
+    })();
 }
 
 export const errorEncodings = [

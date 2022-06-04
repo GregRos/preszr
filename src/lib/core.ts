@@ -4,7 +4,7 @@ import {
     EncodingSpecifier,
     PreszrConfig,
     PrototypeEncoding,
-    SymbolEncoding
+    SymbolSpecifier
 } from "./interface";
 import {
     cloneDeep,
@@ -20,14 +20,8 @@ import {
     tryDecodeScalar,
     tryEncodeScalar
 } from "./data";
-import {
-    arrayEncoding,
-    builtinEncodings,
-    getUnsupportedEncoding,
-    objectEncoding
-} from "./encodings";
+import { arrayEncoding, builtinEncodings, objectEncoding } from "./encodings";
 import { PreszrError } from "./errors";
-import { unsupportedTypes } from "./unsupported";
 import { EncodingStore } from "./encode/store";
 import { EncodeCtx } from "./encode/encode-context";
 import { Fixed } from "./encodings/fixed";
@@ -41,15 +35,7 @@ export class Preszr {
 
     constructor(config?: Partial<PreszrConfig>) {
         config ??= defaultConfig;
-        const unsupportedEncoding = getUnsupportedEncoding(
-            ...unsupportedTypes,
-            ...(config.unsupported ?? [])
-        );
-        this._store.add(
-            ...builtinEncodings,
-            unsupportedEncoding,
-            ...(config.encodes ?? [])
-        );
+        this._store.add(...builtinEncodings, ...(config.encodes ?? []));
     }
 
     private _checkInputHeader(input: PreszrFormat) {

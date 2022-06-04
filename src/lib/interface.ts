@@ -1,7 +1,10 @@
 import { EncodedEntity, ScalarValue } from "./data";
 import { PreszrError } from "./errors";
-import { makeWrapperEncoding } from "./encodings/scalar";
+import { getBuiltInEncodingName, getSymbolName, setsEqual } from "./utils";
+import { Fixed } from "./encodings/fixed";
 
+const MAX_VERSION = 999;
+const MIN_VERSION = 0;
 export const fixedIndexProp = Symbol("fixedIndex");
 
 /**
@@ -48,6 +51,8 @@ export interface InitContext {
     decode(value: ScalarValue): unknown;
 }
 
+export type EncodeFunction<T> = (x: T, ctx: EncodeContext) => EncodedEntity;
+
 /**
  * The decoding logic for a prototype encoding.
  */
@@ -78,58 +83,26 @@ export interface PrototypeSpecifier {
 }
 
 /**
- * This special encoding is used to encode missing symbols.
- */
-export interface SpecialEncoding {
-    name: string;
-    [fixedIndexProp]?: number;
-    metadata?: any;
-}
-
-/**
  * A full symbol encoding.
  */
-export interface SymbolEncoding {
+export interface SymbolSpecifier {
     name: string;
     symbol: symbol;
-    [fixedIndexProp]?: number;
-}
-
-/**
- * A full prototype encoding.
- */
-export interface PrototypeEncoding {
-    version: number;
-    // Encodings can be for several different prototypes, but this is mostly undocumented and
-    // should only be used internally.
-    protos: object[];
-    decoder: Decoder;
-    encode(input: any, ctx: EncodeContext): EncodedEntity;
-    // If this is set, the encoding has a fixed index and doesn't need
-    // to appear in the encoding keys list. It only needs to appear in the
-    // encoding spec map. It makes referencing it faster and message size smaller
-    // but makes it position-dependent, fragile, and unusable for versioning.
-    // This is only suitable for core encodings.
-    [fixedIndexProp]?: number;
-    name: string;
 }
 
 /**
  * A full preszr encoding of any type.
  */
-export type Encoding = PrototypeEncoding | SymbolEncoding | SpecialEncoding;
+export type Encoding =
+    | SymbolEncoding
+    | PrototypeEncoding<any>
+    | SpecialEncoding;
 
 /**
  * These encodings specifiers can't be confused for configuration objects or
  * prototypes.
  */
 export type BasicSpecifier = symbol | Function;
-
-export type NonOverrideSpecifier =
-    | BasicSpecifier
-    | PrototypeSpecifier
-    | PrototypeEncoding
-    | SymbolEncoding;
 
 /**
  * An encoding specifier. Can be a symbol or constructor for a shorthand
@@ -139,8 +112,7 @@ export type NonOverrideSpecifier =
 export type EncodingSpecifier =
     | BasicSpecifier
     | PrototypeSpecifier
-    | PrototypeEncoding
-    | SymbolEncoding;
+    | SymbolSpecifier;
 
 /**
  * Configuration for an Preszr instance.
@@ -164,3 +136,176 @@ export interface PreszrConfig {
 export type DeepPartial<T> = {
     [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K];
 };
+
+export abstract class BaseEncoding {
+    abstract readonly name: string;
+    abstract readonly fixedIndex?: number;
+    abstract readonly key: string;
+}
+
+export class SymbolEncoding extends BaseEncoding {
+    constructor(
+        public readonly name: string,
+        public readonly symbol: symbol,
+        public readonly fixedIndex?: number
+    ) {
+        super();
+    }
+
+    get key() {
+        return `${this.name}.S`;
+    }
+
+    static fromSymbol(s: symbol) {
+        const name = getSymbolName(s);
+        if (!name) {
+            throw new PreszrError(
+                "Configuration",
+                `Symbol has no name. You must specify a full symbol encoding with a 'name' property.`
+            );
+        }
+        return new SymbolEncoding(name, s);
+    }
+
+    static fromSpecifier(spec: SymbolSpecifier) {
+        if (!spec.symbol) {
+            throw new PreszrError(
+                "Configuration",
+                "You must have a 'symbol' property in a symbol encoding."
+            );
+        }
+        if (typeof spec.symbol !== "symbol") {
+            throw new PreszrError(
+                "Configuration",
+                `The 'symbol' property must be a symbol, and not a ${typeof spec.symbol}.`
+            );
+        }
+        const name = spec.name ?? getSymbolName(spec.symbol);
+        if (!name) {
+            throw new PreszrError(
+                "Configuration",
+                `Symbol has no description. Add a 'name' property.`
+            );
+        }
+
+        return new SymbolEncoding(name, spec.symbol);
+    }
+}
+
+function mustBeValidPrototype(proto: object) {
+    if (proto === undefined) {
+        throw new PreszrError(
+            "Configuration",
+            "Prototype cannot be undefined."
+        );
+    }
+    if (typeof proto !== "object" && typeof proto !== "function") {
+        throw new PreszrError(
+            "Configuration",
+            `One of prototypes/constructors are something else. Here is a printout: ${typeof proto}`
+        );
+    }
+}
+
+export class UnsupportedValue {
+    constructor(public readonly type: string) {}
+}
+
+export abstract class PrototypeEncoding<
+    T extends object = object
+> extends BaseEncoding {
+    public abstract readonly name: string;
+    public abstract readonly version: number;
+    public abstract readonly encodes: T[];
+    public abstract readonly fixedIndex?: number;
+
+    abstract encode(x: T, ctx: EncodeContext): EncodedEntity;
+
+    abstract decoder: Decoder;
+
+    get key() {
+        return `${this.name}.v${this.version}`;
+    }
+
+    checkCompatible(other: PrototypeEncoding) {
+        if (!setsEqual(this.encodes, other.encodes)) {
+            throw new PreszrError(
+                "Configuration",
+                `${this.key} and ${other.key} encode different prototypes, but have the same name.`
+            );
+        }
+        if (this.name !== other.name) {
+            throw new PreszrError(
+                "Configuration",
+                `${this.key} and ${other.key} encode the same prototypes, but have different names.`
+            );
+        }
+    }
+
+    validate() {
+        if (!this.encodes || this.encodes.length === 0) {
+            throw new PreszrError(
+                "Bug",
+                "Full prototype encoding must specify one or more prototypes."
+            );
+        }
+        this.encodes.forEach(x => mustBeValidPrototype(x));
+        if (!this.name) {
+            throw new PreszrError(
+                "Bug",
+                "Multi-prototype specifier must provide a name."
+            );
+        }
+        if (!this.decoder) {
+            throw new PreszrError(
+                "Bug",
+                "Multi-prototype specifier must provide a decoder object."
+            );
+        }
+        if (!this.encode) {
+            throw new PreszrError(
+                "Bug",
+                "Multi-prototype specifier must provide an encode function."
+            );
+        }
+        if (
+            typeof this.fixedIndex !== "number" &&
+            this.fixedIndex !== undefined
+        ) {
+            throw new PreszrError(
+                "Bug",
+                "Encoding fixed index must be a number or undefined."
+            );
+        }
+    }
+
+    validateVersion() {
+        const { version, name } = this;
+        if (typeof version !== "number" || !Number.isSafeInteger(version)) {
+            throw new PreszrError(
+                "Configuration",
+                `Version for encoding ${name} must be an safe integer, and not ${version}.`
+            );
+        }
+        if (version > MAX_VERSION || version < MIN_VERSION) {
+            throw new PreszrError(
+                "Configuration",
+                `Version for encoding ${name} must be between ${MIN_VERSION} and ${MAX_VERSION}, and not ${version}`
+            );
+        }
+    }
+}
+
+export class SpecialEncoding extends BaseEncoding {
+    constructor(
+        public readonly name: string,
+        public readonly metadata?: any,
+        public readonly fixedIndex?: number
+    ) {
+        super();
+    }
+
+    get key() {
+        return `${this.name}.X`;
+    }
+}

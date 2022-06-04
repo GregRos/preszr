@@ -4,11 +4,26 @@ import {
     CreateContext,
     InitContext,
     Decoder,
-    fixedIndexProp
+    fixedIndexProp,
+    UnsupportedValue
 } from "../interface";
-import { getClassName, getBuiltInEncodingName } from "../utils";
+import {
+    getClassName,
+    getBuiltInEncodingName,
+    getClass,
+    getProto
+} from "../utils";
 import { ScalarValue } from "../data";
 import { Fixed } from "./fixed";
+import {
+    _AsyncFunction,
+    _AsyncGenerator,
+    _AsyncGeneratorFunction,
+    _FinalizationRegistry,
+    _Generator,
+    _GeneratorFunction,
+    _WeakRef
+} from "../opt-types";
 
 export const nullPlaceholder = {};
 function getAllOwnKeys(obj: object, onlyEnumerable: boolean): PropertyKey[] {
@@ -69,23 +84,24 @@ export function encodeObject(
     return strKeyObject;
 }
 
-export const objectEncoding: PrototypeEncoding = {
-    version: 0,
-    protos: [Object.prototype],
-    [fixedIndexProp]: Fixed.Object,
-    name: getBuiltInEncodingName("object"),
-    encode(input: any, ctx: EncodeContext): any {
-        return encodeObject(input, ctx, false);
-    },
-    decoder: {
-        create(encodedValue: any, ctx: CreateContext): any {
-            return {};
-        },
-        init(target: any, encoded: any, ctx: InitContext) {
-            decodeObject(target, encoded, ctx);
+export const objectEncoding =
+    new (class ObjectEncoding extends PrototypeEncoding<object> {
+        version = 0;
+        encodes = [Object.prototype];
+        fixedIndex = Fixed.Object;
+        name = getBuiltInEncodingName("object");
+        encode(input: any, ctx: EncodeContext): any {
+            return encodeObject(input, ctx, false);
         }
-    }
-};
+        decoder = {
+            create(encodedValue: any, ctx: CreateContext): any {
+                return {};
+            },
+            init(target: any, encoded: any, ctx: InitContext) {
+                decodeObject(target, encoded, ctx);
+            }
+        };
+    })();
 
 function encodeAsSparseArray(input: any, ctx: EncodeContext) {
     // Sparse arrays are serialized like objects.
@@ -94,11 +110,13 @@ function encodeAsSparseArray(input: any, ctx: EncodeContext) {
     return result;
 }
 
-export const arrayEncoding: PrototypeEncoding = {
-    name: getBuiltInEncodingName("array"),
-    version: 0,
-    [fixedIndexProp]: Fixed.Array,
-    protos: [Array.prototype],
+export const arrayEncoding = new (class ArrayEncoding extends PrototypeEncoding<
+    any[]
+> {
+    name = getBuiltInEncodingName("array");
+    version = 0;
+    fixedIndex = Fixed.Array;
+    encodes = [Array.prototype];
     encode(input: any, ctx: EncodeContext): any {
         const keys = Object.keys(input);
         const isSparseCanFalseNegative = input.length !== keys.length;
@@ -115,8 +133,8 @@ export const arrayEncoding: PrototypeEncoding = {
         }
         (ctx as any)._isImplicit = true;
         return newArray;
-    },
-    decoder: {
+    }
+    decoder = {
         create(encodedValue: any, ctx: CreateContext): any {
             return [];
         },
@@ -130,16 +148,18 @@ export const arrayEncoding: PrototypeEncoding = {
                 target[i] = ctx.decode(input[i]);
             }
         }
-    }
-};
-export const nullPrototypeEncoding: PrototypeEncoding = {
-    version: 0,
-    [fixedIndexProp]: Fixed.NullProto,
-    name: getBuiltInEncodingName("null"),
-    encode: getPrototypeEncoder(null),
-    decoder: getPrototypeDecoder(null),
-    protos: [nullPlaceholder]
-};
+    };
+})();
+
+export const nullPrototypeEncoding =
+    new (class NullPrototypeEncoding extends PrototypeEncoding<object> {
+        version = 0;
+        encodes = [nullPlaceholder];
+        name = getBuiltInEncodingName("null");
+        fixedIndex = Fixed.NullProto;
+        encode = getPrototypeEncoder(null);
+        decoder = getPrototypeDecoder(null);
+    })();
 
 export function getPrototypeDecoder(encodes: object | null) {
     return {
@@ -160,20 +180,43 @@ export function getPrototypeEncoder(proto: object | null) {
 
 export const unsupportedEncodingName = getBuiltInEncodingName("unsupported");
 
-export function getUnsupportedEncoding(...protos: object[]): PrototypeEncoding {
-    return {
-        name: unsupportedEncodingName,
-        version: 0,
-        [fixedIndexProp]: Fixed.Unsupported,
-        protos: protos,
-        encode(input: any, ctx: EncodeContext): any {
-            ctx.metadata = getClassName(input);
-            return 0;
-        },
-        decoder: {
-            create(encodedValue: any, ctx: CreateContext): any {
-                return undefined;
-            }
+class UnsupportedEncoding<T extends object> extends PrototypeEncoding<T> {
+    encodes: T[];
+    version = 0;
+    constructor(
+        public name: string,
+        encodes: T,
+        public readonly fixedIndex: number
+    ) {
+        super();
+        this.encodes = [encodes];
+        this.name = name;
+    }
+
+    encode(input: any, ctx: EncodeContext): any {
+        ctx.metadata = getClassName(input);
+        return 0;
+    }
+
+    decoder = {
+        create(encodedValue: any, ctx: CreateContext): any {
+            return new UnsupportedValue(ctx.metadata);
         }
     };
 }
+
+export const unsupportedEncodings = [
+    [Function, Fixed.Function],
+    [_GeneratorFunction, Fixed.GeneratorFunction],
+    [_Generator, Fixed.Generator],
+    [Promise, Fixed.Promise],
+    [WeakSet, Fixed.WeakSet],
+    [_AsyncGenerator, Fixed.AsyncGenerator],
+    [_AsyncGeneratorFunction, Fixed.AsyncGenerator],
+    [_FinalizationRegistry, Fixed.FinalizationRegistry],
+    [_AsyncFunction, Fixed.AsyncFunction],
+    [_WeakRef, Fixed.WeakRef]
+].map(([ctor, index]) => {
+    const name = getBuiltInEncodingName(getClassName(ctor)!);
+    return new UnsupportedEncoding(name, getProto(ctor), index);
+});
