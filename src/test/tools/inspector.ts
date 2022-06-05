@@ -1,5 +1,5 @@
 import { PreszrFormat } from "../../lib/data";
-import { Fixed } from "@lib/encodings/fixed";
+import { Fixed } from "@lib/encodings/fixed-indexes";
 
 export class Inspector {
     constructor(private _inner?: PreszrFormat) {

@@ -7,7 +7,7 @@ import {
 } from "../../lib/utils";
 import { Preszr } from "@lib";
 import { encoded, items, preszr, testBuilder } from "../tools";
-import { Fixed } from "@lib/encodings/fixed";
+import { Fixed } from "@lib/encodings/fixed-indexes";
 
 function getSymbolKey(s: symbol) {
     return `${s.description}.S`;

@@ -4,18 +4,11 @@ import {
     CreateContext,
     InitContext,
     Decoder,
-    fixedIndexProp,
     PreszrUnsupportedValue
 } from "../interface";
-import {
-    getClassName,
-    getBuiltInEncodingName,
-    getClass,
-    getProto,
-    getPrototypeName
-} from "../utils";
+import { getBuiltInEncodingName, getPrototypeName } from "../utils";
 import { ScalarValue } from "../data";
-import { Fixed } from "./fixed";
+import { Fixed } from "./fixed-indexes";
 import {
     _AsyncFunction,
     _AsyncGenerator,
@@ -81,7 +74,7 @@ export function encodeObject(
     if (symbKeyObject) {
         return [symbKeyObject, strKeyObject];
     }
-    (ctx as any)._isImplicit = true;
+    ctx._isImplicit = true;
     return strKeyObject;
 }
 
@@ -107,7 +100,7 @@ export const objectEncoding =
 function encodeAsSparseArray(input: any, ctx: EncodeContext) {
     // Sparse arrays are serialized like objects.
     const result = encodeObject(input, ctx, false);
-    (ctx as any)._isImplicit = false;
+    ctx._isImplicit = false;
     return result;
 }
 
@@ -132,7 +125,7 @@ export const arrayEncoding = new (class ArrayEncoding extends PrototypeEncoding<
             }
             newArray.push(ctx.encode(input[i]));
         }
-        (ctx as any)._isImplicit = true;
+        ctx._isImplicit = true;
         return newArray;
     }
     decoder = {
@@ -178,8 +171,6 @@ export function getPrototypeEncoder(proto: object | null) {
         return result;
     };
 }
-
-export const unsupportedEncodingName = getBuiltInEncodingName("unsupported");
 
 class UnsupportedEncoding<T extends object> extends PrototypeEncoding<T> {
     version = 0;

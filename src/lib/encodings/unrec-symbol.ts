@@ -1,6 +1,6 @@
-import { fixedIndexProp, SpecialEncoding } from "../interface";
+import { SpecialEncoding } from "../interface";
 import { getBuiltInEncodingName, getSymbolName } from "../utils";
-import { Fixed } from "./fixed";
+import { Fixed } from "./fixed-indexes";
 
 // This isn't really an encoding. Encoding unrecognized symbols
 // is handled by the library.

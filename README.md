@@ -6,7 +6,7 @@
 
 `preszr` is a *pre-serialization* library that allows you to serialize objects with meaningful references, prototypes, and arbitrary data types. 
 
-It works by taking those objects and encoding them into simple objects with only JSON-legal data - the kind that can be understood by any serializer, whether it's `JSON.stringify` or anything else. It's similar, but not related to, the [preserialize](https://preserialize.readthedocs.io/en/latest/) Python package.
+It works by encoding complex objects using a flat, highly compact format with only JSON-legal data - the kind that can be understood by any serializer. It's similar, but not related to, the [preserialize](https://preserialize.readthedocs.io/en/latest/) Python package.
 
 If you're curious about how `preszr` works, refer to the <u>Preszr Output</u>.
 
@@ -14,15 +14,15 @@ If you're curious about how `preszr` works, refer to the <u>Preszr Output</u>.
 
 🔗 Preserves references and prototypes!
 
-🐐 Encodes all primitives and built-in object types!*
+🐐 Encodes all primitives and built-in object types!
 
 🐤 Space-efficient format!
 
 🛠️ Easily modifiable to support custom objects!
 
-🕵️ Many error cases and descriptive messages that make for better debugging!
+🕵️ Descriptive error messages!
 
-:sweat_smile: Pain-painstakingly unit-tested for many possible inputs!
+💾 Basic versioning! 
 
 ## Non-features
 
@@ -90,7 +90,7 @@ yarn add preszr
 
 ## Unsupported Types
 
-`preszr` will intelligently encode all [*platform-independent*](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects) objects, except for a few that are outside its scope. Those are explicitly *unsupported*. Here they are:
+`preszr` will intelligently encode all [*platform-independent*](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects), built-in JavaScript objects, except for a few that are outside its scope. Those are explicitly *unsupported*. Here they are:
 
 ❌ `Function` and its variants
 
@@ -98,7 +98,9 @@ yarn add preszr
 
 ❌ `WeakMap`, `WeakSet`, `WeakRef`, and so on.
 
-❌ `Generator`
+❌ `Generator` and its variants
+
+❌ `FinalizationRegistry`.
 
 If you really want to see the list of supported types, see <u>supported.md</u>. You can also generate the list from any `Preszr` instance, as described in the `In-depth Configuration` section below.
 

@@ -5,7 +5,7 @@
 import test from "ava";
 import { encoded, preszr, testBuilder } from "../tools";
 import { defaultPreszr } from "@lib/default";
-import { Fixed } from "@lib/encodings/fixed";
+import { Fixed } from "@lib/encodings/fixed-indexes";
 
 const scalarEncodings = testBuilder(defaultPreszr).getSimple();
 

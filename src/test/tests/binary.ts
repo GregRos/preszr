@@ -3,7 +3,7 @@ import { getClassName, getPrototypeName } from "@lib/utils";
 import { encoded, preszr, testBuilder } from "../tools";
 import { defaultPreszr } from "@lib/default";
 import { createArrayBuffer, createSharedArrayBuffer } from "../utils";
-import { Fixed } from "@lib/encodings/fixed";
+import { Fixed } from "@lib/encodings/fixed-indexes";
 
 const binaryOutputDeepEqual = testBuilder(defaultPreszr)
     .title(({ original }) => `Binary Type ${getPrototypeName(original)}`)

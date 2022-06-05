@@ -1,6 +1,6 @@
 import test from "ava";
 import { encoded, items, preszr, testBuilder } from "../tools";
-import { Fixed } from "@lib/encodings/fixed";
+import { Fixed } from "@lib/encodings/fixed-indexes";
 import { defaultPreszr } from "@lib/default";
 
 export const fullErrorEquality = testBuilder()

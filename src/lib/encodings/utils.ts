@@ -1,11 +1,5 @@
 import { PreszrError } from "../errors";
-import { getSymbolName, isNumericString } from "../utils";
-import {
-    Encoding,
-    fixedIndexProp,
-    PrototypeEncoding,
-    SymbolSpecifier
-} from "../interface";
+import { isNumericString } from "../utils";
 
 export interface ProtoEncodingKeyInfo {
     type: "prototype";

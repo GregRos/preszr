@@ -98,4 +98,3 @@ export function tryDecodeScalar(candidate: any) {
 
     return noResultPlaceholder;
 }
-export const unrecognizedSymbolKey = getBuiltInEncodingName("symbol?");

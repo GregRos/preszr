@@ -2,11 +2,10 @@ import {
     CreateContext,
     InitContext,
     EncodeContext,
-    PrototypeEncoding,
-    fixedIndexProp
+    PrototypeEncoding
 } from "../interface";
 import { getBuiltInEncodingName } from "../utils";
-import { Fixed } from "./fixed";
+import { Fixed } from "./fixed-indexes";
 
 export const regexpEncoding =
     new (class RegexpEncoding extends PrototypeEncoding<RegExp> {

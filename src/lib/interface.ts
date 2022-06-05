@@ -1,11 +1,9 @@
 import { EncodedEntity, ScalarValue } from "./data";
 import { PreszrError } from "./errors";
-import { getBuiltInEncodingName, getSymbolName, setsEqual } from "./utils";
-import { Fixed } from "./encodings/fixed";
+import { getSymbolName } from "./utils";
 
 const MAX_VERSION = 999;
 const MIN_VERSION = 0;
-export const fixedIndexProp = Symbol("fixedIndex");
 
 /**
  * The context used by the encoding process.
@@ -54,8 +52,6 @@ export interface InitContext {
     // Resolves references and decodes encoded scalars. This isn't a recursive call.
     decode(value: ScalarValue): unknown;
 }
-
-export type EncodeFunction<T> = (x: T, ctx: EncodeContext) => EncodedEntity;
 
 /**
  * The decoding logic for a prototype encoding.

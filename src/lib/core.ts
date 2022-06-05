@@ -24,7 +24,7 @@ import { arrayEncoding, getDefaultStore, objectEncoding } from "./encodings";
 import { PreszrError } from "./errors";
 import { EncodingStore } from "./encode/store";
 import { EncodeCtx } from "./encode/encode-context";
-import { Fixed } from "./encodings/fixed";
+import { Fixed } from "./encodings/fixed-indexes";
 import { DecodeContext } from "./encode/decode-context";
 
 /**

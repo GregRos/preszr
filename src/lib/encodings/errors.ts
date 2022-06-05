@@ -6,7 +6,7 @@ import {
 } from "../interface";
 import { getBuiltInEncodingName } from "../utils";
 import { decodeObject, encodeObject } from "./objects";
-import { Fixed } from "./fixed";
+import { Fixed } from "./fixed-indexes";
 
 const errorProperties = ["stack", "name", "message"];
 export function createErrorEncoding(

@@ -1,9 +1,4 @@
-import {
-    CreateContext,
-    EncodeContext,
-    fixedIndexProp,
-    PrototypeEncoding
-} from "../interface";
+import { CreateContext, EncodeContext, PrototypeEncoding } from "../interface";
 import { getBuiltInEncodingName } from "../utils";
 import { fromByteArray, toByteArray } from "base64-js";
 import {
@@ -11,7 +6,7 @@ import {
     _BigUint64Array,
     _SharedArrayBuffer
 } from "../opt-types";
-import { Fixed } from "./fixed";
+import { Fixed } from "./fixed-indexes";
 
 /**
  * A union of all typed array constructors.

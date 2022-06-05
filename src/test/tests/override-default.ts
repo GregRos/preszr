@@ -8,7 +8,7 @@ import {
 } from "@lib";
 import { encoded, preszr, testBuilder } from "../tools";
 import { EncodedEntity } from "@lib/data";
-import { Fixed } from "@lib/encodings/fixed";
+import { Fixed } from "@lib/encodings/fixed-indexes";
 
 test("invalid definition - has name", t => {
     t.throws(() =>

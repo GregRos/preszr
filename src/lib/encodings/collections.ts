@@ -3,12 +3,11 @@ import {
     InitContext,
     EncodeContext,
     PrototypeEncoding,
-    fixedIndexProp,
     Decoder
 } from "../interface";
 import { getBuiltInEncodingName } from "../utils";
 import { EncodedEntity, ScalarValue } from "../data";
-import { Fixed } from "./fixed";
+import { Fixed } from "./fixed-indexes";
 
 export const mapEncoding = new (class MapEncoding extends PrototypeEncoding<
     Map<any, any>

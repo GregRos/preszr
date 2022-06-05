@@ -1,11 +1,4 @@
-import {
-    EncodeContext,
-    Encoding,
-    fixedIndexProp,
-    PrototypeEncoding,
-    SpecialEncoding,
-    SymbolSpecifier
-} from "../interface";
+import { EncodeContext, Encoding, PrototypeEncoding } from "../interface";
 import { version } from "../utils";
 import {
     Entity,
@@ -14,7 +7,7 @@ import {
     Reference,
     tryEncodeScalar
 } from "../data";
-import { Fixed } from "../encodings/fixed";
+import { Fixed } from "../encodings/fixed-indexes";
 import { EncodingStore } from "./store";
 import { getUnrecSymbolEncoding } from "../encodings/unrec-symbol";
 

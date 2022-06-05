@@ -1,7 +1,7 @@
 import test from "ava";
 import { encoded, items, preszr, testBuilder } from "../tools";
 import { defaultPreszr } from "@lib/default";
-import { Fixed } from "@lib/encodings/fixed";
+import { Fixed } from "@lib/encodings/fixed-indexes";
 
 const setEncoding = testBuilder(defaultPreszr).getSimple();
 

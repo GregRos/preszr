@@ -8,7 +8,7 @@ import {
 import { getDummyCtx } from "../utils";
 import { SymbolEncoding } from "@lib/interface";
 import { getDefaultStore } from "@lib/encodings";
-import { UserEncoding } from "@lib/encodings/encoding";
+import { UserEncoding } from "@lib/encodings/user-encoding";
 
 const testSymbol = Symbol("test");
 const defaultStore = getDefaultStore();

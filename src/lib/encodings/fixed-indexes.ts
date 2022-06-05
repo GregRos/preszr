@@ -2,7 +2,6 @@
 // and access a tiny bit faster for them.
 export enum Fixed {
     /*** UNSUPPORTED BLOCK */
-    Unsupported = 1,
 
     // OBJECT BLOCK
     Object = 10,

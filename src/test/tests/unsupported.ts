@@ -2,7 +2,7 @@ import test from "ava";
 import { decode } from "@lib";
 import { encoded, preszr, testBuilder } from "../tools";
 import { defaultPreszr } from "@lib/default";
-import { Fixed } from "@lib/encodings/fixed";
+import { Fixed } from "@lib/encodings/fixed-indexes";
 import { PreszrUnsupportedValue } from "@lib/interface";
 
 const compare = testBuilder(defaultPreszr).get();

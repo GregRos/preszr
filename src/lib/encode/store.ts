@@ -2,25 +2,16 @@ import {
     BaseEncoding,
     Encoding,
     EncodingSpecifier,
-    fixedIndexProp,
     PrototypeEncoding,
     PrototypeSpecifier,
-    SpecialEncoding,
-    SymbolEncoding,
-    SymbolSpecifier
+    SymbolEncoding
 } from "../interface";
 import { PreszrError } from "../errors";
 import { mustParseEncodingKey } from "../encodings/utils";
-import {
-    getClassName,
-    getProto,
-    getPrototypeName,
-    getSymbolName,
-    setsEqual
-} from "../utils";
-import { Fixed } from "../encodings/fixed";
+import { getProto, getPrototypeName, getSymbolName } from "../utils";
+import { Fixed } from "../encodings/fixed-indexes";
 import { nullPlaceholder } from "../encodings";
-import { UserEncoding } from "../encodings/encoding";
+import { UserEncoding } from "../encodings/user-encoding";
 
 export class EncodingStore {
     // We use multiple caches to speed up encoding and decoding.

@@ -3,7 +3,7 @@ import test from "ava";
 import { getImplicitClassEncodingKey } from "../utils";
 import { Preszr } from "@lib";
 import { encoded, items, preszr, testBuilder } from "../tools";
-import { Fixed } from "@lib/encodings/fixed";
+import { Fixed } from "@lib/encodings/fixed-indexes";
 
 class ParentClass {
     constructor(obj = {}) {
