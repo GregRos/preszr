@@ -10,7 +10,7 @@ import { Fixed } from "./fixed";
 
 export const regexpEncoding =
     new (class RegexpEncoding extends PrototypeEncoding<RegExp> {
-        encodes = [RegExp.prototype];
+        encodes = RegExp.prototype;
         version = 0;
         name = getBuiltInEncodingName("RegExp");
         fixedIndex = Fixed.RegExp;
@@ -31,7 +31,7 @@ export const regexpEncoding =
 
 export const dateEncoding =
     new (class DateEncoding extends PrototypeEncoding<Date> {
-        encodes = [Date.prototype];
+        encodes = Date.prototype;
         version = 0;
         fixedIndex = Fixed.Date;
         name = getBuiltInEncodingName("Date");
@@ -53,7 +53,7 @@ export function makeObjectWrappedEncoding<T extends object>(
         name = getBuiltInEncodingName(ctor.name);
         version = 0;
         fixedIndex = index;
-        encodes = [ctor.prototype];
+        encodes = ctor.prototype;
         encode(input: any, ctx: EncodeContext): any {
             return input.valueOf();
         }

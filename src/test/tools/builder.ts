@@ -14,9 +14,9 @@ export function preszr(...tokens: BuilderToken[]) {
     return wrapper.get();
 }
 
-export function encoded(value: any, encoding: string | number) {
+export function encoded(value: any, encoding: string | number, metadata?: any) {
     return new BuilderToken(insp => {
-        insp.push(value, encoding);
+        insp.push(value, encoding, metadata);
     });
 }
 

@@ -33,11 +33,18 @@ export class Inspector {
         }
     }
 
-    push(v: any, encoding?: string | number) {
+    setMetadata(newIndex: number, value: any) {
+        this.metadata[newIndex] = value;
+    }
+
+    push(v: any, encoding?: string | number, metadata?: any) {
         const newIndex = this.length + 1;
         this._inner.push(v);
         if (encoding != null) {
             this.setEncoding(newIndex, encoding);
+        }
+        if (metadata != null) {
+            this.setMetadata(newIndex, metadata);
         }
     }
 

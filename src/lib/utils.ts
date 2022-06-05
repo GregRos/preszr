@@ -90,6 +90,12 @@ export function getProto(protoOrCtor: Function | object) {
         : protoOrCtor;
 }
 
+export function getPrototypeName(proto: object | null) {
+    return proto === null
+        ? "null"
+        : (proto as any)[Symbol.toStringTag] ?? proto.constructor.name;
+}
+
 export function getClassName(
     protoOrCtor: Function | object | null
 ): string | null | undefined {

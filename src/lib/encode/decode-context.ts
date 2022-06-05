@@ -1,5 +1,6 @@
 import { noResultPlaceholder, ScalarValue, tryDecodeScalar } from "../data";
 import { PreszrError } from "../errors";
+import { PrototypeEncoding } from "../interface";
 
 enum DecodeStage {
     Create = 0,
@@ -9,6 +10,7 @@ enum DecodeStage {
 export class DecodeContext {
     private _stage = DecodeStage.Create;
     metadata: any;
+    self!: PrototypeEncoding;
     constructor(private _target: any[]) {}
     next() {
         this._stage = DecodeStage.Init;

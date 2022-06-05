@@ -18,8 +18,8 @@ function getSpeculative(name, code, map) {
     // https://mdn.io/script-src
     try {
         map = map == null ? x => x : map;
-        const result = new Function(`return ${code}`);
-        return map(result);
+        const f = new Function(`return ${code}`);
+        return map(f());
     } catch (e) {
         // if it errors, the expression must not be valid in this env
         // or there was a CSP error, in which case I dunno.

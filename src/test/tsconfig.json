@@ -7,7 +7,8 @@
     "target": "es2020",
     "sourceMap": true,
     "lib": [
-      "es2020"
+      "es2020",
+      "es2021.weakref"
     ],
     "outDir": "../../dist/test",
     "rootDir": ".",

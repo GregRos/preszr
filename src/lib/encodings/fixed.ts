@@ -55,8 +55,9 @@ export enum Fixed {
     FinalizationRegistry,
     AsyncFunction,
     WeakRef,
+
+    // UNRECOGNIZED SYMBOL
     UnrecognizedSymbol = 99,
-    // ... FREE BLOCK 76-99
     End = 100
     // Block end marker 100
     // Custom encodings start at index 100.

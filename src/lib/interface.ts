@@ -11,6 +11,8 @@ export const fixedIndexProp = Symbol("fixedIndex");
  * The context used by the encoding process.
  */
 export interface EncodeContext {
+    readonly self: PrototypeEncoding;
+
     /**
      * Encodes the given input. For entities, it will recursively encode them, add
      * them to the final output as a side effect, and return a reference. For other
@@ -36,6 +38,7 @@ export interface EncodeContext {
  * exposes the entity's metadata.
  */
 export interface CreateContext {
+    self: PrototypeEncoding;
     // The metadata for this encoded entity.
     metadata: any;
 }
@@ -46,6 +49,7 @@ export interface CreateContext {
  */
 export interface InitContext {
     metadata: any;
+    self: PrototypeEncoding;
 
     // Resolves references and decodes encoded scalars. This isn't a recursive call.
     decode(value: ScalarValue): unknown;
@@ -207,7 +211,7 @@ function mustBeValidPrototype(proto: object) {
     }
 }
 
-export class UnsupportedValue {
+export class PreszrUnsupportedValue {
     constructor(public readonly type: string) {}
 }
 
@@ -216,7 +220,7 @@ export abstract class PrototypeEncoding<
 > extends BaseEncoding {
     public abstract readonly name: string;
     public abstract readonly version: number;
-    public abstract readonly encodes: T[];
+    public abstract readonly encodes: T;
     public abstract readonly fixedIndex?: number;
 
     abstract encode(x: T, ctx: EncodeContext): EncodedEntity;
@@ -228,7 +232,7 @@ export abstract class PrototypeEncoding<
     }
 
     checkCompatible(other: PrototypeEncoding) {
-        if (!setsEqual(this.encodes, other.encodes)) {
+        if (this.encodes !== other.encodes) {
             throw new PreszrError(
                 "Configuration",
                 `${this.key} and ${other.key} encode different prototypes, but have the same name.`
@@ -240,16 +244,16 @@ export abstract class PrototypeEncoding<
                 `${this.key} and ${other.key} encode the same prototypes, but have different names.`
             );
         }
+        if (this.fixedIndex !== other.fixedIndex) {
+            throw new PreszrError(
+                "Configuration",
+                `${this.key} [${this.fixedIndex}] and ${other.key} [${other.fixedIndex}] are the same, but they have different fixed indexes.`
+            );
+        }
     }
 
     validate() {
-        if (!this.encodes || this.encodes.length === 0) {
-            throw new PreszrError(
-                "Bug",
-                "Full prototype encoding must specify one or more prototypes."
-            );
-        }
-        this.encodes.forEach(x => mustBeValidPrototype(x));
+        mustBeValidPrototype(this.encodes);
         if (!this.name) {
             throw new PreszrError(
                 "Bug",

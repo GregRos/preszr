@@ -25,7 +25,7 @@ export const arrayBufferEncoding =
         name = getBuiltInEncodingName("ArrayBuffer");
         version = 0;
         fixedIndex = Fixed.ArrayBuffer;
-        encodes = [ArrayBuffer.prototype];
+        encodes = ArrayBuffer.prototype;
 
         encode(input: ArrayBuffer, ctx: EncodeContext): any {
             const b64 = fromByteArray(new Uint8Array(input));
@@ -45,7 +45,7 @@ export const sharedArrayBufferEncoding =
         fixedIndex = Fixed.SharedArrayBuffer;
         name = getBuiltInEncodingName("SharedArrayBuffer");
         version = 0;
-        encodes = [_SharedArrayBuffer.prototype];
+        encodes = _SharedArrayBuffer.prototype;
         encode = arrayBufferEncoding.encode.bind(arrayBufferEncoding);
         decoder = {
             create(encodedValue: string, ctx: CreateContext): any {
@@ -70,7 +70,7 @@ export function createBinEncoding(
         fixedIndex = index;
         name = getBuiltInEncodingName(ctor.name);
         version = 0;
-        encodes = [ctor.prototype];
+        encodes = ctor.prototype;
         encode(
             input: InstanceType<TypedArrayConstructor>,
             ctx: EncodeContext

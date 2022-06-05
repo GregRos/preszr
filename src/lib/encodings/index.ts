@@ -13,22 +13,26 @@ import {
 } from "./binary";
 import { mapEncoding, setEncoding } from "./collections";
 import { errorEncodings } from "./errors";
-import { PrototypeEncoding } from "../interface";
+import { EncodingStore } from "../encode/store";
 
 export { arrayEncoding, nullPlaceholder, objectEncoding };
 
-export const builtinEncodings: PrototypeEncoding<object>[] = [
-    objectEncoding,
-    arrayEncoding,
-    nullPrototypeEncoding,
-    ...wrapperEncodings,
-    dateEncoding,
-    regexpEncoding,
-    ...typedArrayEncodings,
-    arrayBufferEncoding,
-    mapEncoding,
-    setEncoding,
-    ...errorEncodings,
-    sharedArrayBufferEncoding,
-    ...unsupportedEncodings
-];
+export function getDefaultStore() {
+    const store = new EncodingStore();
+    store.add(
+        objectEncoding,
+        arrayEncoding,
+        nullPrototypeEncoding,
+        ...wrapperEncodings,
+        dateEncoding,
+        regexpEncoding,
+        ...typedArrayEncodings,
+        arrayBufferEncoding,
+        mapEncoding,
+        setEncoding,
+        ...errorEncodings,
+        sharedArrayBufferEncoding,
+        ...unsupportedEncodings
+    );
+    return store;
+}

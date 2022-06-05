@@ -20,7 +20,7 @@ import {
     tryDecodeScalar,
     tryEncodeScalar
 } from "./data";
-import { arrayEncoding, builtinEncodings, objectEncoding } from "./encodings";
+import { arrayEncoding, getDefaultStore, objectEncoding } from "./encodings";
 import { PreszrError } from "./errors";
 import { EncodingStore } from "./encode/store";
 import { EncodeCtx } from "./encode/encode-context";
@@ -31,11 +31,11 @@ import { DecodeContext } from "./encode/decode-context";
  * The class used to encode and decode things in the preszr format.
  */
 export class Preszr {
-    private _store = new EncodingStore();
+    private _store = getDefaultStore();
 
     constructor(config?: Partial<PreszrConfig>) {
         config ??= defaultConfig;
-        this._store.add(...builtinEncodings, ...(config.encodes ?? []));
+        this._store.add(...(config.encodes ?? []));
     }
 
     private _checkInputHeader(input: PreszrFormat) {
@@ -118,22 +118,24 @@ export class Preszr {
                 } else {
                     encoding = objectEncoding;
                 }
+            } else if (encodingIndex === Fixed.UnrecognizedSymbol) {
+                targetArray[i] = getUnrecognizedSymbol(metadata[i] as string);
+                continue;
             } else if (encodingIndex < Fixed.End) {
                 encoding = this._store.mustGetByIndex(encodingIndex);
             } else {
                 encoding = encodingByIndex[encodingIndex - Fixed.End];
             }
-            if (encodingIndex === Fixed.UnrecognizedSymbol) {
-                targetArray[i] = getUnrecognizedSymbol(metadata[i] as string);
-                continue;
-            }
+
             if ("symbol" in encoding) {
                 targetArray[i] = encoding.symbol;
                 continue;
             }
             const protoEnc = encoding as PrototypeEncoding;
             ctx.metadata = metadata[i];
+            ctx.self = protoEnc;
             targetArray[i] = protoEnc.decoder.create(cur, ctx);
+            ctx.self = null!;
             if (protoEnc.decoder.init) {
                 needToInit.set(i, protoEnc);
             }
@@ -144,11 +146,13 @@ export class Preszr {
         for (const key of needToInit.keys()) {
             const encoding = needToInit.get(key)!;
             ctx.metadata = metadata[key];
+            ctx.self = encoding;
             encoding.decoder.init!(
                 targetArray[key],
                 input[key] as EncodedEntity,
                 ctx
             );
+            ctx.self = null!;
         }
         return targetArray[1];
     }

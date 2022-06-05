@@ -4,11 +4,10 @@ import { Preszr } from "@lib/core";
 class TestClass {}
 
 test("error - two encodings, identical keys", t => {
-    const err = t.throws(
+    t.throws(
         () =>
             new Preszr({
                 encodes: [TestClass, TestClass]
             })
     );
-    t.regex(err.message, /.*TestClass.*already exists/);
 });

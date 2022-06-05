@@ -15,13 +15,15 @@ import {
 import { getProto } from "../utils";
 
 export class UserEncoding<T extends object> extends PrototypeEncoding<T> {
-    readonly encodes: [T];
+    readonly encodes: T;
     readonly decoder: Decoder;
-    readonly fixedIndex = undefined;
     readonly name: string;
     readonly version: number;
     readonly encode: (input: T, ctx: EncodeContext) => EncodedEntity;
-    constructor(specifier: PrototypeSpecifier & { name: string }) {
+    constructor(
+        specifier: PrototypeSpecifier & { name: string },
+        public readonly fixedIndex: number | undefined
+    ) {
         super();
         if (specifier.encodes === undefined) {
             throw new PreszrError(
@@ -42,8 +44,9 @@ export class UserEncoding<T extends object> extends PrototypeEncoding<T> {
         }
         this.name = specifier.name;
         this.version = specifier.version ?? 0;
-        this.encodes = [proto];
+        this.encodes = proto;
         this.decoder = specifier.decoder ?? getPrototypeDecoder(proto);
         this.encode = specifier.encode ?? getPrototypeEncoder(proto);
+        this.validate();
     }
 }

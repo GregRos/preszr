@@ -2,6 +2,7 @@ import {
     EncodeContext,
     Encoding,
     fixedIndexProp,
+    PrototypeEncoding,
     SpecialEncoding,
     SymbolSpecifier
 } from "../interface";
@@ -23,7 +24,7 @@ export class EncodeCtx implements EncodeContext {
     private _encodingSpec = Object.create(null);
     private _metadata = Object.create(null);
     private _workingMessage = [0] as unknown as PreszrFormat;
-
+    self!: PrototypeEncoding;
     _isImplicit = false;
     metadata = undefined;
 
@@ -77,7 +78,9 @@ export class EncodeCtx implements EncodeContext {
         }
         const encoding = _store.mustGetByProto(value);
         const oldMetadata = this.metadata;
+        this.self = encoding;
         const preszed = encoding.encode(value, this);
+        this.self = null!;
         // _isImplicit will be set only on specific library encodings.
         // For example `object`. This is to make sure regular objects don't get the extra
         // characters needed to mark their encodings.

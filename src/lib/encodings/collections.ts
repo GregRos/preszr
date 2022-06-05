@@ -16,7 +16,7 @@ export const mapEncoding = new (class MapEncoding extends PrototypeEncoding<
     fixedIndex = Fixed.Map;
     name = getBuiltInEncodingName("Map");
     version = 0;
-    encodes = [Map.prototype];
+    encodes = Map.prototype;
 
     encode(input: Map<any, any>, ctx: EncodeContext): any {
         const array = [] as [ScalarValue, ScalarValue][];
@@ -50,7 +50,7 @@ export const setEncoding = new (class SetEncoding extends PrototypeEncoding<
     fixedIndex = Fixed.Set;
     name = getBuiltInEncodingName("Set");
     version = 0;
-    encodes = [Set.prototype];
+    encodes = Set.prototype;
 
     encode(input: Set<any>, ctx: EncodeContext): EncodedEntity {
         const outArray = [] as ScalarValue[];

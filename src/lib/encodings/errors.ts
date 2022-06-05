@@ -15,7 +15,7 @@ export function createErrorEncoding(
 ): PrototypeEncoding<any> {
     return new (class ErrorSubtypeEncoding extends PrototypeEncoding<Error> {
         fixedIndex = index;
-        encodes = [errorCtor.prototype];
+        encodes = errorCtor.prototype;
         version = 0;
         name = getBuiltInEncodingName(errorCtor.name);
         encode(input: any, ctx: EncodeContext): any {

@@ -5,13 +5,14 @@ import {
     InitContext,
     Decoder,
     fixedIndexProp,
-    UnsupportedValue
+    PreszrUnsupportedValue
 } from "../interface";
 import {
     getClassName,
     getBuiltInEncodingName,
     getClass,
-    getProto
+    getProto,
+    getPrototypeName
 } from "../utils";
 import { ScalarValue } from "../data";
 import { Fixed } from "./fixed";
@@ -87,7 +88,7 @@ export function encodeObject(
 export const objectEncoding =
     new (class ObjectEncoding extends PrototypeEncoding<object> {
         version = 0;
-        encodes = [Object.prototype];
+        encodes = Object.prototype;
         fixedIndex = Fixed.Object;
         name = getBuiltInEncodingName("object");
         encode(input: any, ctx: EncodeContext): any {
@@ -116,7 +117,7 @@ export const arrayEncoding = new (class ArrayEncoding extends PrototypeEncoding<
     name = getBuiltInEncodingName("array");
     version = 0;
     fixedIndex = Fixed.Array;
-    encodes = [Array.prototype];
+    encodes = Array.prototype;
     encode(input: any, ctx: EncodeContext): any {
         const keys = Object.keys(input);
         const isSparseCanFalseNegative = input.length !== keys.length;
@@ -154,7 +155,7 @@ export const arrayEncoding = new (class ArrayEncoding extends PrototypeEncoding<
 export const nullPrototypeEncoding =
     new (class NullPrototypeEncoding extends PrototypeEncoding<object> {
         version = 0;
-        encodes = [nullPlaceholder];
+        encodes = nullPlaceholder;
         name = getBuiltInEncodingName("null");
         fixedIndex = Fixed.NullProto;
         encode = getPrototypeEncoder(null);
@@ -181,26 +182,24 @@ export function getPrototypeEncoder(proto: object | null) {
 export const unsupportedEncodingName = getBuiltInEncodingName("unsupported");
 
 class UnsupportedEncoding<T extends object> extends PrototypeEncoding<T> {
-    encodes: T[];
     version = 0;
     constructor(
-        public name: string,
-        encodes: T,
+        public readonly name: string,
+        public readonly encodes: T,
         public readonly fixedIndex: number
     ) {
         super();
-        this.encodes = [encodes];
+        this.encodes = encodes;
         this.name = name;
     }
 
     encode(input: any, ctx: EncodeContext): any {
-        ctx.metadata = getClassName(input);
         return 0;
     }
 
     decoder = {
         create(encodedValue: any, ctx: CreateContext): any {
-            return new UnsupportedValue(ctx.metadata);
+            return new PreszrUnsupportedValue(ctx.self.name.slice(1));
         }
     };
 }
@@ -211,12 +210,15 @@ export const unsupportedEncodings = [
     [_Generator, Fixed.Generator],
     [Promise, Fixed.Promise],
     [WeakSet, Fixed.WeakSet],
+    [WeakMap, Fixed.WeakMap],
     [_AsyncGenerator, Fixed.AsyncGenerator],
-    [_AsyncGeneratorFunction, Fixed.AsyncGenerator],
+    [_AsyncGeneratorFunction, Fixed.AsyncGeneratorFunction],
     [_FinalizationRegistry, Fixed.FinalizationRegistry],
     [_AsyncFunction, Fixed.AsyncFunction],
     [_WeakRef, Fixed.WeakRef]
-].map(([ctor, index]) => {
-    const name = getBuiltInEncodingName(getClassName(ctor)!);
-    return new UnsupportedEncoding(name, getProto(ctor), index);
-});
+]
+    .filter(x => x[0])
+    .map(([ctor, index]) => {
+        const name = getBuiltInEncodingName(getPrototypeName(ctor.prototype));
+        return new UnsupportedEncoding(name, ctor.prototype, index);
+    });

@@ -1,6 +1,10 @@
 /* eslint-disable symbol-description */
 import test from "ava";
-import { getSymbolName, getUnrecognizedSymbol } from "../../lib/utils";
+import {
+    getSymbolName,
+    getUnrecognizedSymbol,
+    getUnrecognizedSymbolName
+} from "../../lib/utils";
 import { Preszr } from "@lib";
 import { encoded, items, preszr, testBuilder } from "../tools";
 import { Fixed } from "@lib/encodings/fixed";
@@ -16,7 +20,6 @@ test("unrecognized symbol name generator", t => {
     t.is(getSymbolName(getUnrecognizedSymbol("x")), "preszr unknown: x");
 });
 
-// First let's check recognized symbols only...
 {
     const knows1 = Preszr([symb1]);
 
@@ -39,6 +42,53 @@ test("unrecognized symbol name generator", t => {
             encoded([{ "2": 10 }, {}], Fixed.Object),
             encoded(0, symbolEncName)
         )
+    });
+
+    test("unrecognized symbol value", t => {
+        const encodedValue = knows1.encode(symb2);
+        t.deepEqual(
+            encodedValue,
+            preszr(encoded(0, Fixed.UnrecognizedSymbol, "symbol2"))
+        );
+        const decodedValue = knows1.decode(encodedValue);
+        t.is(typeof decodedValue, "symbol");
+        t.is(getSymbolName(decodedValue), getUnrecognizedSymbolName("symbol2"));
+    });
+
+    test("unrecognized symbol still has ID", t => {
+        const encodedValue = knows1.encode({
+            a: symb2,
+            b: symb2
+        });
+        t.deepEqual(
+            encodedValue,
+            preszr(
+                items({ a: "2", b: "2" }),
+                encoded(0, Fixed.UnrecognizedSymbol, "symbol2")
+            )
+        );
+        const result = knows1.decode(encodedValue);
+        t.is(typeof result.a, "symbol");
+        t.is(result.a, result.b);
+    });
+
+    test("unrecognized symbol key", t => {
+        const encodedValue = knows1.encode({
+            [symb2]: 5
+        });
+        t.deepEqual(
+            encodedValue,
+            preszr(
+                encoded([{ "2": 5 }, {}], Fixed.Object),
+                encoded(0, Fixed.UnrecognizedSymbol, "symbol2")
+            )
+        );
+        const result = knows1.decode(encodedValue);
+        const keys = Object.getOwnPropertySymbols(result);
+        t.is(keys.length, 1);
+        const [symbKey] = keys;
+        t.is(typeof symbKey, "symbol");
+        t.is(getSymbolName(symbKey), getUnrecognizedSymbolName("symbol2"));
     });
 }
 {

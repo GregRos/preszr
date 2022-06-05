@@ -1,15 +1,23 @@
 import {
+    BaseEncoding,
     Encoding,
     EncodingSpecifier,
     fixedIndexProp,
     PrototypeEncoding,
     PrototypeSpecifier,
+    SpecialEncoding,
     SymbolEncoding,
     SymbolSpecifier
 } from "../interface";
 import { PreszrError } from "../errors";
 import { mustParseEncodingKey } from "../encodings/utils";
-import { getClassName, getSymbolName, setsEqual } from "../utils";
+import {
+    getClassName,
+    getProto,
+    getPrototypeName,
+    getSymbolName,
+    setsEqual
+} from "../utils";
 import { Fixed } from "../encodings/fixed";
 import { nullPlaceholder } from "../encodings";
 import { UserEncoding } from "../encodings/encoding";
@@ -67,28 +75,23 @@ export class EncodingStore {
     }
 
     private _registerProtos(encoding: PrototypeEncoding) {
-        for (const proto of encoding.encodes) {
-            const existingEncoding = this._protoToEncoding.get(proto);
-            // It's illegal to have two different encodings for the same prototype, since it becomes ambiguous.
-            if (existingEncoding && existingEncoding.name !== encoding.name) {
-                throw new PreszrError(
-                    "Configuration",
-                    `Encoding ${
-                        encoding.key
-                    } references prototype ${getClassName(
-                        proto
-                    )}, but encoding ${
-                        existingEncoding.key
-                    } also refers that prototype.`
-                );
-            }
-            // However, it's okay to have the same encoding with different versions reference different prototypes.
-            if (
-                !existingEncoding ||
-                existingEncoding.version < encoding.version
-            ) {
-                this._protoToEncoding.set(proto, encoding);
-            }
+        const existingEncoding = this._protoToEncoding.get(encoding.encodes);
+        // It's illegal to have two different encodings for the same prototype, since it becomes ambiguous.
+        if (existingEncoding && existingEncoding.name !== encoding.name) {
+            throw new PreszrError(
+                "Configuration",
+                `Encoding ${
+                    encoding.key
+                } references prototype ${getPrototypeName(
+                    encoding.encodes
+                )}, but encoding ${
+                    existingEncoding.key
+                } also refers that prototype.`
+            );
+        }
+        // However, it's okay to have the same encoding with different versions reference different prototypes.
+        if (!existingEncoding || existingEncoding.version < encoding.version) {
+            this._protoToEncoding.set(encoding.encodes, encoding);
         }
     }
 
@@ -101,7 +104,6 @@ export class EncodingStore {
         } else {
             throw new PreszrError("Configuration", "Unknown encoding format.");
         }
-        this._maybeRegisterFixedIndexEncoding(fullEncoding);
     }
 
     _maybeRegisterFixedIndexEncoding(encoding: Encoding) {
@@ -111,34 +113,47 @@ export class EncodingStore {
             if (existing && existing.name !== encoding.name) {
                 throw new PreszrError(
                     "Configuration",
-                    `Encodings '${encoding.key}' and '${encoding.key}' have identical fixed index (${fixed}).`
+                    `Encodings '${encoding.key}' and '${existing.key}' have identical fixed index (${fixed}).`
                 );
             }
             this._indexToEncoding[fixed] = encoding;
         }
     }
 
-    private _makeFromCtor(ctor: Function) {
-        return this._makeFromPartialProto({
+    makeEncodingFromCtor(ctor: Function) {
+        return this.makeEncodingFromProtoSpec({
             encodes: ctor
         });
     }
 
-    _makeFromPartialProto(specifier: PrototypeSpecifier): PrototypeEncoding {
-        const builtIn = this._getBuiltInEncoding(specifier.encodes);
+    makeEncodingFromProtoSpec(
+        specifier: PrototypeSpecifier
+    ): PrototypeEncoding {
+        const proto = getProto(specifier.encodes);
+        if (!proto) {
+            throw new PreszrError(
+                "Configuration",
+                `Couldn't get the prototype from the constructor '${getPrototypeName(
+                    specifier.encodes
+                )}'.`
+            );
+        }
+        const builtIn = this._getBuiltInEncoding(proto);
         let name = specifier.name;
+        let fixedIndex: number | undefined = undefined;
         if (builtIn) {
             if (name) {
                 throw new PreszrError(
                     "Configuration",
-                    `You can't specify a 'name' because the type ${getClassName(
-                        specifier.encodes
+                    `You can't specify a 'name' because the type ${getPrototypeName(
+                        proto
                     )} is built-in.`
                 );
             }
             name = builtIn.name;
+            fixedIndex = builtIn.fixedIndex;
         } else {
-            name ??= getClassName(specifier.encodes);
+            name ??= getPrototypeName(proto);
             if (!name) {
                 throw new PreszrError(
                     "Configuration",
@@ -147,18 +162,21 @@ export class EncodingStore {
             }
         }
 
-        return new UserEncoding({
-            encodes: specifier.encodes,
-            encode: specifier.encode,
-            version: specifier.version,
-            name,
-            decoder: specifier.decoder
-        });
+        return new UserEncoding(
+            {
+                encodes: proto,
+                encode: specifier.encode,
+                version: specifier.version,
+                name,
+                decoder: specifier.decoder
+            },
+            fixedIndex
+        );
     }
 
-    _mustMakeEncoding(encoding: EncodingSpecifier): Encoding {
+    makeEncoding(encoding: EncodingSpecifier): Encoding {
         if (typeof encoding === "function") {
-            return this._makeFromCtor(encoding);
+            return this.makeEncodingFromCtor(encoding);
         } else if (typeof encoding === "symbol") {
             return SymbolEncoding.fromSymbol(encoding);
         } else if (typeof encoding !== "object") {
@@ -167,31 +185,29 @@ export class EncodingStore {
                 `Expected encoding specifier to be an object, function, or symbol, but was: ${typeof encoding}.`
             );
         } else if ("encodes" in encoding) {
-            return this._makeFromPartialProto(encoding);
+            return this.makeEncodingFromProtoSpec(encoding);
         } else if ("symbol" in encoding && encoding.symbol) {
             return SymbolEncoding.fromSpecifier(encoding);
         } else {
             throw new PreszrError(
                 "Configuration",
-                "Encoding specifier must have one of the properties: 'symbol', 'proto', or 'protos'."
+                "Encoding specifier must have one of the properties: 'symbol', or 'encodes'."
             );
         }
     }
 
-    add(...specs: EncodingSpecifier[]) {
-        for (const spec of specs) {
-            const fullEncoding = this._mustMakeEncoding(spec);
+    add(...encodings: (Encoding | EncodingSpecifier)[]) {
+        for (const encoding of encodings) {
+            const fullEncoding =
+                encoding instanceof BaseEncoding
+                    ? encoding
+                    : this.makeEncoding(encoding);
             this._addFullEncoding(fullEncoding);
         }
     }
 
-    private _checkCompatible(
-        real: PrototypeEncoding,
-        expected: PrototypeEncoding
-    ) {}
-
     private _addProtoEncoding(encoding: PrototypeEncoding) {
-        const existingByProto = this._protoToEncoding.get(encoding.encodes[0]);
+        const existingByProto = this._protoToEncoding.get(encoding.encodes);
         if (existingByProto) {
             encoding.checkCompatible(existingByProto);
         }
@@ -202,9 +218,13 @@ export class EncodingStore {
             versioned = new Map<number, PrototypeEncoding>();
             this._nameToProtoEncodings.set(encoding.name, versioned);
         }
+        if (versioned.get(encoding.version)) {
+            throw new PreszrError(
+                "Configuration",
+                `Encoding ${encoding.key} already exists.`
+            );
+        }
         const existingByName = versioned.get(-1)!;
-        this._checkCompatible(encoding, existingByName);
-
         this._registerProtos(encoding);
         // The latest encoding version is kept under -1 for easy access.
         const maxVersionEncoding = versioned.get(-1);
@@ -213,6 +233,7 @@ export class EncodingStore {
             maxVersionEncoding.version < encoding.version
         ) {
             versioned.set(-1, encoding);
+            this._maybeRegisterFixedIndexEncoding(encoding);
             // If the max version was set, that means the proto cache is obsolete
             this._cacheProtoToEncoding = undefined;
         }
@@ -252,6 +273,7 @@ export class EncodingStore {
         }
         this._symbolToEncoding.set(encoding.symbol, encoding);
         this._keyToEncoding.set(encoding.key, encoding);
+        this._maybeRegisterFixedIndexEncoding(encoding);
         return encoding;
     }
 
@@ -313,9 +335,7 @@ export class EncodingStore {
                     `Expected there to be a maximum version encoding for ${encoding.name}.`
                 );
             }
-            for (const proto of encoding.encodes) {
-                cache.set(proto, encoding);
-            }
+            cache.set(encoding.encodes, encoding);
         }
         return cache;
     }
