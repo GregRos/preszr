@@ -10,22 +10,25 @@ import {
     cloneDeep,
     defaultsDeep,
     getUnrecognizedSymbol,
+    isNumeric,
     version
 } from "./utils";
 import {
+    badType,
     EncodedEntity,
     noResultPlaceholder,
     PreszrFormat,
     PreszrOutput,
     tryDecodeScalar,
-    tryEncodeScalar
+    tryEncodeScalar,
+    unknownScalar
 } from "./data";
 import { arrayEncoding, getDefaultStore, objectEncoding } from "./encodings";
-import { PreszrError } from "./errors";
 import { EncodingStore } from "./encode/store";
 import { EncodeCtx } from "./encode/encode-context";
 import { Fixed } from "./encodings/fixed-indexes";
 import { DecodeContext } from "./encode/decode-context";
+import { getErrorByCode } from "./errors/texts";
 
 /**
  * The class used to encode and decode things in the preszr format.
@@ -34,59 +37,85 @@ export class Preszr {
     private _store = getDefaultStore();
 
     constructor(config?: Partial<PreszrConfig>) {
+        if (config && typeof config !== "object") {
+            throw getErrorByCode("config/bad-type")(config);
+        }
         config ??= defaultConfig;
+        if (config.encodes && !Array.isArray(config.encodes)) {
+            throw getErrorByCode("config/encodes/not-array")(config.encodes);
+        }
+
         this._store.add(...(config.encodes ?? []));
     }
 
     private _checkInputHeader(input: PreszrFormat) {
-        let reason = "" as string;
         let versionInfo = "" as any;
         if (!Array.isArray(input)) {
-            reason = "input is not array";
+            throw getErrorByCode("decode/input/not-array")(input);
         } else {
             const header = input?.[0];
 
             if (!header) {
-                reason = "no header element";
+                throw getErrorByCode("decode/input/empty-array")();
             } else if (!Array.isArray(header)) {
-                reason = "header element is not array";
+                throw getErrorByCode("decode/input/bad-header")(header);
             } else {
                 versionInfo = header[0];
                 if (versionInfo == null) {
-                    reason = "no version info";
+                    throw getErrorByCode("decode/input/header/empty-array")();
                 } else if (typeof versionInfo !== "string") {
-                    reason = "version is not string";
-                } else if (+versionInfo !== parseInt(versionInfo)) {
-                    reason = "version is not numeric";
+                    throw getErrorByCode("decode/input/version/not-string")(
+                        versionInfo
+                    );
+                } else if (!isNumeric(versionInfo)) {
+                    throw getErrorByCode("decode/input/version/not-numeric")(
+                        versionInfo
+                    );
                 } else if (versionInfo !== version) {
-                    throw new PreszrError(
-                        "Decoding",
-                        `Input was encoded using version ${versionInfo}, but preszr is version ${version}. Set skipValidateVersion to allow this.`
+                    throw getErrorByCode("decode/input/version/mismatch")(
+                        versionInfo,
+                        version
                     );
                 } else if (!Array.isArray(header[1])) {
-                    reason = "no encoding keys or encoding keys not an array";
-                } else if (typeof header[2] !== "object" || !header[1]) {
-                    reason =
-                        "no encoding data or encoding data is not an object";
-                } else if (typeof header[3] !== "object" || !header[2]) {
-                    reason =
-                        "no custom metadata or custom metadata is not an object";
+                    throw getErrorByCode("decode/input/header/no-keys")();
+                } else if (
+                    typeof header[2] !== "object" ||
+                    !header[2] ||
+                    Array.isArray(header[2])
+                ) {
+                    throw getErrorByCode("decode/input/header/no-map")();
+                } else if (
+                    typeof header[3] !== "object" ||
+                    !header[3] ||
+                    Array.isArray(header[2])
+                ) {
+                    throw getErrorByCode("decode/input/header/no-metadata")();
+                } else if (header.length > 4) {
+                    throw getErrorByCode("decode/input/header/too-long")(
+                        header
+                    );
                 } else if (input.length === 1) {
-                    reason = "input must have at least 2 elements";
+                    throw getErrorByCode("decode/input/no-data")();
                 }
             }
-        }
-        if (reason) {
-            throw new PreszrError(
-                "Decoding",
-                `Input is not preszr-encoded: ${reason}`
-            );
         }
     }
 
     decode(input: PreszrOutput): any {
-        const tryScalar = tryDecodeScalar(input);
-        if (tryScalar !== noResultPlaceholder) return tryScalar;
+        if (typeof input !== "object" || input === null) {
+            const tryScalar = tryDecodeScalar(input);
+            switch (tryScalar) {
+                case noResultPlaceholder:
+                    break;
+                case badType:
+                    throw getErrorByCode("decode/input/bad-type")(input);
+                case unknownScalar:
+                    throw getErrorByCode("decode/input/unknown-scalar")(input);
+                default:
+                    return tryScalar;
+            }
+        }
+
         input = input as PreszrFormat;
         // We check the header is in Preszr format.
         this._checkInputHeader(input);
@@ -118,7 +147,7 @@ export class Preszr {
                 } else {
                     encoding = objectEncoding;
                 }
-            } else if (encodingIndex === Fixed.UnrecognizedSymbol) {
+            } else if (encodingIndex === Fixed.UnknownSymbol) {
                 targetArray[i] = getUnrecognizedSymbol(metadata[i] as string);
                 continue;
             } else if (encodingIndex < Fixed.End) {
@@ -127,8 +156,8 @@ export class Preszr {
                 encoding = encodingByIndex[encodingIndex - Fixed.End];
             }
 
-            if ("symbol" in encoding) {
-                targetArray[i] = encoding.symbol;
+            if (typeof encoding.encodes === "symbol") {
+                targetArray[i] = encoding.encodes;
                 continue;
             }
             const protoEnc = encoding as PrototypeEncoding;
@@ -170,6 +199,5 @@ export class Preszr {
 }
 
 export const defaultConfig: PreszrConfig = {
-    encodes: [],
-    unsupported: []
+    encodes: []
 };

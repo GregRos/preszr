@@ -1,6 +1,12 @@
-import { noResultPlaceholder, ScalarValue, tryDecodeScalar } from "../data";
-import { PreszrError } from "../errors";
+import {
+    badType,
+    noResultPlaceholder,
+    ScalarValue,
+    tryDecodeScalar,
+    unknownScalar
+} from "../data";
 import { PrototypeEncoding } from "../interface";
+import { getErrorByCode } from "../errors/texts";
 
 enum DecodeStage {
     Create = 0,
@@ -11,22 +17,32 @@ export class DecodeContext {
     private _stage = DecodeStage.Create;
     metadata: any;
     self!: PrototypeEncoding;
+
     constructor(private _target: any[]) {}
+
     next() {
         this._stage = DecodeStage.Init;
     }
+
     decode(value: ScalarValue): unknown {
         if (this._stage === DecodeStage.Create) {
-            throw new PreszrError(
-                "Decoding",
-                `Illegal call to 'decode' in the Create stage. You can only do that during the Init stage.`
-            );
+            throw getErrorByCode("decode/create/decode/call")();
+        }
+        if (value !== null && typeof value === "object") {
+            throw getErrorByCode("decode/init/decode/bad-type")(value);
         }
         const decodedPrimitive = tryDecodeScalar(value);
-        if (decodedPrimitive !== noResultPlaceholder) {
-            return decodedPrimitive;
+        switch (decodedPrimitive) {
+            case noResultPlaceholder:
+                return this._target[value as any];
+            case unknownScalar:
+                throw getErrorByCode("decode/init/decode/unknown-scalar")(
+                    value
+                );
+            case badType:
+                throw getErrorByCode("decode/init/decode/bad-type")(value);
+            default:
+                return decodedPrimitive;
         }
-        value = value as number;
-        return this._target[value];
     }
 }

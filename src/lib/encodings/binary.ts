@@ -7,6 +7,7 @@ import {
     _SharedArrayBuffer
 } from "../opt-types";
 import { Fixed } from "./fixed-indexes";
+import { defineProtoEncoding } from "./utils";
 
 /**
  * A union of all typed array constructors.
@@ -15,8 +16,8 @@ export type TypedArrayConstructor = {
     new (buffer: ArrayBuffer): any;
 };
 
-export const arrayBufferEncoding =
-    new (class ArrayBufferEncoding extends PrototypeEncoding<ArrayBuffer> {
+export const arrayBufferEncoding = defineProtoEncoding(
+    class ArrayBufferEncoding extends PrototypeEncoding<ArrayBuffer> {
         name = getBuiltInEncodingName("ArrayBuffer");
         version = 0;
         fixedIndex = Fixed.ArrayBuffer;
@@ -33,10 +34,11 @@ export const arrayBufferEncoding =
                 return byteArray.buffer;
             }
         };
-    })();
+    }
+);
 
-export const sharedArrayBufferEncoding =
-    new (class SharedArrayBufferEncoding extends PrototypeEncoding<any> {
+export const sharedArrayBufferEncoding = defineProtoEncoding(
+    class SharedArrayBufferEncoding extends PrototypeEncoding<any> {
         fixedIndex = Fixed.SharedArrayBuffer;
         name = getBuiltInEncodingName("SharedArrayBuffer");
         version = 0;
@@ -54,34 +56,37 @@ export const sharedArrayBufferEncoding =
                 return sharedBuffer;
             }
         };
-    })();
+    }
+);
 
 export function createBinEncoding(
     index: number,
     ctor: TypedArrayConstructor
 ): PrototypeEncoding<any> | undefined {
     if (!ctor) return undefined;
-    return new (class BinaryTypeEncoding extends PrototypeEncoding<any> {
-        fixedIndex = index;
-        name = getBuiltInEncodingName(ctor.name);
-        version = 0;
-        encodes = ctor.prototype;
-        encode(
-            input: InstanceType<TypedArrayConstructor>,
-            ctx: EncodeContext
-        ): any {
-            return arrayBufferEncoding.encode(input.buffer, ctx);
-        }
-        decoder = {
-            create(encodedValue: any, ctx: CreateContext): any {
-                const buffer = arrayBufferEncoding.decoder.create(
-                    encodedValue,
-                    ctx
-                ) as ArrayBuffer;
-                return new ctor(buffer);
+    return defineProtoEncoding(
+        class BinaryTypeEncoding extends PrototypeEncoding<any> {
+            fixedIndex = index;
+            name = getBuiltInEncodingName(ctor.name);
+            version = 0;
+            encodes = ctor.prototype;
+            encode(
+                input: InstanceType<TypedArrayConstructor>,
+                ctx: EncodeContext
+            ): any {
+                return arrayBufferEncoding.encode(input.buffer, ctx);
             }
-        };
-    })();
+            decoder = {
+                create(encodedValue: any, ctx: CreateContext): any {
+                    const buffer = arrayBufferEncoding.decoder.create(
+                        encodedValue,
+                        ctx
+                    ) as ArrayBuffer;
+                    return new ctor(buffer);
+                }
+            };
+        }
+    );
 }
 
 export const typedArrayEncodings = [

@@ -90,10 +90,18 @@ export function getProto(protoOrCtor: Function | object) {
         : protoOrCtor;
 }
 
+export function isNumeric(x: string) {
+    return !Array.isArray(x) && +x === parseInt(x);
+}
+
 export function getPrototypeName(proto: object | null) {
     return proto === null
         ? "null"
         : (proto as any)[Symbol.toStringTag] ?? proto.constructor.name;
+}
+
+export function getCtorName(ctor: Function) {
+    return ctor.name;
 }
 
 export function getClassName(

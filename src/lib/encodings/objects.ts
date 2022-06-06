@@ -18,8 +18,10 @@ import {
     _GeneratorFunction,
     _WeakRef
 } from "../opt-types";
+import { defineProtoEncoding } from "./utils";
 
 export const nullPlaceholder = {};
+
 function getAllOwnKeys(obj: object, onlyEnumerable: boolean): PropertyKey[] {
     const keys = Reflect.ownKeys(obj);
     if (onlyEnumerable) {
@@ -78,15 +80,17 @@ export function encodeObject(
     return strKeyObject;
 }
 
-export const objectEncoding =
-    new (class ObjectEncoding extends PrototypeEncoding<object> {
+export const objectEncoding = defineProtoEncoding(
+    class ObjectEncoding extends PrototypeEncoding<object> {
         version = 0;
         encodes = Object.prototype;
         fixedIndex = Fixed.Object;
         name = getBuiltInEncodingName("object");
+
         encode(input: any, ctx: EncodeContext): any {
             return encodeObject(input, ctx, false);
         }
+
         decoder = {
             create(encodedValue: any, ctx: CreateContext): any {
                 return {};
@@ -95,7 +99,8 @@ export const objectEncoding =
                 decodeObject(target, encoded, ctx);
             }
         };
-    })();
+    }
+);
 
 function encodeAsSparseArray(input: any, ctx: EncodeContext) {
     // Sparse arrays are serialized like objects.
@@ -104,56 +109,59 @@ function encodeAsSparseArray(input: any, ctx: EncodeContext) {
     return result;
 }
 
-export const arrayEncoding = new (class ArrayEncoding extends PrototypeEncoding<
-    any[]
-> {
-    name = getBuiltInEncodingName("array");
-    version = 0;
-    fixedIndex = Fixed.Array;
-    encodes = Array.prototype;
-    encode(input: any, ctx: EncodeContext): any {
-        const keys = Object.keys(input);
-        const isSparseCanFalseNegative = input.length !== keys.length;
-        if (isSparseCanFalseNegative) {
-            return encodeAsSparseArray(input, ctx);
-        }
-        // The array still might be sparse, even after that check.
-        const newArray = [] as any[];
-        for (let i = 0; i < keys.length; i++) {
-            if (i !== +keys[i]) {
+export const arrayEncoding = defineProtoEncoding(
+    class ArrayEncoding extends PrototypeEncoding<any[]> {
+        name = getBuiltInEncodingName("array");
+        version = 0;
+        fixedIndex = Fixed.Array;
+        encodes = Array.prototype;
+
+        encode(input: any, ctx: EncodeContext): any {
+            const keys = Object.keys(input);
+            const isSparseCanFalseNegative = input.length !== keys.length;
+            if (isSparseCanFalseNegative) {
                 return encodeAsSparseArray(input, ctx);
             }
-            newArray.push(ctx.encode(input[i]));
-        }
-        ctx._isImplicit = true;
-        return newArray;
-    }
-    decoder = {
-        create(encodedValue: any, ctx: CreateContext): any {
-            return [];
-        },
-        init(target: any, input: any, ctx: InitContext) {
-            if (!Array.isArray(input)) {
-                // Decode similarly to objects
-                decodeObject(target, input, ctx);
-                return;
+            // The array still might be sparse, even after that check.
+            const newArray = [] as any[];
+            for (let i = 0; i < keys.length; i++) {
+                if (i !== +keys[i]) {
+                    return encodeAsSparseArray(input, ctx);
+                }
+                newArray.push(ctx.encode(input[i]));
             }
-            for (let i = 0; i < input.length; i++) {
-                target[i] = ctx.decode(input[i]);
-            }
+            ctx._isImplicit = true;
+            return newArray;
         }
-    };
-})();
 
-export const nullPrototypeEncoding =
-    new (class NullPrototypeEncoding extends PrototypeEncoding<object> {
+        decoder = {
+            create(encodedValue: any, ctx: CreateContext): any {
+                return [];
+            },
+            init(target: any, input: any, ctx: InitContext) {
+                if (!Array.isArray(input)) {
+                    // Decode similarly to objects
+                    decodeObject(target, input, ctx);
+                    return;
+                }
+                for (let i = 0; i < input.length; i++) {
+                    target[i] = ctx.decode(input[i]);
+                }
+            }
+        };
+    }
+);
+
+export const nullPrototypeEncoding = defineProtoEncoding(
+    class NullPrototypeEncoding extends PrototypeEncoding<object> {
         version = 0;
         encodes = nullPlaceholder;
         name = getBuiltInEncodingName("null");
         fixedIndex = Fixed.NullProto;
         encode = getPrototypeEncoder(null);
         decoder = getPrototypeDecoder(null);
-    })();
+    }
+);
 
 export function getPrototypeDecoder(encodes: object | null) {
     return {
@@ -174,6 +182,7 @@ export function getPrototypeEncoder(proto: object | null) {
 
 class UnsupportedEncoding<T extends object> extends PrototypeEncoding<T> {
     version = 0;
+
     constructor(
         public readonly name: string,
         public readonly encodes: T,

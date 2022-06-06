@@ -1,6 +1,6 @@
 {
   "name": "preszr",
-  "version": "0.1.0",
+  "version": "2.0.0",
   "description": "A lightweight library for encoding complex objects so they can be serialized.",
   "main": "dist/lib/index.js",
   "repository": {
@@ -55,10 +55,12 @@
   "nyc": {
     "produce-source-map": true,
     "extension": [
-      ".ts"
+      ".ts",
+      ".js"
     ],
     "include": [
-      "src/lib/**/*.ts"
+      "src/lib/**/*.ts",
+      "dist/lib/**/*.js"
     ],
     "all": true,
     "reporter": [

@@ -1,5 +1,6 @@
-import { getBuiltInEncodingName } from "./utils";
+import { getBuiltInEncodingName, isNumeric } from "./utils";
 import { _BigInt } from "./opt-types";
+import { getErrorByCode } from "./errors/texts";
 
 export type Version = string;
 
@@ -11,6 +12,7 @@ export type EncodedEntity = Primitive | string | DataObject | EncodedEntity[];
 
 export interface DataObject {
     [key: string]: EncodedEntity;
+
     [key: number]: EncodedEntity;
 }
 
@@ -43,7 +45,8 @@ export const negZeroEncoding = "-0";
 export const nanEncoding = "NaN";
 
 export const noResultPlaceholder = "";
-
+export const unknownScalar = "X";
+export const badType = "B";
 export function tryEncodeScalar(num: any): EncodedScalar | Primitive {
     if (num === null || typeof num === "boolean") {
         return num;
@@ -76,25 +79,28 @@ export function tryDecodeScalar(candidate: any) {
     const t = typeof candidate;
     if (t === "boolean" || t === "number" || candidate === null) {
         return candidate;
-    }
-    if (t === "string") {
+    } else if (t === "string") {
         if (candidate.startsWith("B")) {
             const result = _BigInt(candidate.slice(1));
             return result;
         }
+        switch (candidate) {
+            case infinityEncoding:
+                return Infinity;
+            case negInfinityEncoding:
+                return -Infinity;
+            case nanEncoding:
+                return NaN;
+            case negZeroEncoding:
+                return -0;
+            case undefinedEncoding:
+                return undefined;
+        }
+        if (isNumeric(candidate)) {
+            return noResultPlaceholder;
+        }
+        return unknownScalar;
+    } else {
+        return badType;
     }
-    switch (candidate) {
-        case infinityEncoding:
-            return Infinity;
-        case negInfinityEncoding:
-            return -Infinity;
-        case nanEncoding:
-            return NaN;
-        case negZeroEncoding:
-            return -0;
-        case undefinedEncoding:
-            return undefined;
-    }
-
-    return noResultPlaceholder;
 }

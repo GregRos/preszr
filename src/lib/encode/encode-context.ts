@@ -1,4 +1,9 @@
-import { EncodeContext, Encoding, PrototypeEncoding } from "../interface";
+import {
+    EncodeContext,
+    Encoding,
+    PrototypeEncoding,
+    SymbolEncoding
+} from "../interface";
 import { version } from "../utils";
 import {
     Entity,
@@ -36,7 +41,7 @@ export class EncodeCtx implements EncodeContext {
         return encodingIndex;
     }
 
-    private _mustGetBySymbol(s: symbol): Encoding {
+    private _mustGetBySymbol(s: symbol): SymbolEncoding {
         const inner = this._store.mayGetBySymbol(s);
         if (!inner) {
             return getUnrecSymbolEncoding(s);

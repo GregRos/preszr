@@ -15,14 +15,6 @@ test("decoding - header structure", t => {
     t.deepEqual(metadata, {});
 });
 
-function isBadPayloadError(err: Error) {
-    return err.message.includes("not preszr-encoded");
-}
-
-function isBadVersionError(err: Error) {
-    return err.message.includes("version");
-}
-
 test("decoding - error when trying to decode anomalous object", t => {
     const badPayloads = [
         {}, // non-array
@@ -38,18 +30,19 @@ test("decoding - error when trying to decode anomalous object", t => {
 
     for (const payload of badPayloads) {
         const err = t.throws(() => decode(payload));
-        t.true(isBadPayloadError(err));
     }
 });
 
 test("decoding - error when trying to decode wrong version", t => {
     const encoded = [[pkgVersion + 1, [], {}, {}], {}] as any;
-    const err = t.throws(() => decode(encoded));
-    t.true(isBadVersionError(err));
+    const err = t.throws(() => decode(encoded), {
+        code: "decode/input/version/mismatch"
+    });
 });
 
 test("decoding error - unknown encoding", t => {
     const encoded = [[pkgVersion, ["test.v0"], { 1: 0 }, {}], 0] as any;
-    const err = t.throws(() => decode(encoded));
-    t.regex(err.message, /no prototype encoding/i);
+    const err = t.throws(() => decode(encoded), {
+        code: "decode/keys/unknown-proto"
+    });
 });

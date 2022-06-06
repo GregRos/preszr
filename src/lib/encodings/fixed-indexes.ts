@@ -56,7 +56,7 @@ export enum Fixed {
     WeakRef,
 
     // UNRECOGNIZED SYMBOL
-    UnrecognizedSymbol = 99,
+    UnknownSymbol = 99,
     End = 100
     // Block end marker 100
     // Custom encodings start at index 100.

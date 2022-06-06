@@ -48,7 +48,7 @@ test("unrecognized symbol name generator", t => {
         const encodedValue = knows1.encode(symb2);
         t.deepEqual(
             encodedValue,
-            preszr(encoded(0, Fixed.UnrecognizedSymbol, "symbol2"))
+            preszr(encoded(0, Fixed.UnknownSymbol, "symbol2"))
         );
         const decodedValue = knows1.decode(encodedValue);
         t.is(typeof decodedValue, "symbol");
@@ -64,7 +64,7 @@ test("unrecognized symbol name generator", t => {
             encodedValue,
             preszr(
                 items({ a: "2", b: "2" }),
-                encoded(0, Fixed.UnrecognizedSymbol, "symbol2")
+                encoded(0, Fixed.UnknownSymbol, "symbol2")
             )
         );
         const result = knows1.decode(encodedValue);
@@ -80,7 +80,7 @@ test("unrecognized symbol name generator", t => {
             encodedValue,
             preszr(
                 encoded([{ "2": 5 }, {}], Fixed.Object),
-                encoded(0, Fixed.UnrecognizedSymbol, "symbol2")
+                encoded(0, Fixed.UnknownSymbol, "symbol2")
             )
         );
         const result = knows1.decode(encodedValue);

@@ -1,5 +1,10 @@
-import { PreszrError } from "../errors";
 import { isNumericString } from "../utils";
+import {
+    PrototypeEncoding,
+    PrototypeSpecifier,
+    SymbolSpecifier
+} from "../interface";
+import { getErrorByCode } from "../errors/texts";
 
 export interface ProtoEncodingKeyInfo {
     type: "prototype";
@@ -14,13 +19,27 @@ export interface SymbolEncodingKeyInfo {
 
 export type EncodingKeyInfo = ProtoEncodingKeyInfo | SymbolEncodingKeyInfo;
 
+export type PrototypeEncodingCtor<T extends object> = {
+    new (): PrototypeEncoding<T>;
+};
+
+export function isSymbolSpecifier(
+    encoding: PrototypeSpecifier | SymbolSpecifier
+): encoding is SymbolSpecifier {
+    return typeof encoding.encodes === "symbol";
+}
+
+export function defineProtoEncoding<
+    Type extends object,
+    Class extends PrototypeEncodingCtor<Type>
+>(cls: Class): PrototypeEncoding<Type> {
+    return new cls();
+}
+
 export function mustParseEncodingKey(key: string): EncodingKeyInfo {
     const lastDot = key.lastIndexOf(".");
     if (lastDot === -1) {
-        throw new PreszrError(
-            "Decoding",
-            `In encoding key ${key}, had no postfix.`
-        );
+        throw getErrorByCode("decode/keys/bad-format")(key);
     }
     const strPostfix = key.slice(lastDot + 1);
     const name = key.slice(0, lastDot);
@@ -31,20 +50,14 @@ export function mustParseEncodingKey(key: string): EncodingKeyInfo {
         };
     }
     if (!strPostfix.startsWith("v")) {
-        throw new PreszrError("Decoding", `Unknown postfix ${strPostfix}.`);
+        throw getErrorByCode("decode/keys/bad-format")(key);
     }
     const strVersion = strPostfix.slice(1);
     if (!isNumericString(strVersion)) {
-        throw new PreszrError(
-            "Decoding",
-            `For encoding key ${key}, version wasn't numeric.`
-        );
+        throw getErrorByCode("decode/keys/bad-format")(key);
     }
     if (!name) {
-        throw new PreszrError(
-            "Decoding",
-            `For encoding key ${key}, name was empty.`
-        );
+        throw getErrorByCode("decode/keys/bad-format")(key);
     }
     return {
         type: "prototype",

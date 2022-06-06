@@ -44,28 +44,17 @@ export const decode = <T = unknown>(encoded: PreszrOutput): T =>
 export const Preszr = function Preszr(arg: any) {
     if (Array.isArray(arg)) {
         return new PreszrClass({
-            encodes: arg,
-            unsupported: []
+            encodes: arg
         });
     }
-    return new PreszrClass(arg);
+    return new PreszrClass(arg ?? {});
 } as unknown as {
-    new (specs: EncodingSpecifier[]): Preszr;
-    /**
-     * Creates a new `Preszr` instance. Can be called with or without `new`.
-     * @param config The configuration. Should be the same in the source and destination.
-     * @constructor
-     */
-    new (config?: DeepPartial<PreszrConfig>): Preszr;
-
-    /**
-     * Creates a new `Preszr` instance. Can be called with or without `new`.
-     * @param config The configuration. Should be the same in the source and destination.
-     * @constructor
-     */
-    (config?: DeepPartial<PreszrConfig>): Preszr;
-
     (specs: EncodingSpecifier[]): Preszr;
+    (config: PreszrConfig): Preszr;
+    (): Preszr;
+    new (specs: EncodingSpecifier[]): Preszr;
+    new (): Preszr;
+    new (config: PreszrConfig): Preszr;
 };
 
 /**
