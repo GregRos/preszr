@@ -339,25 +339,4 @@ const preszr = Preszr([
 ]);
 ```
 
-The minimum version is $1$ and the maximum version is $999$. 
-
-## In-depth Configuration
-
-`Preszr` supports a few more configuration options. For example, you can specify your own unsupported types. 
-
-1. **unsupported**: A list of prototypes or constructors to unsupport. These are added to the built-in unsupported types and handled the same way.
-2. **strict**: Options for making the encoder more strict
-
-
-
-```typescript
-class Example1 {}
-class Example2 {}
-const preszr = Preszr({
-    unsupported: [
-        Example1,
-        Example2.prototype
-    ]
-});
-```
-
+The minimum version is $1$ and the maximum version is $999$.
