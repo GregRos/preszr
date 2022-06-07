@@ -8,13 +8,13 @@
 
 It works by encoding complex objects using a flat, highly compact format with only JSON-legal data - the kind that can be understood by any serializer. It's similar, but not related to, the [preserialize](https://preserialize.readthedocs.io/en/latest/) Python package.
 
-If you're curious about how `preszr` works, refer to the <u>Preszr Output</u>.
+If you're curious about how `preszr` works, refer to the <a href="docs/format.md">Preszr Format</a>.
 
 ## Features
 
 🔗 Preserves references and prototypes!
 
-🐐 Encodes all primitives and built-in object types!
+🐐 Encodes all primitives and built-in object types! See <a href="docs/supported.md">this</a> for a full breakdown.
 
 🐤 Space-efficient format!
 
