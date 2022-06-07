@@ -1,5 +1,5 @@
 import test from "ava";
-import { getClassName, getPrototypeName } from "@lib/utils";
+import { getPrototypeName } from "@lib/utils";
 import { encoded, preszr, testBuilder } from "../tools";
 import { defaultPreszr } from "@lib/default";
 import { createArrayBuffer, createSharedArrayBuffer } from "../utils";

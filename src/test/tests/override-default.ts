@@ -1,11 +1,5 @@
 import test from "ava";
-import {
-    CreateContext,
-    EncodeContext,
-    InitContext,
-    Preszr,
-    PrototypeSpecifier
-} from "@lib";
+import { CreateContext, EncodeContext, InitContext, Preszr } from "@lib";
 import { encoded, preszr, testBuilder } from "../tools";
 import { EncodedEntity } from "@lib/data";
 import { FixedIndexes } from "@lib/encodings/fixed-indexes";

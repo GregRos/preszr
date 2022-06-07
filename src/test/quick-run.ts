@@ -41,8 +41,5 @@ const preszr = Preszr([
         encodes: ExampleVersionedClass
     }
 ]);
+console.log(preszr);
 console.log(JSON.stringify(encode(obj), null, 2));
-
-let a: any;
-
-const b = typeof a;

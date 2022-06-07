@@ -1,17 +1,11 @@
 import {
     Decoder,
     EncodeContext,
-    EncodingSpecifier,
     PrototypeEncoding,
     PrototypeSpecifier
 } from "../interface";
 import { EncodedEntity } from "../data";
-import {
-    getPrototypeDecoder,
-    getPrototypeEncoder,
-    nullPlaceholder
-} from "./objects";
-import { getProto } from "../utils";
+import { getPrototypeDecoder, getPrototypeEncoder } from "./objects";
 import { getErrorByCode } from "../errors/texts";
 
 const MAX_VERSION = 999;

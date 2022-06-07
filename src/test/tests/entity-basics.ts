@@ -29,20 +29,20 @@ test("decoding - error when trying to decode anomalous object", t => {
     ] as any[];
 
     for (const payload of badPayloads) {
-        const err = t.throws(() => decode(payload));
+        t.throws(() => decode(payload));
     }
 });
 
 test("decoding - error when trying to decode wrong version", t => {
     const encoded = [[pkgVersion + 1, [], {}, {}], {}] as any;
-    const err = t.throws(() => decode(encoded), {
+    t.throws(() => decode(encoded), {
         code: "decode/input/version/mismatch"
     });
 });
 
 test("decoding error - unknown encoding", t => {
     const encoded = [[pkgVersion, ["test.v0"], { 1: 0 }, {}], 0] as any;
-    const err = t.throws(() => decode(encoded), {
+    t.throws(() => decode(encoded), {
         code: "decode/keys/unknown-proto"
     });
 });

@@ -1,5 +1,5 @@
 import test from "ava";
-import { encode, Preszr } from "@lib";
+import { Preszr } from "@lib";
 import { encoded, preszr, testBuilder } from "../tools";
 
 {

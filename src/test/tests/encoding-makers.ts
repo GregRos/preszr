@@ -1,14 +1,9 @@
 import test from "ava";
 import { PrototypeEncoding, SymbolSpecifier } from "@lib";
-import {
-    getImplicitClassEncodingName,
-    getBuiltInEncodingName,
-    getClass
-} from "@lib/utils";
+import { getBuiltInEncodingName } from "@lib/utils";
 import { getDummyCtx } from "../utils";
 import { SymbolEncoding } from "@lib/interface";
 import { getDefaultStore } from "@lib/encodings";
-import { UserEncoding } from "@lib/encodings/user-encoding";
 
 const testSymbol = Symbol("test");
 const defaultStore = getDefaultStore();
@@ -70,19 +65,19 @@ test("encoding from prototype", t => {
 });
 
 test("error - nameless ctor without key", t => {
-    const err = t.throws(() => defaultStore.makeEncoding(class {}));
+    t.throws(() => defaultStore.makeEncoding(class {}));
 });
 
 test("error - cannot get prototype from ctor", t => {
     const brokenCtor = function () {};
     brokenCtor.prototype = null;
-    const err = t.throws(() => defaultStore.makeEncoding(brokenCtor), {
+    t.throws(() => defaultStore.makeEncoding(brokenCtor), {
         code: "config/proto/couldnt-get-prototype"
     });
 });
 
 test("error - no prototype(s)", t => {
-    const err = t.throws(() => defaultStore.makeEncoding({} as any), {
+    t.throws(() => defaultStore.makeEncoding({} as any), {
         code: "config/spec/no-encodes"
     });
 });

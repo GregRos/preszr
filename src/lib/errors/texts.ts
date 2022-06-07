@@ -1,15 +1,5 @@
-import {
-    Encoding,
-    PrototypeEncoding,
-    PrototypeSpecifier,
-    SymbolEncoding
-} from "../interface";
-import {
-    getClassName,
-    getCtorName,
-    getProto,
-    getPrototypeName
-} from "../utils";
+import { Encoding, PrototypeEncoding, SymbolEncoding } from "../interface";
+import { getCtorName, getPrototypeName } from "../utils";
 import { PreszrError } from "./index";
 
 export const errorDefinitions = {

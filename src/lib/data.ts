@@ -1,6 +1,5 @@
-import { getBuiltInEncodingName, isNumeric } from "./utils";
+import { isNumeric } from "./utils";
 import { _BigInt } from "./opt-types";
-import { getErrorByCode } from "./errors/texts";
 
 export type Version = string;
 

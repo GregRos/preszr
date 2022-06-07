@@ -1,18 +1,5 @@
-import {
-    DeepPartial,
-    Encoding,
-    EncodingSpecifier,
-    PreszrConfig,
-    PrototypeEncoding,
-    SymbolSpecifier
-} from "./interface";
-import {
-    cloneDeep,
-    defaultsDeep,
-    getUnrecognizedSymbol,
-    isNumeric,
-    version
-} from "./utils";
+import { Encoding, PreszrConfig, PrototypeEncoding } from "./interface";
+import { getUnrecognizedSymbol, isNumeric, version } from "./utils";
 import {
     badType,
     EncodedEntity,
@@ -24,7 +11,6 @@ import {
     unknownScalar
 } from "./data";
 import { arrayEncoding, getDefaultStore, objectEncoding } from "./encodings";
-import { EncodingStore } from "./encode/store";
 import { EncodeCtx } from "./encode/encode-context";
 import { FixedIndexes } from "./encodings/fixed-indexes";
 import { DecodeContext } from "./encode/decode-context";

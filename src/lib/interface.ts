@@ -1,6 +1,5 @@
 import { EncodedEntity, ScalarValue } from "./data";
 import { getPrototypeName, getSymbolName } from "./utils";
-import { FixedIndexes } from "./encodings/fixed-indexes";
 import { getErrorByCode } from "./errors/texts";
 
 /**
@@ -118,13 +117,6 @@ export interface PreszrConfig {
      */
     encodes: EncodingSpecifier[];
 }
-
-/**
- * Similar to Partial<T>, but recursively applied.
- */
-export type DeepPartial<T> = {
-    [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K];
-};
 
 export abstract class BaseEncoding {
     abstract readonly name: string;

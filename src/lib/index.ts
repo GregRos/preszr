@@ -1,7 +1,6 @@
 import { Preszr as PreszrClass } from "./core";
 import { PreszrOutput } from "./data";
 import {
-    DeepPartial,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     EncodingSpecifier,
     PreszrConfig
@@ -17,7 +16,6 @@ export {
     SymbolSpecifier,
     CreateContext,
     InitContext,
-    DeepPartial,
     PreszrConfig,
     EncodeContext
 } from "./interface";

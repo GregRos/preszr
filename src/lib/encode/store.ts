@@ -4,11 +4,10 @@ import {
     EncodingSpecifier,
     PrototypeEncoding,
     PrototypeSpecifier,
-    SymbolEncoding,
-    SymbolSpecifier
+    SymbolEncoding
 } from "../interface";
 import { isSymbolSpecifier, mustParseEncodingKey } from "../encodings/utils";
-import { getProto, getPrototypeName, getSymbolName } from "../utils";
+import { getProto, getPrototypeName } from "../utils";
 import { FixedIndexes } from "../encodings/fixed-indexes";
 import { nullPlaceholder } from "../encodings";
 import { UserEncoding } from "../encodings/user-encoding";
@@ -202,7 +201,6 @@ export class EncodingStore {
         if (versioned.get(encoding.version)) {
             throw getErrorByCode("config/proto/encoding-exists")(encoding);
         }
-        const existingByName = versioned.get(-1)!;
         versioned.set(encoding.version, encoding);
         this._registerProtos(encoding);
         // The latest encoding version is kept under -1 for easy access.
@@ -222,7 +220,7 @@ export class EncodingStore {
     }
 
     *getProtoEncodings(): Generator<PrototypeEncoding> {
-        for (const [proto, encoding] of this._protoToEncoding) {
+        for (const [, encoding] of this._protoToEncoding) {
             yield encoding;
         }
     }

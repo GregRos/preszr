@@ -1,5 +1,4 @@
 import test from "ava";
-import { decode } from "@lib";
 import { encoded, preszr, testBuilder } from "../tools";
 import { defaultPreszr } from "@lib/default";
 import { FixedIndexes } from "@lib/encodings/fixed-indexes";
