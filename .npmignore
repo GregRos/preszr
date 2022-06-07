@@ -16,3 +16,4 @@ yarn-error.log
 coverage
 .idea/
 .git/
+.eslintrc.js
