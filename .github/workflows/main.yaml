@@ -21,10 +21,10 @@ jobs:
           node-version: '14'
           cache: npm
           registry-url: https://registry.npmjs.org
-      - run: yarn install
-      - run: yarn run build
-      - run: yarn run lint:check
-      - run: yarn test
+      - run: npm install
+      - run: npm run build
+      - run: npm run lint:check
+      - run: npm test
       - name: Coveralls
         uses: coverallsapp/github-action@master
         with:

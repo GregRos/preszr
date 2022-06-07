@@ -10,7 +10,7 @@ import { encoded, preszr, testBuilder } from "../tools";
     const versionedPreszr = Preszr([
         {
             encodes: TestClass,
-            version: 0,
+            version: 1,
             encode(input, ctx) {
                 return input.val;
             },
@@ -22,7 +22,7 @@ import { encoded, preszr, testBuilder } from "../tools";
         },
         {
             encodes: TestClass,
-            version: 1,
+            version: 2,
             encode(input) {
                 return input.val * 2;
             },
@@ -38,11 +38,11 @@ import { encoded, preszr, testBuilder } from "../tools";
 
     test("two versions, uses latest", versionedTest.get(), {
         original: new TestClass(1),
-        encoded: preszr(encoded(2, "TestClass.v1"))
+        encoded: preszr(encoded(2, "TestClass.v2"))
     });
 
     test("two versions, can still read old one", t => {
-        const encodedValue = preszr(encoded(1, "TestClass.v0"));
+        const encodedValue = preszr(encoded(1, "TestClass.v1"));
         const original = versionedPreszr.decode(encodedValue);
         t.deepEqual(original, new TestClass(1));
     });
@@ -60,7 +60,7 @@ import { encoded, preszr, testBuilder } from "../tools";
         },
         {
             name: "test",
-            version: 1,
+            version: 2,
             encodes: TestClass2.prototype
         }
     ]);
@@ -68,11 +68,11 @@ import { encoded, preszr, testBuilder } from "../tools";
 
     test("uses new version", differentClassesTest.get(), {
         original: new TestClass2(),
-        encoded: preszr(encoded({}, "test.v1"))
+        encoded: preszr(encoded({}, "test.v2"))
     });
 
     test("can still read old version", differentClassesTest.get(), {
         original: new TestClass(),
-        encoded: preszr(encoded({}, "test.v0"))
+        encoded: preszr(encoded({}, "test.v1"))
     });
 }

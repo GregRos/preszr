@@ -18,7 +18,7 @@ class TestClass {}
         },
         encoded: preszr(
             items({ a: "2", b: "3" }),
-            encoded({}, "TestClass.v0"),
+            encoded({}, "TestClass.v1"),
             encoded(0, "symbol1.S")
         )
     });
@@ -32,7 +32,7 @@ class TestClass {}
     const thisBuilder = testBuilder(thisInst);
     test("Use prototype property", thisBuilder.get(), {
         original: new TestClass(),
-        encoded: preszr(encoded({}, "TestClass.v0"))
+        encoded: preszr(encoded({}, "TestClass.v1"))
     });
 }
 
@@ -46,7 +46,7 @@ class TestClass {}
     const thisBuilder = testBuilder(thisInst);
     test("Use encoding name", thisBuilder.get(), {
         original: new nameless(),
-        encoded: preszr(encoded({}, "TestClass.v0"))
+        encoded: preszr(encoded({}, "TestClass.v1"))
     });
 }
 {

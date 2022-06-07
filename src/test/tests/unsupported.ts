@@ -85,7 +85,7 @@ test("unsupported - SetIterator", compare, {
     decoded: new PreszrUnsupportedValue("Set Iterator")
 });
 
-test("unsupported - ArrayIterator", compare, {
+test("unsupported - MapIterator", compare, {
     original: new Map()[Symbol.iterator](),
     encoded: preszr(encoded(0, FixedIndexes.MapIterator)),
     decoded: new PreszrUnsupportedValue("Map Iterator")

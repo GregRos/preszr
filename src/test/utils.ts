@@ -19,7 +19,7 @@ export const stringify = (value: any) => {
 };
 
 export function getImplicitClassEncodingKey(cls: string) {
-    return `${cls}.v0`;
+    return `${cls}.v1`;
 }
 
 export function createSparseArray<T>(arrayLikeObj: Record<any, T>): T[] {
