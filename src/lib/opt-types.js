@@ -98,3 +98,8 @@ exports._FinalizationRegistry =
     typeof FinalizationRegistry !== "undefined"
         ? FinalizationRegistry
         : missingCtor("FinalizationRegistry");
+
+exports._MapIteratorProto = Object.getPrototypeOf(new Map()[Symbol.iterator]());
+exports._SetIteratorProto = Object.getPrototypeOf(new Set()[Symbol.iterator]());
+
+exports._ArrayIteratorProto = Object.getPrototypeOf([][Symbol.iterator]());

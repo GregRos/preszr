@@ -26,7 +26,7 @@ import {
 import { arrayEncoding, getDefaultStore, objectEncoding } from "./encodings";
 import { EncodingStore } from "./encode/store";
 import { EncodeCtx } from "./encode/encode-context";
-import { Fixed } from "./encodings/fixed-indexes";
+import { FixedIndexes } from "./encodings/fixed-indexes";
 import { DecodeContext } from "./encode/decode-context";
 import { getErrorByCode } from "./errors/texts";
 
@@ -147,13 +147,13 @@ export class Preszr {
                 } else {
                     encoding = objectEncoding;
                 }
-            } else if (encodingIndex === Fixed.UnknownSymbol) {
+            } else if (encodingIndex === FixedIndexes.UnknownSymbol) {
                 targetArray[i] = getUnrecognizedSymbol(metadata[i] as string);
                 continue;
-            } else if (encodingIndex < Fixed.End) {
+            } else if (encodingIndex < FixedIndexes.End) {
                 encoding = this._store.mustGetByIndex(encodingIndex);
             } else {
-                encoding = encodingByIndex[encodingIndex - Fixed.End];
+                encoding = encodingByIndex[encodingIndex - FixedIndexes.End];
             }
 
             if (typeof encoding.encodes === "symbol") {

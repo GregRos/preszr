@@ -1,33 +1,33 @@
 import test from "ava";
 import { encoded, items, preszr, testBuilder } from "../tools";
 import { defaultPreszr } from "@lib/default";
-import { Fixed } from "@lib/encodings/fixed-indexes";
+import { FixedIndexes } from "@lib/encodings/fixed-indexes";
 
 const mapEncoding = testBuilder(defaultPreszr)
     .title(({ title }) => `Map - ${title}`)
     .getSimple();
 
-test("empty", mapEncoding, new Map(), preszr(encoded([], Fixed.Map)));
+test("empty", mapEncoding, new Map(), preszr(encoded([], FixedIndexes.Map)));
 
 test(
     "one pair",
     mapEncoding,
     new Map([[1, 2]]),
-    preszr(encoded([[1, 2]], Fixed.Map))
+    preszr(encoded([[1, 2]], FixedIndexes.Map))
 );
 
 test(
     "object key",
     mapEncoding,
     new Map([[{}, 1]]),
-    preszr(encoded([["2", 1]], Fixed.Map), items({}))
+    preszr(encoded([["2", 1]], FixedIndexes.Map), items({}))
 );
 
 test(
     "ref key-value",
     mapEncoding,
     new Map([[{}, {}]]),
-    preszr(encoded([["2", "3"]], Fixed.Map), items({}, {}))
+    preszr(encoded([["2", "3"]], FixedIndexes.Map), items({}, {}))
 );
 
 test(
@@ -43,7 +43,7 @@ test(
                 [1, 2],
                 [2, 3]
             ],
-            Fixed.Map
+            FixedIndexes.Map
         )
     )
 );
@@ -52,14 +52,14 @@ test(
     "nested map",
     mapEncoding,
     new Map([[new Map(), 5]]),
-    preszr(encoded([["2", 5]], Fixed.Map), encoded([], Fixed.Map))
+    preszr(encoded([["2", 5]], FixedIndexes.Map), encoded([], FixedIndexes.Map))
 );
 
 test(
     "string key",
     mapEncoding,
     new Map([["a", 2]]),
-    preszr(encoded([["2", 2]], Fixed.Map), items("a"))
+    preszr(encoded([["2", 2]], FixedIndexes.Map), items("a"))
 );
 
 // Test same ref, unsupported

@@ -5,7 +5,7 @@
 import test from "ava";
 import { encoded, preszr, testBuilder } from "../tools";
 import { defaultPreszr } from "@lib/default";
-import { Fixed } from "@lib/encodings/fixed-indexes";
+import { FixedIndexes } from "@lib/encodings/fixed-indexes";
 
 const scalarEncodings = testBuilder(defaultPreszr).getSimple();
 
@@ -36,21 +36,21 @@ test(
     "Number wrapper",
     scalarEncodings,
     new Number(5),
-    preszr(encoded(5, Fixed.FundNumber))
+    preszr(encoded(5, FixedIndexes.FundNumber))
 );
 
 test(
     "Boolean wrapper",
     scalarEncodings,
     new Boolean(5),
-    preszr(encoded(true, Fixed.FundBool))
+    preszr(encoded(true, FixedIndexes.FundBool))
 );
 
 test(
     "String wrapper",
     scalarEncodings,
     new String("x"),
-    preszr(encoded("x", Fixed.FundString))
+    preszr(encoded("x", FixedIndexes.FundString))
 );
 
 const date = new Date();
@@ -59,19 +59,19 @@ test(
     "Date",
     scalarEncodings,
     date,
-    preszr(encoded(date.getTime(), Fixed.Date))
+    preszr(encoded(date.getTime(), FixedIndexes.Date))
 );
 
 test(
     "RegExp no flags",
     scalarEncodings,
     /abc/,
-    preszr(encoded("abc", Fixed.RegExp))
+    preszr(encoded("abc", FixedIndexes.RegExp))
 );
 
 test(
     "RegExp with flags",
     scalarEncodings,
     /abc/gi,
-    preszr(encoded(["abc", "gi"], Fixed.RegExp))
+    preszr(encoded(["abc", "gi"], FixedIndexes.RegExp))
 );

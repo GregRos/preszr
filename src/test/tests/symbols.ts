@@ -7,7 +7,7 @@ import {
 } from "../../lib/utils";
 import { Preszr } from "@lib";
 import { encoded, items, preszr, testBuilder } from "../tools";
-import { Fixed } from "@lib/encodings/fixed-indexes";
+import { FixedIndexes } from "@lib/encodings/fixed-indexes";
 
 function getSymbolKey(s: symbol) {
     return `${s.description}.S`;
@@ -39,7 +39,7 @@ test("unrecognized symbol name generator", t => {
     test("symbol key", stdTest, {
         original: { [symb1]: 10 },
         encoded: preszr(
-            encoded([{ "2": 10 }, {}], Fixed.Object),
+            encoded([{ "2": 10 }, {}], FixedIndexes.Object),
             encoded(0, symbolEncName)
         )
     });
@@ -48,7 +48,7 @@ test("unrecognized symbol name generator", t => {
         const encodedValue = knows1.encode(symb2);
         t.deepEqual(
             encodedValue,
-            preszr(encoded(0, Fixed.UnknownSymbol, "symbol2"))
+            preszr(encoded(0, FixedIndexes.UnknownSymbol, "symbol2"))
         );
         const decodedValue = knows1.decode(encodedValue);
         t.is(typeof decodedValue, "symbol");
@@ -64,7 +64,7 @@ test("unrecognized symbol name generator", t => {
             encodedValue,
             preszr(
                 items({ a: "2", b: "2" }),
-                encoded(0, Fixed.UnknownSymbol, "symbol2")
+                encoded(0, FixedIndexes.UnknownSymbol, "symbol2")
             )
         );
         const result = knows1.decode(encodedValue);
@@ -79,8 +79,8 @@ test("unrecognized symbol name generator", t => {
         t.deepEqual(
             encodedValue,
             preszr(
-                encoded([{ "2": 5 }, {}], Fixed.Object),
-                encoded(0, Fixed.UnknownSymbol, "symbol2")
+                encoded([{ "2": 5 }, {}], FixedIndexes.Object),
+                encoded(0, FixedIndexes.UnknownSymbol, "symbol2")
             )
         );
         const result = knows1.decode(encodedValue);
@@ -101,7 +101,7 @@ test("unrecognized symbol name generator", t => {
             [symb2]: 2
         },
         encoded: preszr(
-            encoded([{ "2": 1, "3": 2 }, {}], Fixed.Object),
+            encoded([{ "2": 1, "3": 2 }, {}], FixedIndexes.Object),
             encoded(0, getSymbolKey(symb1)),
             encoded(0, getSymbolKey(symb2))
         )
@@ -113,7 +113,7 @@ test("unrecognized symbol name generator", t => {
             [symb2]: symb1
         },
         encoded: preszr(
-            encoded([{ "2": "3", "3": "2" }, {}], Fixed.Object),
+            encoded([{ "2": "3", "3": "2" }, {}], FixedIndexes.Object),
             encoded(0, getSymbolKey(symb1)),
             encoded(0, getSymbolKey(symb2))
         )
@@ -125,7 +125,7 @@ test("unrecognized symbol name generator", t => {
             a: 3
         },
         encoded: preszr(
-            encoded([{ 2: 2 }, { a: 3 }], Fixed.Object),
+            encoded([{ 2: 2 }, { a: 3 }], FixedIndexes.Object),
             encoded(0, getSymbolKey(symb1))
         )
     });

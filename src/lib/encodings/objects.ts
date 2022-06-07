@@ -1,21 +1,24 @@
 import {
-    EncodeContext,
-    PrototypeEncoding,
     CreateContext,
-    InitContext,
     Decoder,
-    PreszrUnsupportedValue
+    EncodeContext,
+    InitContext,
+    PreszrUnsupportedValue,
+    PrototypeEncoding
 } from "../interface";
 import { getBuiltInEncodingName, getPrototypeName } from "../utils";
 import { ScalarValue } from "../data";
-import { Fixed } from "./fixed-indexes";
+import { FixedIndexes } from "./fixed-indexes";
 import {
+    _ArrayIteratorProto,
     _AsyncFunction,
     _AsyncGenerator,
     _AsyncGeneratorFunction,
     _FinalizationRegistry,
     _Generator,
     _GeneratorFunction,
+    _MapIteratorProto,
+    _SetIteratorProto,
     _WeakRef
 } from "../opt-types";
 import { defineProtoEncoding } from "./utils";
@@ -84,7 +87,7 @@ export const objectEncoding = defineProtoEncoding(
     class ObjectEncoding extends PrototypeEncoding<object> {
         version = 0;
         encodes = Object.prototype;
-        fixedIndex = Fixed.Object;
+        fixedIndex = FixedIndexes.Object;
         name = getBuiltInEncodingName("object");
 
         encode(input: any, ctx: EncodeContext): any {
@@ -113,7 +116,7 @@ export const arrayEncoding = defineProtoEncoding(
     class ArrayEncoding extends PrototypeEncoding<any[]> {
         name = getBuiltInEncodingName("array");
         version = 0;
-        fixedIndex = Fixed.Array;
+        fixedIndex = FixedIndexes.Array;
         encodes = Array.prototype;
 
         encode(input: any, ctx: EncodeContext): any {
@@ -157,7 +160,7 @@ export const nullPrototypeEncoding = defineProtoEncoding(
         version = 0;
         encodes = nullPlaceholder;
         name = getBuiltInEncodingName("null");
-        fixedIndex = Fixed.NullProto;
+        fixedIndex = FixedIndexes.NullProto;
         encode = getPrototypeEncoder(null);
         decoder = getPrototypeDecoder(null);
     }
@@ -205,20 +208,35 @@ class UnsupportedEncoding<T extends object> extends PrototypeEncoding<T> {
 }
 
 export const unsupportedEncodings = [
-    [Function, Fixed.Function],
-    [_GeneratorFunction, Fixed.GeneratorFunction],
-    [_Generator, Fixed.Generator],
-    [Promise, Fixed.Promise],
-    [WeakSet, Fixed.WeakSet],
-    [WeakMap, Fixed.WeakMap],
-    [_AsyncGenerator, Fixed.AsyncGenerator],
-    [_AsyncGeneratorFunction, Fixed.AsyncGeneratorFunction],
-    [_FinalizationRegistry, Fixed.FinalizationRegistry],
-    [_AsyncFunction, Fixed.AsyncFunction],
-    [_WeakRef, Fixed.WeakRef]
+    [Function, FixedIndexes.Function],
+    [_GeneratorFunction, FixedIndexes.GeneratorFunction],
+    [_Generator, FixedIndexes.Generator],
+    [Promise, FixedIndexes.Promise],
+    [WeakSet, FixedIndexes.WeakSet],
+    [WeakMap, FixedIndexes.WeakMap],
+    [_AsyncGenerator, FixedIndexes.AsyncGenerator],
+    [_AsyncGeneratorFunction, FixedIndexes.AsyncGeneratorFunction],
+    [_FinalizationRegistry, FixedIndexes.FinalizationRegistry],
+    [_AsyncFunction, FixedIndexes.AsyncFunction],
+    [_WeakRef, FixedIndexes.WeakRef]
 ]
     .filter(x => x[0])
     .map(([ctor, index]) => {
         const name = getBuiltInEncodingName(getPrototypeName(ctor.prototype));
         return new UnsupportedEncoding(name, ctor.prototype, index);
     });
+
+unsupportedEncodings.push(
+    ...[
+        [_SetIteratorProto, FixedIndexes.SetIterator],
+        [_MapIteratorProto, FixedIndexes.MapIterator],
+        [_ArrayIteratorProto, FixedIndexes.ArrayIterator]
+    ].map(
+        ([proto, index]) =>
+            new UnsupportedEncoding(
+                getBuiltInEncodingName(getPrototypeName(proto)),
+                proto,
+                index
+            )
+    )
+);

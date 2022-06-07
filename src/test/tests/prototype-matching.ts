@@ -3,7 +3,7 @@ import test from "ava";
 import { getImplicitClassEncodingKey } from "../utils";
 import { Preszr } from "@lib";
 import { encoded, items, preszr, testBuilder } from "../tools";
-import { Fixed } from "@lib/encodings/fixed-indexes";
+import { FixedIndexes } from "@lib/encodings/fixed-indexes";
 
 class ParentClass {
     constructor(obj = {}) {
@@ -84,6 +84,6 @@ test("Unknown prototype", builder.get(), {
                 enumerable: true
             }
         }),
-        encoded: preszr(encoded({ a: 5 }, Fixed.NullProto))
+        encoded: preszr(encoded({ a: 5 }, FixedIndexes.NullProto))
     });
 }

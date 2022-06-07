@@ -6,7 +6,7 @@ import {
 } from "../interface";
 import { getBuiltInEncodingName } from "../utils";
 import { decodeObject, encodeObject } from "./objects";
-import { Fixed } from "./fixed-indexes";
+import { FixedIndexes } from "./fixed-indexes";
 import { defineProtoEncoding } from "./utils";
 
 const errorProperties = ["stack", "name", "message"];
@@ -46,11 +46,11 @@ export function createErrorEncoding(
 }
 
 export const errorEncodings = [
-    createErrorEncoding(Fixed.EvalError, EvalError),
-    createErrorEncoding(Fixed.RangeError, RangeError),
-    createErrorEncoding(Fixed.ReferenceError, ReferenceError),
-    createErrorEncoding(Fixed.TypeError, TypeError),
-    createErrorEncoding(Fixed.URIError, URIError),
-    createErrorEncoding(Fixed.SyntaxError, SyntaxError),
-    createErrorEncoding(Fixed.Error, Error)
+    createErrorEncoding(FixedIndexes.EvalError, EvalError),
+    createErrorEncoding(FixedIndexes.RangeError, RangeError),
+    createErrorEncoding(FixedIndexes.ReferenceError, ReferenceError),
+    createErrorEncoding(FixedIndexes.TypeError, TypeError),
+    createErrorEncoding(FixedIndexes.URIError, URIError),
+    createErrorEncoding(FixedIndexes.SyntaxError, SyntaxError),
+    createErrorEncoding(FixedIndexes.Error, Error)
 ];

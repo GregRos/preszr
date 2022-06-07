@@ -15,7 +15,7 @@ import { getProto } from "../utils";
 import { getErrorByCode } from "../errors/texts";
 
 const MAX_VERSION = 999;
-const MIN_VERSION = 0;
+const MIN_VERSION = 1;
 export class UserEncoding<T extends object> extends PrototypeEncoding<T> {
     readonly encodes: T;
     readonly decoder: Decoder;
@@ -29,7 +29,7 @@ export class UserEncoding<T extends object> extends PrototypeEncoding<T> {
     ) {
         super();
         this.name = specifier.name;
-        this.version = specifier.version ?? 0;
+        this.version = specifier.version ?? 1;
         this.encodes = specifier.encodes;
         this.decoder = specifier.decoder ?? getPrototypeDecoder(this.encodes);
         this.encode = specifier.encode ?? getPrototypeEncoder(this.encodes);

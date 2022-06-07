@@ -1,9 +1,9 @@
 import { PreszrFormat } from "../../lib/data";
-import { Fixed } from "@lib/encodings/fixed-indexes";
+import { FixedIndexes } from "@lib/encodings/fixed-indexes";
 
 export class Inspector {
     constructor(private _inner?: PreszrFormat) {
-        this._inner = [["0", [], {}, {}]];
+        this._inner = [["2", [], {}, {}]];
     }
 
     get(): PreszrFormat;
@@ -27,7 +27,7 @@ export class Inspector {
         const ix = this.keys.indexOf(encodingKey);
         if (ix < 0) {
             this.keys.push(encodingKey);
-            this.spec[newIndex] = Fixed.End + this.keys.length - 1;
+            this.spec[newIndex] = FixedIndexes.End + this.keys.length - 1;
         } else {
             this.spec[newIndex] = ix;
         }

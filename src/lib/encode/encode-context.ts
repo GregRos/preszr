@@ -12,7 +12,7 @@ import {
     Reference,
     tryEncodeScalar
 } from "../data";
-import { Fixed } from "../encodings/fixed-indexes";
+import { FixedIndexes } from "../encodings/fixed-indexes";
 import { EncodingStore } from "./store";
 import { getUnrecSymbolEncoding } from "../encodings/unrec-symbol";
 
@@ -35,7 +35,7 @@ export class EncodeCtx implements EncodeContext {
         const encodingKeys = this._encodingKeys;
         let encodingIndex = encodingKeys.get(encoding);
         if (encodingIndex == null) {
-            encodingIndex = encodingKeys.size + Fixed.End;
+            encodingIndex = encodingKeys.size + FixedIndexes.End;
             encodingKeys.set(encoding, encodingIndex);
         }
         return encodingIndex;

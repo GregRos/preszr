@@ -1,6 +1,6 @@
 import test from "ava";
 import { encoded, items, preszr, testBuilder } from "../tools";
-import { Fixed } from "@lib/encodings/fixed-indexes";
+import { FixedIndexes } from "@lib/encodings/fixed-indexes";
 import { defaultPreszr } from "@lib/default";
 
 export const fullErrorEquality = testBuilder()
@@ -32,7 +32,7 @@ const checkErrorMacro = fullErrorEquality.instance(defaultPreszr);
                     name: "3",
                     message: "4"
                 },
-                Fixed.Error
+                FixedIndexes.Error
             ),
             items(regularError.stack, regularError.name, regularError.message)
         )
@@ -61,32 +61,32 @@ const encodedError = (err: Error, type: number | string) => {
     test(
         checkErrorMacro.getSimple(),
         syntaxError,
-        encodedError(syntaxError, Fixed.SyntaxError)
+        encodedError(syntaxError, FixedIndexes.SyntaxError)
     );
     test(
         checkErrorMacro.getSimple(),
         typeError,
-        encodedError(typeError, Fixed.TypeError)
+        encodedError(typeError, FixedIndexes.TypeError)
     );
     test(
         checkErrorMacro.getSimple(),
         uriError,
-        encodedError(uriError, Fixed.URIError)
+        encodedError(uriError, FixedIndexes.URIError)
     );
     test(
         checkErrorMacro.getSimple(),
         evalError,
-        encodedError(evalError, Fixed.EvalError)
+        encodedError(evalError, FixedIndexes.EvalError)
     );
     test(
         checkErrorMacro.getSimple(),
         refError,
-        encodedError(refError, Fixed.ReferenceError)
+        encodedError(refError, FixedIndexes.ReferenceError)
     );
     test(
         checkErrorMacro.getSimple(),
         rangeError,
-        encodedError(rangeError, Fixed.RangeError)
+        encodedError(rangeError, FixedIndexes.RangeError)
     );
 }
 function assignError(x: any) {
@@ -117,7 +117,7 @@ function assignError(x: any) {
                     message: "5",
                     newKey: "3"
                 },
-                Fixed.Error
+                FixedIndexes.Error
             ),
             items("SubError", "x", err3.stack, "test")
         ),

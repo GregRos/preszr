@@ -6,7 +6,7 @@ import {
     _BigUint64Array,
     _SharedArrayBuffer
 } from "../opt-types";
-import { Fixed } from "./fixed-indexes";
+import { FixedIndexes } from "./fixed-indexes";
 import { defineProtoEncoding } from "./utils";
 
 /**
@@ -20,7 +20,7 @@ export const arrayBufferEncoding = defineProtoEncoding(
     class ArrayBufferEncoding extends PrototypeEncoding<ArrayBuffer> {
         name = getBuiltInEncodingName("ArrayBuffer");
         version = 0;
-        fixedIndex = Fixed.ArrayBuffer;
+        fixedIndex = FixedIndexes.ArrayBuffer;
         encodes = ArrayBuffer.prototype;
 
         encode(input: ArrayBuffer, ctx: EncodeContext): any {
@@ -39,7 +39,7 @@ export const arrayBufferEncoding = defineProtoEncoding(
 
 export const sharedArrayBufferEncoding = defineProtoEncoding(
     class SharedArrayBufferEncoding extends PrototypeEncoding<any> {
-        fixedIndex = Fixed.SharedArrayBuffer;
+        fixedIndex = FixedIndexes.SharedArrayBuffer;
         name = getBuiltInEncodingName("SharedArrayBuffer");
         version = 0;
         encodes = _SharedArrayBuffer.prototype;
@@ -90,18 +90,18 @@ export function createBinEncoding(
 }
 
 export const typedArrayEncodings = [
-    createBinEncoding(Fixed.Uint8Array, Uint8Array),
-    createBinEncoding(Fixed.Uint8ClampedArray, Uint8ClampedArray),
-    createBinEncoding(Fixed.Uint16Array, Uint16Array),
-    createBinEncoding(Fixed.Uint32Array, Uint32Array),
-    createBinEncoding(Fixed.Int8Array, Int8Array),
-    createBinEncoding(Fixed.Int16Array, Int16Array),
-    createBinEncoding(Fixed.Int32Array, Int32Array),
-    createBinEncoding(Fixed.Float32Array, Float32Array),
-    createBinEncoding(Fixed.Float64Array, Float64Array),
-    createBinEncoding(Fixed.DataView, DataView),
-    createBinEncoding(Fixed.BigInt64Array, _BigInt64Array),
-    createBinEncoding(Fixed.BigUint64Array, _BigUint64Array)
+    createBinEncoding(FixedIndexes.Uint8Array, Uint8Array),
+    createBinEncoding(FixedIndexes.Uint8ClampedArray, Uint8ClampedArray),
+    createBinEncoding(FixedIndexes.Uint16Array, Uint16Array),
+    createBinEncoding(FixedIndexes.Uint32Array, Uint32Array),
+    createBinEncoding(FixedIndexes.Int8Array, Int8Array),
+    createBinEncoding(FixedIndexes.Int16Array, Int16Array),
+    createBinEncoding(FixedIndexes.Int32Array, Int32Array),
+    createBinEncoding(FixedIndexes.Float32Array, Float32Array),
+    createBinEncoding(FixedIndexes.Float64Array, Float64Array),
+    createBinEncoding(FixedIndexes.DataView, DataView),
+    createBinEncoding(FixedIndexes.BigInt64Array, _BigInt64Array),
+    createBinEncoding(FixedIndexes.BigUint64Array, _BigUint64Array)
 ]
     .filter(x => !!x)
     .map(x => x!);

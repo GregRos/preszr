@@ -9,7 +9,7 @@ import {
 } from "../interface";
 import { isSymbolSpecifier, mustParseEncodingKey } from "../encodings/utils";
 import { getProto, getPrototypeName, getSymbolName } from "../utils";
-import { Fixed } from "../encodings/fixed-indexes";
+import { FixedIndexes } from "../encodings/fixed-indexes";
 import { nullPlaceholder } from "../encodings";
 import { UserEncoding } from "../encodings/user-encoding";
 import { getErrorByCode } from "../errors/texts";
@@ -39,7 +39,7 @@ export class EncodingStore {
     private _keyToEncoding = new Map<string, Encoding>();
 
     // A "map" of index to built-in encoding. Has empty indexes.
-    private _indexToEncoding = Array(Fixed.End) as Encoding[];
+    private _indexToEncoding = Array(FixedIndexes.End) as Encoding[];
 
     // Quickly matches a prototype to an encoding. Weak map to avoid memory leaks.
     // Used and updated during operation, and needs to be rebuilt whenever encodings are added.
@@ -63,7 +63,7 @@ export class EncodingStore {
 
     private _isBuiltIn(encoding: PrototypeEncoding) {
         const fixedIndex = encoding.fixedIndex;
-        return fixedIndex != null && fixedIndex < Fixed.End;
+        return fixedIndex != null && fixedIndex < FixedIndexes.End;
     }
 
     private _registerProtos(encoding: PrototypeEncoding) {
@@ -258,7 +258,7 @@ export class EncodingStore {
     mustGetByIndex(ix: number) {
         const encoding = this._indexToEncoding[ix];
         if (!encoding) {
-            if (ix < Fixed.End) {
+            if (ix < FixedIndexes.End) {
                 throw getErrorByCode("decode/map/unknown-builtin-index")(ix);
             }
             throw getErrorByCode("decode/map/unknown-index")(ix);

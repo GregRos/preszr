@@ -3,7 +3,7 @@ import test from "ava";
 
 import { encoded, items, preszr, testBuilder } from "../tools";
 import { defaultPreszr } from "@lib/default";
-import { Fixed } from "@lib/encodings/fixed-indexes";
+import { FixedIndexes } from "@lib/encodings/fixed-indexes";
 
 const singleton = testBuilder(defaultPreszr)
     .title(
@@ -49,20 +49,20 @@ test("deepEqual assertions work for sparse arrays", t => {
         "sparse array",
         singleton,
         createSparseArray({ 1: 5, 2: 6 }),
-        preszr(encoded({ 1: 5, 2: 6 }, Fixed.Array))
+        preszr(encoded({ 1: 5, 2: 6 }, FixedIndexes.Array))
     );
 
     test(
         "sparse array with reference",
         singleton,
         createSparseArray({ 1: {}, 2: {} }),
-        preszr(encoded({ 1: "2", 2: "3" }, Fixed.Array), items({}, {}))
+        preszr(encoded({ 1: "2", 2: "3" }, FixedIndexes.Array), items({}, {}))
     );
 
     test(
         "array with string keys",
         singleton,
         createSparseArray({ 1: 1, a: 2 }),
-        preszr(encoded({ 1: 1, a: 2 }, Fixed.Array))
+        preszr(encoded({ 1: 1, a: 2 }, FixedIndexes.Array))
     );
 }

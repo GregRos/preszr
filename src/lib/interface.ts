@@ -1,6 +1,6 @@
 import { EncodedEntity, ScalarValue } from "./data";
 import { getPrototypeName, getSymbolName } from "./utils";
-import { Fixed } from "./encodings/fixed-indexes";
+import { FixedIndexes } from "./encodings/fixed-indexes";
 import { getErrorByCode } from "./errors/texts";
 
 /**

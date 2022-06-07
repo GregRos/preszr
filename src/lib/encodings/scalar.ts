@@ -5,7 +5,7 @@ import {
     PrototypeEncoding
 } from "../interface";
 import { getBuiltInEncodingName } from "../utils";
-import { Fixed } from "./fixed-indexes";
+import { FixedIndexes } from "./fixed-indexes";
 import { defineProtoEncoding } from "./utils";
 
 export const regexpEncoding = defineProtoEncoding(
@@ -13,7 +13,7 @@ export const regexpEncoding = defineProtoEncoding(
         encodes = RegExp.prototype;
         version = 0;
         name = getBuiltInEncodingName("RegExp");
-        fixedIndex = Fixed.RegExp;
+        fixedIndex = FixedIndexes.RegExp;
 
         encode({ source, flags }: RegExp, ctx: EncodeContext): any {
             return flags ? [source, flags] : source;
@@ -36,7 +36,7 @@ export const dateEncoding = defineProtoEncoding(
     class DateEncoding extends PrototypeEncoding<Date> {
         encodes = Date.prototype;
         version = 0;
-        fixedIndex = Fixed.Date;
+        fixedIndex = FixedIndexes.Date;
         name = getBuiltInEncodingName("Date");
 
         encode(input: Date, ctx: EncodeContext): any {
@@ -76,7 +76,7 @@ export function makeObjectWrappedEncoding<T extends object>(
 }
 
 export const wrapperEncodings = [
-    makeObjectWrappedEncoding(Fixed.FundNumber, Number),
-    makeObjectWrappedEncoding(Fixed.FundBool, Boolean),
-    makeObjectWrappedEncoding(Fixed.FundString, String)
+    makeObjectWrappedEncoding(FixedIndexes.FundNumber, Number),
+    makeObjectWrappedEncoding(FixedIndexes.FundBool, Boolean),
+    makeObjectWrappedEncoding(FixedIndexes.FundString, String)
 ];

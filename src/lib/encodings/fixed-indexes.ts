@@ -1,24 +1,24 @@
 // Fixed indexes for built-in encodings. This makes payloads smaller
 // and access a tiny bit faster for them.
-export enum Fixed {
+export enum FixedIndexes {
     /*** UNSUPPORTED BLOCK */
 
     // OBJECT BLOCK
-    Object = 10,
+    Object = 1,
     Array,
     NullProto,
     Map,
     Set,
 
     // SCALAR BLOCK
-    RegExp = 30,
+    RegExp = 10,
     Date,
     FundBool,
     FundString,
     FundNumber,
 
     // BINARY BLOCK
-    ArrayBuffer = 40,
+    ArrayBuffer = 20,
     SharedArrayBuffer,
     Uint8Array,
     Uint8ClampedArray,
@@ -34,7 +34,7 @@ export enum Fixed {
     BigInt64Array,
 
     // ERROR BLOCK
-    EvalError = 70,
+    EvalError = 50,
     RangeError,
     ReferenceError,
     TypeError,
@@ -43,7 +43,7 @@ export enum Fixed {
     Error,
 
     // UNSUPPORTED BLOCK
-    Function = 80,
+    Function = 70,
     GeneratorFunction,
     Generator,
     Promise,
@@ -54,9 +54,11 @@ export enum Fixed {
     FinalizationRegistry,
     AsyncFunction,
     WeakRef,
-
+    MapIterator,
+    SetIterator,
+    ArrayIterator,
     // UNRECOGNIZED SYMBOL
-    UnknownSymbol = 99,
+    UnknownSymbol = 98,
     End = 100
     // Block end marker 100
     // Custom encodings start at index 100.

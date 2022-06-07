@@ -18,7 +18,7 @@ If you're curious about how `preszr` works, refer to the <u>Preszr Output</u>.
 
 🐤 Space-efficient format!
 
-🛠️ Easily modifiable to support custom objects!
+🛠️ Easily modifiable to support custom objects or enhance existing encodings!
 
 🕵️ Descriptive error messages!
 
@@ -62,12 +62,16 @@ class Example {}
 class Exmaple2 {}
 
 // 'new' is optional
-const myPreszr = Preszr({
-    encodings: [
-        Example,
-        Example2
-    ]
-});
+const myPreszr = Preszr([
+    Example,
+    Example2
+]);
+
+// Another alternative, to allow for more options in the future:
+const myPreszr2 = Preszr({
+    encodes: [Example, Exmaple2]
+})
+
 ```
 
 That's it. That's all you need to do for `preszr` to recognize those prototypes and preserve them.
@@ -75,6 +79,8 @@ That's it. That's all you need to do for `preszr` to recognize those prototypes 
 You need to configure Preszr with the same prototype encodings in both the source and the destination, though the order doesn't matter. One way to do this while avoiding code duplication is to distribute a set of custom types together with an `Preszr` instance that can encode them.
 
 When encoding an object with a prototype it doesn't know, `Preszr` will descend to the closest prototype it *does* know, possibly all the way down to `Object.prototype`.
+
+`preszr` will only look at *own* and *enumerable* keys, so it won't be bothered by things like methods, getters, and setters.
 
 ## Installing
 
@@ -90,7 +96,7 @@ yarn add preszr
 
 ## Unsupported Types
 
-`preszr` will intelligently encode all [*platform-independent*](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects), built-in JavaScript objects, except for a few that are outside its scope. Those are explicitly *unsupported*. Here they are:
+`preszr` will intelligently encode all [*platform-independent*](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects), built-in JavaScript objects, except for a few that are outside its scope. Those are explicitly *unsupported*. Here are some examples:
 
 ❌ `Function` and its variants
 
@@ -102,11 +108,7 @@ yarn add preszr
 
 ❌ `FinalizationRegistry`.
 
-If you really want to see the list of supported types, see <u>supported.md</u>. You can also generate the list from any `Preszr` instance, as described in the `In-depth Configuration` section below.
-
 When `preszr` encounters a value it unsupports, it won't error - it will instead replace it with a marker that indicates an unsupported value was encountered. This is because it aims to reproduce the input object as closely as possible, and just ignoring some of the data doesn't do that.
-
-`preszr` will only look at *own* and *enumerable* keys, though, so it won't be bothered by things like methods, getters, and setters.
 
 Oh, `preszr` won't intelligently encode things like HTML elements and arbitrary Node objects - those aren't platform-independent. You can totally *configure* it to do so, though, by adding a custom encoding.
 
@@ -130,27 +132,31 @@ If you pass a constructor as an encoding, `preszr` will generate a complete prot
 1. When encoding, use the standard object encoder.
 2. When decoding, it will use the standard object decoder and attach the correct prototype. No constructor will be executed.
 
-In general, it will work properly, but in some cases you will need more configuration. The simplest case is if the constructor is nameless or if there are several constructors with the same name. In that case, you will need to supply an object with `key` and `prototype` instead:
+In general, it will work properly, but in some cases you will need more configuration. The simplest case is if the constructor is nameless or if there are several constructors with the same name. In that case, you will need to supply an object with `name` and `encodes` instead:
 
 ```typescript
 const nameless = (class {})
 
-const preszr = Preszr({
-    encodings: [{ 
-        key: "Nameless", 
-        prototype: nameless.prototype
-    }]
+const preszr = Preszr({ 
+    name: "Nameless", 
+    encodes: nameless
 });
 ```
 
-However, prototype encodings are quite versatile and can do a lot more than this. Let's take a look at the interface of the prototype encoding specifier:
+However, prototype encodings are quite versatile and can do a lot more than this. Let's take a look at the interface of the prototype encoding specifier, which is used to define them:
 
 ```typescript
-export interface SzrPrototypeSpecifier {
-    key?: string;
-    prototype: object | null;
+
+export interface PrototypeSpecifier {
+    name?: string | null;
+    
+    version?: number;
+
+    encodes: object | Function;
+
     decoder?: Decoder;
-    encode?(input: any, ctx: EncodeContext): SzrEncodedEntity;
+
+    encode?(input: any, ctx: EncodeContext): EncodedEntity;
 }
 ```
 
@@ -161,7 +167,7 @@ The actual logic of encoding and decoding is in the `decoder` object and the `en
 The signature of this function is as follows:
 
 ```typescript
-(input: any, ctx: EncodeContext) => SzrEncodedEntity;
+(input: any, ctx: EncodeContext) => EncodedEntity;
 ```
 
 This function should return simple data that can be represented in JSON. So that means:
@@ -197,9 +203,12 @@ You can also set `ctx.metadata`. This is a kind of additional return value that 
 Unlike encoding, decoding is a two-step process. Here is the type of the decoder:
 
 ```typescript
-interface Decoder {
-    create(encoded: SzrEncodedEntity, ctx: DecodeCreateContext): unknown;
-    init?(target: any, encoded: SzrEncodedEntity, ctx: DecodeInitContext): void;
+export interface Decoder {
+    // Creates an instance of the entity without referencing any other encoded entities.
+    create(encoded: EncodedEntity, ctx: CreateContext): unknown;
+
+    // Fills in additional data by resolving references to other entities.
+    init?(target: unknown, encoded: EncodedEntity, ctx: InitContext): void;
 }
 ```
 
@@ -220,27 +229,32 @@ Here `ctx` exposes the member `ctx.decode` which is the reverse of `ctx.encode`.
 Take a look at how the `setEncoding` is implemented in the library, for encoding the JS collection `Set`:
 
 ```typescript
-export const setEncoding: SzrPrototypeEncoding = {
-    prototypes: [Set.prototype],
-    key: getLibraryString("Set"),
-    encode(input: Set<unknown>, ctx: EncodeContext): SzrEncodedEntity {
-        const outArray: SzrLeaf[] = [];
+class SetEncoding extends PrototypeEncoding<Set<any>> {
+    fixedIndex = FixedIndexes.Set;
+    name = getBuiltInEncodingName("Set");
+    version = 0;
+    encodes = Set.prototype;
+
+    encode(input: Set<any>, ctx: EncodeContext): EncodedEntity {
+        const outArray = [] as ScalarValue[];
         for (const item of input) {
             outArray.push(ctx.encode(item));
         }
         return outArray;
-    },
-    decoder: {
-        create(): unknown {
+    }
+
+    decoder = new (class SetDecoder implements Decoder {
+        create(): any {
             return new Set();
-        },
-        init(target: Set<unknown>, encoded: SzrLeaf[], ctx: DecodeInitContext) {
+        }
+
+        init(target: Set<any>, encoded: ScalarValue[], ctx: InitContext) {
             for (const item of encoded) {
                 target.add(ctx.decode(item));
             }
         }
-    }
-};
+    })();
+}
 ```
 
 Note how each element of the set is encoded using `ctx.encode`. In `create`, an empty set is created, while in `init` we decode the elements of the set.
@@ -274,24 +288,19 @@ Splitting up the decoding process like this lets us avoid that problem.
 
 ### Symbol encodings
 
-`preszr` also supports encoding JavaScript [symbol](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol) values. Similarly to prototypes, `preszr` knows about all the built-in symbols but you have to tell it about your custom symbols for it to encode them. You can do this by putting them in the `encodings` array:
+`preszr` also supports encoding JavaScript [symbol](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol) values. Similarly to prototypes, `preszr` knows about all the built-in symbols but you have to tell it about your custom symbols for it to encode them. You can do this by putting them in the same list as the prototypes:
 
 ```typescript
 const mySymbol = Symbol("test")
-const preszr = new Preszr({
-    encodings: [
-        mySymbol
-    ]
-});
+const preszr = new Preszr([mySymbol]);
 ```
 
-`preszr` will take the key for that encoding from the symbol's description. If your symbol doesn't have a description or if you have several symbols with the same description, you'll have to supply a full *symbol encoding* object:
+`preszr` will take the key for that encoding from the symbol's description. If your symbol doesn't have a description or if you have several symbols with the same description, you'll have to supply a full *symbol specifier* object:
 
 ```typescript
-export interface SzrSymbolEncoding {
-    key?: string;
-    symbol: symbol;
-    metadata?: any;
+export interface SymbolSpecifier {
+    name: string;
+    encodes: symbol;
 }
 ```
 
@@ -299,23 +308,38 @@ For example, like this:
 
 ```typescript
 const mySymbol2 = Symbol();
-const preszr = Preszr({
-    encodings: [{
-        key: "mySymbol",
-        symbol: mySymbol2
-    }]
-});
+const preszr = Preszr([{
+    name: "mySymbol",
+    encodes: mySymbol2
+}]);
 ```
 
 *Unlike prototypes*, `preszr` will still try to represent symbols it doesn't know. When encoding, they will be marked as unknown symbols and their descriptions will be saved. When decoding, `preszr` will generate a new symbol with a description similar to `preszr unknown symbol X` for each symbol it doesn't recognize.
 
-You might notice that the encoding also had `metadata` property. This is similar to the same property in the prototype encoding, and while you can use it, it's mainly for internal use.
+## Versioning
 
-## Debugging, Errors, etc
+Preszr supports basic versioning for your custom encodings. Built-in encodings are not versioned - in fact, a breaking change in a built-in encoding will *always* involve a major version change.
 
+Versioning only works with prototype encodings and allow you to enhance the encoding while still being able to read older formats. To do this, simply add several encodings with the same `name` but different versions:
 
+```typescript
+class ExampleVersionedClass {}
 
+const preszr = Preszr([
+    {
+        name: "example",
+        version: 1,
+        encodes: ExampleVersionedClass
+    },
+    {
+        name: "example",
+        version: 2,
+        encodes: ExampleVersionedClass
+    }
+]);
+```
 
+The minimum version is $1$ and the maximum version is $999$. 
 
 ## In-depth Configuration
 

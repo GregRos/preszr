@@ -8,7 +8,7 @@ import {
 } from "@lib";
 import { encoded, preszr, testBuilder } from "../tools";
 import { EncodedEntity } from "@lib/data";
-import { Fixed } from "@lib/encodings/fixed-indexes";
+import { FixedIndexes } from "@lib/encodings/fixed-indexes";
 
 test("invalid definition - has name", t => {
     t.throws(() =>
@@ -70,7 +70,7 @@ const refDate = new Date();
 
     test("Override is used instead of default", testWithModifiedDates, {
         original: testObject,
-        encoded: preszr(encoded([testObject.getTime(), 100], Fixed.Date))
+        encoded: preszr(encoded([testObject.getTime(), 100], FixedIndexes.Date))
     });
 }
 
@@ -82,6 +82,6 @@ const modifiedDateEnc2 = getNewDateEncoding(2, "b");
 
     test("2nd override used", testWith2Overrides, {
         original: Object.assign(new Date(refDate), { b: 100 }),
-        encoded: preszr(encoded([refDate.getTime(), 100], Fixed.Date))
+        encoded: preszr(encoded([refDate.getTime(), 100], FixedIndexes.Date))
     });
 }

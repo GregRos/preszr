@@ -4,7 +4,7 @@ import { getErrorByCode } from "./errors/texts";
 
 export type Version = string;
 
-export interface EncodingSpec {
+export interface KeyMap {
     [key: number]: number;
 }
 
@@ -20,9 +20,9 @@ export interface Metadata {
     [key: number]: EncodedEntity;
 }
 
-export type EncodingKeys = string[];
+export type KeyList = string[];
 
-export type Header = [Version, EncodingKeys, EncodingSpec, Metadata];
+export type Header = [Version, KeyList, KeyMap, Metadata];
 
 export type Reference = string;
 

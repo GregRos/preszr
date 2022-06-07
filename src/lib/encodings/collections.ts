@@ -7,12 +7,12 @@ import {
 } from "../interface";
 import { getBuiltInEncodingName } from "../utils";
 import { EncodedEntity, ScalarValue } from "../data";
-import { Fixed } from "./fixed-indexes";
+import { FixedIndexes } from "./fixed-indexes";
 import { defineProtoEncoding } from "./utils";
 
 export const mapEncoding = defineProtoEncoding(
     class MapEncoding extends PrototypeEncoding<Map<any, any>> {
-        fixedIndex = Fixed.Map;
+        fixedIndex = FixedIndexes.Map;
         name = getBuiltInEncodingName("Map");
         version = 0;
         encodes = Map.prototype;
@@ -46,7 +46,7 @@ export const mapEncoding = defineProtoEncoding(
 
 export const setEncoding = defineProtoEncoding(
     class SetEncoding extends PrototypeEncoding<Set<any>> {
-        fixedIndex = Fixed.Set;
+        fixedIndex = FixedIndexes.Set;
         name = getBuiltInEncodingName("Set");
         version = 0;
         encodes = Set.prototype;
