@@ -59,7 +59,7 @@ export const errorDefinitions = {
         return `'encodes' property on a spec must be a symbol, function, or object. It was a ${type}.`;
     },
     "config/spec/name-illegal-builtin"(proto: object) {
-        return `'Name' property is bad because ${getPrototypeName(
+        return `'Name' property is illegal because ${getPrototypeName(
             proto
         )} is built-in. Remove it.`;
     },

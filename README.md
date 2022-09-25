@@ -4,83 +4,156 @@
 [![Coverage Status](https://coveralls.io/repos/github/GregRos/preszr/badge.svg?branch=master)](https://coveralls.io/github/GregRos/preszr?branch=master)
 [![npm](https://img.shields.io/npm/v/preszr)](https://www.npmjs.com/package/preszr)
 
-`preszr` is a *pre-serialization* library that allows you to serialize objects with meaningful references, prototypes, and arbitrary data types. 
+`preszr` is a *pre-serialization* JavaScript library that allows you to serialize objects with meaningful references and [prototypes](https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Objects/Object_prototypes). In other words, it's for encoding [object graphs](https://stackoverflow.com/a/2046774). 
 
-It works by encoding complex objects using a flat, highly compact format with only JSON-legal data - the kind that can be understood by any serializer. It's similar, but not related to, the [preserialize](https://preserialize.readthedocs.io/en/latest/) Python package.
+Here's is how you'd use it:
 
-If you're curious about how `preszr` works, refer to the <a href="docs/format.md">Preszr Format</a>.
+1. Take <a href="docs/">any value</a> and *encode* it with `preszr`, giving you a [preszr message](docs/format.md).
+2. You can take that array and *serialize* it with [`JSON.stringify`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify), or anything else that can serialize JS objects, like [BSON](https://www.mongodb.com/basics/bson).
+3. You send it via the network or maybe save it to file.
+4. At the other end (in time or space), you first *deserialize* the data using `JSON.parse` or whatever you used.
+5. Then you *decode* it using `preszr`. 
+6. Now you have your thing back, with all its references and prototypes and everything (if any).
+
+`preszr` doesn't use any fancy algorithms, the only magic is in the <a href="docs/format.md">format</a>
+
+There's a library called [preserialize](https://preserialize.readthedocs.io/en/latest/) for python that does something similar, but `preszr` isn't related to it.
 
 ## Features
 
 🔗 Preserves references and prototypes!
 
-🐐 Encodes all primitives and built-in object types! See <a href="docs/supported.md">this</a> for a full breakdown.
+🐐 Encodes all built-in data types and values as of 2022!<sup>1 </sup>
 
 🐤 Space-efficient format!
 
-🛠️ Easily modifiable to support custom objects or enhance existing encodings!
-
-🕵️ Descriptive error messages!
+🛠️ Super easy to encode custom types!
 
 💾 Basic versioning! 
 
+🌍 Should work in all standard JS environments!
+
+<sup>1 </sup><small>All platform-independent, built-in objects and primitives, except for some that are <a href="docs/supported.md">explicitly unsupported</a></small>.
+
 ## Non-features
 
-🚫 Doesn't use schemas or decorators¡
-
-🛡️ Doesn't alter your objects¡
+🚫 Doesn't require schemas or decorators¡
 
 🔒 Doesn't require executing generated code¡
 
+🛡️ Doesn't modify the input¡
+
+## Use cases
+
+All those emojis sure look nice, but when would you actually want to use `preszr`? Normally you'd want to keep communication between things as simple as possible to avoid tight coupling.
+
+Normally, yes. But sometimes things are not normal. For example;
+
+* You're hacking something together and just want objects to appear at the other end.
+* If your data is an object-graph, like if it's a decision tree, workflow, etc.
+* Things are already tightly coupled so there is no use trying to minimize it. Maybe it's even deliberate.
+
 ## Usage
 
-To encode an object, use the `encode` function:
+`preszr` exports three things:
 
-```typescript
-import {encode} from "preszr";
-
-const original = { /* ... */ }
-const encoded = encode(original);
+```javascript
+import { encode, decode, Preszr } from "preszr";
 ```
 
-The result of `encode` is an array in *preszr format*, or in some cases a primitive. Whatever the result is, it can be serialized using any method that can serialize JSON.
+`encode` will encode your thing into a *preszr message*:
 
-After serializing the object and, say, sending it via the network, you'll need to `decode` it to get back the original form.
+```javascript
+const yourThing = {
+    a: new Uint16Array([1, 2, 3]),
+    b: undefined,
+    c: []
+};
+const encoded = encode({
+    a: new Uint16Array([1, 2, 3])
+});
 
-```typescript
-import {decode} from "preszr";
+// Serializing the message
+const serialized = JSON.stringify(encoded);
 
-const original = decode(encoded);
+// Sending it
+websocket.send(serialized);
 ```
+`decode` will do the opposite:
 
-The default `encode` and `decode` functions will work for many objects out of the box, but they can't encode custom prototypes. To do that, you'll need create new `Preszr` instance and set the `encodings` array to contain some constructors:
-
-```typescript
-import {Preszr} from "preszr";
-
-class Example {}
-class Exmaple2 {}
-
-// 'new' is optional
-const myPreszr = Preszr([
-    Example,
-    Example2
-]);
-
-// Another alternative, to allow for more options in the future:
-const myPreszr2 = Preszr({
-    encodes: [Example, Exmaple2]
+```javascript
+websocket.on("message", event => {
+    const data = event.data;
+    
+    // Deserializing
+    const deserialized = JSON.parse(data);
+    
+    // Decoding
+    const decoded = decode(deserialized);
+    
+    // Got your thing back!
+    expect(decoded).toEqual(yourThing);
 })
-
 ```
 
-That's it. That's all you need to do for `preszr` to recognize those prototypes and preserve them.
+The default functions will work for most objects - for example:
 
-You need to configure Preszr with the same prototype encodings in both the source and the destination, though the order doesn't matter. One way to do this while avoiding code duplication is to distribute a set of custom types together with an `Preszr` instance that can encode them.
+* `Date`
+* `ArrayBuffer`
+* `BigInt64Array` (if exists)
 
-When encoding an object with a prototype it doesn't know, `Preszr` will descend to the closest prototype it *does* know, possibly all the way down to `Object.prototype`.
+Or, more generally, any platform-independent, built-in object that's not [explicitly unsupported](docs/supported.md).
 
-`preszr` will only look at *own* and *enumerable* keys, so it won't be bothered by things like methods, getters, and setters.
+What about other object types, though? Let's take a real-world example.
+
+```javascript
+class UhhNumber {
+	constructor(_value) {
+        this._value = value;
+    }
+    
+    plus(other) {
+        return new UhhNumber(this._value + other._value);
+    }
+    
+    valueOf() {
+        return this._value;
+    }
+    
+    get value() {
+        return this._Value;
+    }
+}
+```
+
+Say you wanted `preszr` to encode one of those. You just create a new `Preszr` instance and give it a config object like this:
+
+```javascript
+// 'new' is actually optional.
+const prz = new Preszr({
+    encodes: [UhhNumber]
+})
+```
+
+And that's it. `myInstance` can now encode an `UhhNumber`! Here is an example:
+
+```javascript
+const recoded = prz.decode(
+    prz.encode(new UhhNumber(5))
+);
+
+expect(recoded).toBeInstanceOf(UhhNumber);
+
+expect(recoded.value).toBe(5);
+
+expect(
+    recoded.plus(recoded)
+).toEqual(
+    new UhhNumber(10)
+);
+```
+
+The `Preszr` object is immutable and its configuration can't be modified later.
 
 ## Installing
 
@@ -94,176 +167,218 @@ Or:
 yarn add preszr
 ```
 
-## Unsupported Types
+# Library versioning
 
-`preszr` will intelligently encode all [*platform-independent*](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects), built-in JavaScript objects, except for a few that are outside its scope. Those are explicitly *unsupported*. Here are some examples:
+`preszr` follows [semver](https://semver.org/), and changes in the format of a *preszr message* will always increment the major version.
 
-❌ `Function` and its variants
+To make sure it doesn't decode data incorrectly, `preszr` injects its major version into <a href="docs/format.md">non-trivial *preszr messages*</a>. `preszr` will use that version number to determine if it can decode the message or not. Right now `preszr` will error unless that number is the same, but in the future it might have some fallback.
 
-❌ `Promise`
+This is one of the features that allows you to safely write preszr messages to disk.
 
-❌ `WeakMap`, `WeakSet`, `WeakRef`, and so on.
+# Customization
 
-❌ `Generator` and its variants
+To encode objects, `preszr` uses objects called *encodings*. Here is what they look like:
 
-❌ `FinalizationRegistry`.
-
-When `preszr` encounters a value it unsupports, it won't error - it will instead replace it with a marker that indicates an unsupported value was encountered. This is because it aims to reproduce the input object as closely as possible, and just ignoring some of the data doesn't do that.
-
-Oh, `preszr` won't intelligently encode things like HTML elements and arbitrary Node objects - those aren't platform-independent. You can totally *configure* it to do so, though, by adding a custom encoding.
-
-## In-depth Encodings
-
-The simple examples in the Usage section don't really do the encoding feature justice. Encodings let you use `preszr` to encode and decode custom objects in arbitrary ways. In fact, `preszr` encodes objects such as `Set` and `Map` using built-in encodings.
-
-There are actually two types of encodings:
-
-1. *Prototype encodings*, which are more interesting.
-2. *Symbol encodings*, which also exist.
-
-Every encoding has a unique `key` that identifies it. In addition to any encodings you provide, every instance of `preszr` already includes built-in encodings for all supported prototypes. Built-in encodings have keys starting with `Preszr/`, such as `Preszr/Map`. You can't create keys for encodings that start with `Preszr/` yourself.
-
-### Prototype encoding
-
-A prototype encoding lets `preszr` know how to encode and decode objects with specific prototypes. This only applies to proper objects - strings and the like are handled separately.
-
-If you pass a constructor as an encoding, `preszr` will generate a complete prototype encoding under the hood. This encoding will:
-
-1. When encoding, use the standard object encoder.
-2. When decoding, it will use the standard object decoder and attach the correct prototype. No constructor will be executed.
-
-In general, it will work properly, but in some cases you will need more configuration. The simplest case is if the constructor is nameless or if there are several constructors with the same name. In that case, you will need to supply an object with `name` and `encodes` instead:
-
-```typescript
-const nameless = (class {})
-
-const preszr = Preszr({ 
-    name: "Nameless", 
-    encodes: nameless
-});
-```
-
-However, prototype encodings are quite versatile and can do a lot more than this. Let's take a look at the interface of the prototype encoding specifier, which is used to define them:
-
-```typescript
-
-export interface PrototypeSpecifier {
-    name?: string | null;
+```javascript
+{
+    // What it encodes. A constructor or prototype.
+	encodes: UhhNumber
     
-    version?: number;
-
-    encodes: object | Function;
-
-    decoder?: Decoder;
-
-    encode?(input: any, ctx: EncodeContext): EncodedEntity;
-}
-```
-
-The actual logic of encoding and decoding is in the `decoder` object and the `encode` function.
-
-#### Encode
-
-The signature of this function is as follows:
-
-```typescript
-(input: any, ctx: EncodeContext) => EncodedEntity;
-```
-
-This function should return simple data that can be represented in JSON. So that means:
-
-1. JSON-compatible scalars, like numbers, strings, and so on.
-2. Objects and arrays with no meaningful references or prototypes.
-
-`preszr` will not check your output due to performance concerns.
-
-`encode` takes two parameters:
-
-1. The value being encoded, `input`.
-2. `ctx`, the encoding context. This is an object that lets you communicate with the encoding process.
-
-For simple objects, there is no need to use `ctx` at all - all you need to generate an encoding of your object is to use `input`. However, `ctx` is important when your object contains other data or references to objects that themselves need to be encoded. To deal with these values, use the function `ctx.encode`.
-
-`ctx.encode` is a kind of recursive call that encodes nested data. Note that it doesn't actually return the output of `Preszr.encode`.
-
-1. For entities that need to be referenced, such as most objects and symbols, it will encode them, add them to the final output as a side-effect, and return a reference you can plug in the correct location. Note that during this process, encoders will be used - including the one you're writing. Thus this function can end up calling your own `encode` implementation on a different input.
-2. For JSON-legal scalars, it will just return the value back.
-3. For scalars that aren't JSON-legal, it will return an encoded value.
-
-You shouldn't care what `ctx.encode` returns. Just know that it's a JSON-legal value you can plug wherever it's needed. `preszr` takes care of things like type checking for you.
-
-#### Metadata
-
-You can also set `ctx.metadata`. This is a kind of additional return value that will be stored in the preszr output. You can use this value later during decoding. This isn't necessary, since you could store this data in the encoded object, but it lets you encode things as arrays or even scalars, while also letting you store extra data about them.
-
-`metadata` can be any JSON-legal object or value.
-
-#### Decoder
-
-Unlike encoding, decoding is a two-step process. Here is the type of the decoder:
-
-```typescript
-export interface Decoder {
-    // Creates an instance of the entity without referencing any other encoded entities.
-    create(encoded: EncodedEntity, ctx: CreateContext): unknown;
-
-    // Fills in additional data by resolving references to other entities.
-    init?(target: unknown, encoded: EncodedEntity, ctx: InitContext): void;
-}
-```
-
-##### Create
-
-The first step is to create the decoded object. During this part of the process, you can only use the `encoded` parameter, which contains the encoded value, and `ctx.metadata`. For some objects, those that don't reference other objects, this is enough.
-
-The return value of the function should be the base form of the object, without any data that needs to be decoded. In many cases, the object will be "broken", such as having a particular prototype but lacking the data necessary to actually function.
-
-##### Init
-
-The second step is to initialize the object you created in the previous step, which is available through the `target` parameter. For simple objects like dates, regular expressions, and binary data this step isn't used at all - all the information they contain is unencoded. However, regular objects arrays need this extra step.
-
-Here `ctx` exposes the member `ctx.decode` which is the reverse of `ctx.encode`. It will resolve references, decode unencoded scalars, and so on. However, there is a caveat - most objects during this stage aren't initialized. That means you shouldn't try to perform operations with objects you get from `ctx.decode`. Just plug the object you receive in the correct place.
-
-#### Example
-
-Take a look at how the `setEncoding` is implemented in the library, for encoding the JS collection `Set`:
-
-```typescript
-class SetEncoding extends PrototypeEncoding<Set<any>> {
-    fixedIndex = FixedIndexes.Set;
-    name = getBuiltInEncodingName("Set");
-    version = 0;
-    encodes = Set.prototype;
-
-    encode(input: Set<any>, ctx: EncodeContext): EncodedEntity {
-        const outArray = [] as ScalarValue[];
-        for (const item of input) {
-            outArray.push(ctx.encode(item));
-        }
-        return outArray;
+	// A name. Can be usually be inferred.
+	name: "NumberOrSomething"
+    
+    // A version. Defaults to 1. We'll talk about these later.
+   	version: 1,
+    
+    // Encoding logic.
+    encodes(/* LATER */) { /* LATER */ },
+        
+    // Decoding logic.
+	decoder: {
+        create(/* LATER */) { /* LATER */ },
+        init(/* LATER */) { /* LATER */ }
     }
-
-    decoder = new (class SetDecoder implements Decoder {
-        create(): any {
-            return new Set();
-        }
-
-        init(target: Set<any>, encoded: ScalarValue[], ctx: InitContext) {
-            for (const item of encoded) {
-                target.add(ctx.decode(item));
-            }
-        }
-    })();
 }
 ```
 
-Note how each element of the set is encoded using `ctx.encode`. In `create`, an empty set is created, while in `init` we decode the elements of the set.
+When encoding, `preszr` will use the encoding of the nearest prototype of an object that it knows, possibly down to `Object.prototype` if it doesn't find anything else. You can't have two encodings for the same prototype, unless they're versioned (but we'll talk about versioning later). The same is true for encodings with the same name.
 
-#### Caveats
+These objects go into the `encodes` property of the `Preszr` configuration object. The order doesn't matter and has no effect. When you put a constructor in there like we did in the Usage section, `preszr` will just generate a complete encoding behind the scenes, inferring or using defaults for everything except the `encodes` property (which is required).
 
-While this system is flexible enough to work with almost all objects, there are objects it can't decode. For example, take the following object, which uses [JS private fields](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_class_fields):
+In some cases, like if `preszr` fails to infer the constructor name or there is a collision, you'll need to supply a basic encoding object. It can just include the `name` and `encodes` properties, though:
 
 ```typescript
+const NamelessClass = (class {});
+
+// throws PreszrError(config/spec/proto/no-name): 
+// Couldn't get the prototype's name. Add a 'name' property
+let preszr = Preszr({
+    encodes: [NamelessClass]
+});
+
+// Doesn't throw
+preszr = Preszr({
+    encodes: [{
+        encodes: NamelessClass
+        name: "NamelessClass"
+    }]
+})
+```
+
+The default encoding logic is pretty dumb, but it will work for most normal objects. Here is what it does:
+
+*  When encoding, it will copy the object key by key<sup>1</sup> and recursively encode each value.
+* When decoding, it will create a new object with the right prototype and then copy the input key by key<sup>1</sup>, decoding its values.
+
+<sup>1</sup><small> Inherited or non-enumerable keys are not copied. Symbol keys are copied though, if they are enumerable.</small>
+
+Some objects can't be encoded like this. For example, `Map` and `Set` use hidden internal data. Some of your objects might too. They also might depend on variables bound to closures or on the phase of the moon. For those objects, you'll need to write custom encoding logic. That's the `encodes` function and the `decoder` object. While you can have neither and just use the default behavior, if you specify one of them you have to also specify the other.
+
+## Encoding
+
+Encoding is done by a single function that looks like this:
+
+```javascript
+function encodes(uhhNumber, ctx) {
+	return uhhNumber.value;
+}
+```
+
+This function takes the input (here called `uhhNumber`) and returns a representation of it that consists of only structural data and JSON-legal values. The representation can be anything you choose - an object, a number, a string, and so  on. So the following are all valid representations:
+
+* `"abcd"`
+* `null`
+* `1500`
+* `{ value: 10}`
+* `[1]`
+* `[[[[[10]]]]]`
+
+The following are not:
+
+* `new Uint8Array()`
+* `function () {console.log("hello world")}`
+* [`100n`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt#description)
+* `undefined`
+* [`document.all`](https://developer.mozilla.org/en-US/docs/Web/API/Document/all)
+
+Preszr won't check your results, though (for performance reasons), and if you return anything weird it can lead to *undefined behavior* **gasp!**
+
+Each `encode` function is supposed to only ever encode a single prototype. When it stumbles on some internal value (that of a property, an element of a collection, or something else), it can just give control back so `preszr` can handle encoding it. It does that using the `ctx.encode` method. 
+
+`ctx.encode` is different from the previous functions called `encode` we talked about. It's only for encoding the internals of an object - it doesn't return a *preszr message* or anything like that. 
+
+Instead, it will always return a JSON-legal primitive that you just need to plug in the right place - either the value itself, an encoded string, or a reference (<a href="docs/supported.md">which is also a string</a>).
+
+At any rate, it makes writing an encoding for something extremely simple. Even for a complex object, you just need to figure out how to represent the structure of its internal values.
+
+Let's look at the encoding of [Set](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set) as an example:
+
+```javascript
+function encode(set, ctx) {
+    const result = [];
+    for (const item of set) {
+        result.push(
+            // We don't need to worry about encoding the elements,
+            // and just let preszr handle it.
+            ctx.encode(item)
+        );
+    }
+    return result;
+}
+```
+
+It's usually that simple.
+
+`ctx.encode` can recurse - if it needs to encode a value of the type you're encoding down the line, it will call your `encode` function again. To protect from infinite recursion, calling `ctx.encode` with the same value as the input will throw an exception. 
+
+Calls to `encode` are, in general, hard to predict, so it's important to make sure your `encode` function doesn't cause side-effects or have an internal state.
+
+## Decoding
+
+Decoding is a two-step process:
+
+1. You first **CREATE** the object based on its *preszr representation*, without decoding any internal data.
+2. Then you **INIT** it by decoding the internal data and putting it where it belongs.
+
+A *decoder object* is just an object with those functions. However, both are optional.
+
+```javascript
+const decoder = {
+	create(input) {
+		
+	},
+	init(input, ctx) {
+	
+	}
+}
+```
+
+### CREATE
+
+```typescript
+// CREATE stage for Set:
+function create(encodedInput) {
+    return new Set();
+}
+```
+
+During this stage, you need to return an instance with the correct prototype.
+
+However, you can't decode any internal data that was encoded using `ctx.encode`, since other objects might not have had their **CREATE** step execute, so there is nothing `ctx.encode` can return. 
+
+The result of this stage will be an empty, uninitialized object. It'll have fields that are `undefined`, methods that don't work, etc.
+
+On the other hand, if you don't need to decode internal data (e.g. the object can't have references to other objects), you don't need the next stage at all, and just this function will be enough. One example is `Uint8Array`, which is just encoded as a base64 string. 
+
+```javascript
+const decoder = {
+    create(base64) {
+        return new Uint8Array(base64ToBinary(base64));
+    }
+}
+```
+
+**If you don't have a `create` method, the object will be created using [`Object.create`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create) and left blank. This will often be enough.**
+
+### INIT
+
+```javascript
+// INIT stage for Set:
+function init(target, encodedInput, ctx) {
+    // We chose our `input` to be an array.
+	for (const element of encodedInput) {
+    	target.push(
+        	ctx.decode(element);
+        )
+    }
+}
+```
+
+During this stage, we initialize the object that was created in the **CREATE** stage (which we get through the `target` parameter). This time, we can use the `ctx` we get to decode internal data, much in the same way we did when we were encoding.
+
+`ctx.decode` lets us decode an encoded value. Its input is the output of the `ctx.encode` function we used while encoding. The result will be the proper, decoded form of what you gave it. It will resolve references, decode encoded strings, or (if was JSON-legal in the first place) just return the value is it is.
+
+Unlike `ctx.encode`, `ctx.decode` is not recursive. Objects you get from it will have had their **CREATE** stage execute, but not their **INIT** stage, so they might have properties that are `undefined ` and methods that don't work.
+
+**Your `init` function should not return anything and its return value will be ignored.**
+
+**If you don't have an `init` function, this stage will do nothing.**
+
+### Empty decoders
+
+You can have an empty decoder object, `{}`. An empty decoder object will create the object using `Object.create` and not initialize anything. I don't know why you'd want to do that though. Maybe if you're just testing the encoding part.
+
+### Caveats
+
+Like all things, `preszr` has a few limitations. Some things, it either won't or can't deal with.
+
+#### Immutable objects
+
+`preszr` can't decode objects that can only be initialized using a constructor. Let's look at some examples.
+
+This object uses [JS private fields](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_class_fields) that can't be modified from outside the class:
+
+```javascript
 class ClassWithPrivateField {
     #value;
     constructor(input) {
@@ -275,68 +390,113 @@ class ClassWithPrivateField {
 }
 ```
 
-While `preszr` can encode this class (you would need to write a special encoder for it), it can't decode it, as the only way to set the field `#value` is via the constructor. The field might contain an object, so it has to be decoded as well. This raises a problem:
+Something similar can be achieved with a closure:
 
-1. During `create`, decoding values isn't available since objects haven't been created yet.
-2. During `init`, it's impossible to access the private field `#value` outside the class and it's also impossible to return a new instance.
-
-This problem can be solved by adding another member to the class so the `#value` field could be set outside the constructor.
-
-One approach to solving this problem in the library is to add a `decode` function in the `create` phase (or else just have one decode phase, similarly to encode). The problem is `decode` would need to be recursive, and wouldn't be able to deal with circular references.
-
-Splitting up the decoding process like this lets us avoid that problem.
-
-### Symbol encodings
-
-`preszr` also supports encoding JavaScript [symbol](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol) values. Similarly to prototypes, `preszr` knows about all the built-in symbols but you have to tell it about your custom symbols for it to encode them. You can do this by putting them in the same list as the prototypes:
-
-```typescript
-const mySymbol = Symbol("test")
-const preszr = new Preszr([mySymbol]);
-```
-
-`preszr` will take the key for that encoding from the symbol's description. If your symbol doesn't have a description or if you have several symbols with the same description, you'll have to supply a full *symbol specifier* object:
-
-```typescript
-export interface SymbolSpecifier {
-    name: string;
-    encodes: symbol;
+```javascript
+function createObject(value) {
+    return {
+        get value() {
+            return value;
+		}
+    }
 }
 ```
 
-For example, like this:
+Any decoder will need to decode `value` (since it's internal data that could be an object), but this raises a problem:
 
-```typescript
-const mySymbol2 = Symbol();
-const preszr = Preszr([{
-    name: "mySymbol",
-    encodes: mySymbol2
-}]);
+1. During **CREATE**, decoding values isn't possible since objects haven't been created yet.
+2. During **INIT**, you can't modify `obj.value` and you can't return a new object either. 
+
+In some cases, you can forcibly call the constructor on an existing object, but not in the cases above. `preszr` doesn't allow you to break the laws of JavaScript, so you'll need to change your code if you want to encode these.
+
+#### Objects with stray keys
+
+`preszr` doesn't handle things like `Set` objects with string object keys:
+
+```javascript
+Object.assign(new Set(), {
+    a: 1
+})
 ```
 
-*Unlike prototypes*, `preszr` will still try to represent symbols it doesn't know. When encoding, they will be marked as unknown symbols and their descriptions will be saved. When decoding, `preszr` will generate a new symbol with a description similar to `preszr unknown symbol X` for each symbol it doesn't recognize.
+Seeing it's a `Set`, `preszr` will invoke the set encoding logic, which doesn't look at any keys at all.
 
-## Versioning
+## Symbols
 
-Preszr supports basic versioning for your custom encodings. Built-in encodings are not versioned - in fact, a breaking change in a built-in encoding will *always* involve a major version change.
+`preszr` can also deal with [JavaScript symbols](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol), both as values and as object keys. Just like with prototypes, `preszr` knows about all the [built-in symbols](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol#static_properties) (though most are not relevant to data), but you'll need to tell it about your custom symbols so it can reproduce them.
 
-Versioning only works with prototype encodings and allow you to enhance the encoding while still being able to read older formats. To do this, simply add several encodings with the same `name` but different versions:
+To do that, you can just put them in the `encodes` array of the `Preszr` configuration:
 
-```typescript
-class ExampleVersionedClass {}
-
-const preszr = Preszr([
-    {
-        name: "example",
-        version: 1,
-        encodes: ExampleVersionedClass
-    },
-    {
-        name: "example",
-        version: 2,
-        encodes: ExampleVersionedClass
-    }
-]);
+```javascript
+const mySecretSymbol = Symbol("A secret symbol")
+const przWithSymbols = new Preszr({
+    encodes: [
+        mySecretSymbol
+    ]
+})
 ```
 
-The minimum version is $1$ and the maximum version is $999$.
+This creates a *symbol encoding*, a different type of encoding than we talked about earlier (which was actually a *prototype encoding*). Symbol encodings don't have the features of prototype encodings. Here is what a  complete symbol encoding looks like:
+
+```javascript
+const symbolEncoding = {
+    encodes: mySecretSymbol,
+    name: "MySecretSymbol"
+}
+```
+
+Like with prototype encodings, `encodes` is required but `name` can be omitted - that's what happens if you just provide the symbol. In that case, the name is inferred from the symbol description. If the symbol doesn't have a description or if there is a collision, you'll need to provide the property after all.
+
+Symbol encodings go into the same `encodes` array as other encodings. 
+
+# Versioning
+
+`preszr`'s internal versioning system for custom encodings has been designed to handle two specific use-cases:
+
+1. Reading legacy data, such as data that was written to disk before a change in your objects was made.
+2. Overriding built-in encodings, such as for `Set` and the like.
+
+But first, let's look at how `preszr` manages these versions in general.
+
+### Versions
+
+`preszr` identifies each encoding with an encoding key. For prototype encodings, this key will be a combination of the *name* and *version* of the encoding:
+
+```javascript
+`${ENCODING_NAME}.v${ENCODING_VERSION}`
+```
+
+The rule is that two encodings with the same *key* can't exist on a `Preszr` object.
+
+* For built-in encodings, the version is always `0`. Instead of using this system, **any change in a built-in encoding will cause a change in the major version of the library.**
+* For user-defined encodings, the version defaults to `1`, but can be any positive, [safe](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isSafeInteger#:~:text=A%20safe%20integer%20is%20an,fit%20the%20IEEE%2D754%20representation.) integer.
+
+Another rule is that two encodings with the same name must encode the same prototype.
+
+When `preszr` receives a value to encode, it will encode it using the encoding that has the highest version, noting that version down in the *preszr message*. It won't do this when decoding, though. Instead, `preszr` will try to find a decoder that matches the encoding key exactly. If it can't find, it will throw an error.
+
+This follows the [robustness principle](https://en.wikipedia.org/wiki/Robustness_principle):
+
+> Be conservative in what you send, be liberal in what you accept
+
+It means that you'll be able to read legacy data, but never write it, and updating it is as easy as decoding and then re-encoding it. It was mainly designed this way to make the versioning system as simple as possible, though.
+
+When you version an encoding, there are a few more restrictions you have to follow:
+
+* If you have a versioned encoding, each instance must have the `version` property - it will never be inferred This makes it clear that your encoding is versioned.
+* You must also specify the `name` property. This is because a change in your object can cause the inferred name to change.
+
+Versioned encodings still go into the `encodes` list of encodings, in any order, as separate objects. Grouping them together doesn't do anything.
+
+### How a version change would work
+
+When you want to make a change to how your object is encoded while still being able to read old data, you need to do the following:
+
+1. Create a new version of your encoding. Your logic can be as similar or different as you want.
+2. If, after the modification, your object needs new or different data, modify each previous version of the encoding you want to support so that it returns a compatible object.
+
+## Overriding a built-in encoding
+
+Versions work the same way for built-in encodings, except that you're not allowed to set their `name` property when you define an override - they're identified uniquely by their prototype, and it would just be confusing.
+
+Built-in encodings will always have the version `0`, so you can start your versions from `1`, but `version` is still required.
