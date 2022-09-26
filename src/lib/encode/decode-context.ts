@@ -31,7 +31,11 @@ export class DecodeContext {
         const decodedPrimitive = tryDecodeScalar(value);
         switch (decodedPrimitive) {
             case noResultPlaceholder:
-                return this._target[value as any];
+                const x = this._target[value as any];
+                if (!x) {
+                    throw getErrorByCode("decode/create/decode/call")();
+                }
+                return x;
             case unknownScalar:
                 throw getErrorByCode("decode/init/decode/unknown-scalar")(
                     value

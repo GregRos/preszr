@@ -16,6 +16,8 @@ import { FixedIndexes } from "../encodings/fixed-indexes";
 import { EncodingStore } from "./store";
 import { getUnrecSymbolEncoding } from "../encodings/unrec-symbol";
 
+const TypedArray = Object.getPrototypeOf(Uint8Array.prototype)
+    .constructor as any;
 export class EncodeCtx implements EncodeContext {
     private _encodingKeys = new Map<Encoding, number>();
     private _objectToRef = new Map<object | symbol | string, Reference>();
@@ -57,6 +59,16 @@ export class EncodeCtx implements EncodeContext {
             _metadata,
             _store
         } = this;
+        if (value instanceof TypedArray) {
+            // Due to how shared-buffer typed arrays work, they can't be encoded using the standard method.
+            // While there are some generic ways this can be done, they make the message format much more complex
+            // and introduce tons of issues.
+
+            // An alternative is to add a hardcoded special case.
+            const buffer = (value as Uint8Array).buffer;
+            // This will add the TypedArray to the
+            this.encode(buffer);
+        }
         const index = msg.length;
         const ref = `${index}`;
         _objectToRef.set(value, ref);
@@ -64,6 +76,7 @@ export class EncodeCtx implements EncodeContext {
             msg.push(value);
             return ref;
         }
+
         msg.push(0);
         if (typeof value === "symbol") {
             const encoding = this._mustGetBySymbol(value);

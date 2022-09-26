@@ -39,67 +39,100 @@ test(
 test(
     binaryOutputDeepEqual,
     new Uint8Array(arrayBuffer),
-    preszr(encoded(base64, FixedIndexes.Uint8Array))
+    preszr(
+        encoded(base64, FixedIndexes.ArrayBuffer),
+        encoded("1", FixedIndexes.Uint8Array)
+    )
 );
 
 test(
     binaryOutputDeepEqual,
     new Uint16Array(arrayBuffer),
-    preszr(encoded(base64, FixedIndexes.Uint16Array))
+    preszr(
+        encoded(base64, FixedIndexes.ArrayBuffer),
+        encoded("1", FixedIndexes.Uint16Array)
+    )
 );
 
 test(
     binaryOutputDeepEqual,
     new Uint32Array(arrayBuffer),
-    preszr(encoded(base64, FixedIndexes.Uint32Array))
+    preszr(
+        encoded(base64, FixedIndexes.ArrayBuffer),
+        encoded("1", FixedIndexes.Uint32Array)
+    )
 );
 
 test(
     binaryOutputDeepEqual,
     new Uint8ClampedArray(arrayBuffer),
-    preszr(encoded(base64, FixedIndexes.Uint8ClampedArray))
+    preszr(
+        encoded(base64, FixedIndexes.ArrayBuffer),
+        encoded("1", FixedIndexes.Uint8ClampedArray)
+    )
 );
 
 test(
     binaryOutputDeepEqual,
     new BigUint64Array(arrayBuffer),
-    preszr(encoded(base64, FixedIndexes.BigUint64Array))
+    preszr(
+        encoded(base64, FixedIndexes.ArrayBuffer),
+        encoded("1", FixedIndexes.BigUint64Array)
+    )
 );
 
 test(
     binaryOutputDeepEqual,
     new Int8Array(arrayBuffer),
-    preszr(encoded(base64, FixedIndexes.Int8Array))
+    preszr(
+        encoded(base64, FixedIndexes.ArrayBuffer),
+        encoded("1", FixedIndexes.Int8Array)
+    )
 );
 
 test(
     binaryOutputDeepEqual,
     new Int16Array(arrayBuffer),
-    preszr(encoded(base64, FixedIndexes.Int16Array))
+    preszr(
+        encoded(base64, FixedIndexes.ArrayBuffer),
+        encoded("1", FixedIndexes.Int16Array)
+    )
 );
 
 test(
     binaryOutputDeepEqual,
     new Int32Array(arrayBuffer),
-    preszr(encoded(base64, FixedIndexes.Int32Array))
+    preszr(
+        encoded(base64, FixedIndexes.ArrayBuffer),
+        encoded("1", FixedIndexes.Int32Array)
+    )
 );
 
 test(
     binaryOutputDeepEqual,
     new BigInt64Array(arrayBuffer),
-    preszr(encoded(base64, FixedIndexes.BigInt64Array))
+    preszr(
+        encoded(base64, FixedIndexes.ArrayBuffer),
+        encoded("1", FixedIndexes.BigInt64Array)
+    )
 );
 
 test(
     binaryOutputDeepEqual,
     new Float32Array(arrayBuffer),
-    preszr(encoded(base64, FixedIndexes.Float32Array))
+    preszr(
+        encoded(base64, FixedIndexes.ArrayBuffer),
+        encoded("1", FixedIndexes.Float32Array)
+    )
 );
 
 test(
     binaryOutputDeepEqual,
     new Float64Array(arrayBuffer),
-    preszr(encoded(base64, FixedIndexes.Float64Array))
+    preszr(
+        encoded(base64, FixedIndexes.ArrayBuffer),
+        encoded("1", FixedIndexes.Float64Array)
+    )
 );
 
 test(

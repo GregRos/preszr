@@ -17,12 +17,6 @@ export interface EncodeContext {
     encode(value: any, prevRealm?: boolean): ScalarValue;
 
     /**
-     * So
-     * @param value
-     */
-    nextCusterEncode(value: any): ScalarValue;
-
-    /**
      * For internal use only.
      */
     _isImplicit: boolean;
@@ -53,12 +47,6 @@ export interface CreateContext {
      * Read the metadata value for the entity.
      */
     readonly metadata: any;
-
-    /**
-     * Will try to decode `value`. Will only succeed if `value` references
-     * @param value
-     */
-    tryDecode(value: ScalarValue): undefined | { value: any };
 }
 
 /**

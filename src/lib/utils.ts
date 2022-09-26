@@ -8,7 +8,7 @@ try {
 }
 
 export function cloneDeep<T>(source: T): T {
-    if (typeof source !== "object") {
+    if (typeof source !== "object" || !source) {
         return source;
     }
     if (Array.isArray(source)) {

@@ -78,11 +78,11 @@ export function createBinEncoding(
             }
             decoder = {
                 create(encodedValue: any, ctx: CreateContext): any {
-                    const buffer = arrayBufferEncoding.decoder.create(
-                        encodedValue,
-                        ctx
-                    ) as ArrayBuffer;
-                    return new ctor(buffer);
+                    // As a hard-coded special case, we made sure that the buffer is encoded before the typed array
+                    // that references it. So this should work.
+                    // However, normally this would fail.
+                    const buf = (ctx as any).decode(encodedValue);
+                    return new ctor(buf);
                 }
             };
         }
