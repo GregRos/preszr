@@ -74,7 +74,7 @@ export function createBinEncoding(
                 input: InstanceType<TypedArrayConstructor>,
                 ctx: EncodeContext
             ): any {
-                return arrayBufferEncoding.encode(input.buffer, ctx);
+                return ctx.encode(input.buffer);
             }
             decoder = {
                 create(encodedValue: any, ctx: CreateContext): any {

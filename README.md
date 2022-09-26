@@ -439,15 +439,24 @@ const przWithSymbols = new Preszr({
 This creates a *symbol encoding*, a different type of encoding than we talked about earlier (which was actually a *prototype encoding*). Symbol encodings don't have the features of prototype encodings. Here is what a  complete symbol encoding looks like:
 
 ```javascript
-const symbolEncoding = {
-    encodes: mySecretSymbol,
-    name: "MySecretSymbol"
-}
+const przWithSymbols = new Preszr({
+    encodes: [{
+        encodes: mySecretSymbol,
+        name: "MySecretSymbol"
+	}]
+)
+const symbolEncoding = 
 ```
 
 Like with prototype encodings, `encodes` is required but `name` can be omitted - that's what happens if you just provide the symbol. In that case, the name is inferred from the symbol description. If the symbol doesn't have a description or if there is a collision, you'll need to provide the property after all.
 
-Symbol encodings go into the same `encodes` array as other encodings. 
+Symbol encodings go into the same `encodes` array as other encodings.
+
+If `preszr` encounters a symbol it doesn't recognize, it won't ignore it or error. It will instead replace all of its appearances with a stand-in symbol. This is similar to what it does with [unsupported values](docs/supported.md). The symbol's description will be similar to:
+
+```
+preszr unrecognized ${description}
+```
 
 # Versioning
 

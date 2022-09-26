@@ -7,14 +7,20 @@ import { getErrorByCode } from "./errors/texts";
  */
 export interface EncodeContext {
     readonly self: PrototypeEncoding;
-
     /**
      * Encodes the given input. For entities, it will recursively encode them, add
      * them to the final output as a side effect, and return a reference. For other
      * values, it will return them as-is or encode them, usually as a string.
+     * @param value The value to encode.
+     * @param prevRealm If true, the value will be encoded into the previous realm.
+     */
+    encode(value: any, prevRealm?: boolean): ScalarValue;
+
+    /**
+     * So
      * @param value
      */
-    encode(value: any): ScalarValue;
+    nextCusterEncode(value: any): ScalarValue;
 
     /**
      * For internal use only.
@@ -28,14 +34,31 @@ export interface EncodeContext {
     metadata: any;
 }
 
+export type Option<T> =
+    | undefined
+    | {
+          value: T;
+      };
+
 /**
  * The context used by the create stage of the decoding process. Only
  * exposes the entity's metadata.
  */
 export interface CreateContext {
-    self: PrototypeEncoding;
-    // The metadata for this encoded entity.
-    metadata: any;
+    /**
+     * The encoding that's being executed.
+     */
+    readonly self: PrototypeEncoding;
+    /**
+     * Read the metadata value for the entity.
+     */
+    readonly metadata: any;
+
+    /**
+     * Will try to decode `value`. Will only succeed if `value` references
+     * @param value
+     */
+    tryDecode(value: ScalarValue): undefined | { value: any };
 }
 
 /**

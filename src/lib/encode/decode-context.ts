@@ -25,9 +25,6 @@ export class DecodeContext {
     }
 
     decode(value: ScalarValue): unknown {
-        if (this._stage === DecodeStage.Create) {
-            throw getErrorByCode("decode/create/decode/call")();
-        }
         if (value !== null && typeof value === "object") {
             throw getErrorByCode("decode/init/decode/bad-type")(value);
         }
