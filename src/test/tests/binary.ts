@@ -140,3 +140,8 @@ test(
     new DataView(arrayBuffer),
     preszr(encoded(base64, FixedIndexes.DataView))
 );
+
+{
+    const commonData = new Uint8Array([1, 2, 3]);
+    const a = new Uint8Array(commonData.buffer, 4);
+}

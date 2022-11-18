@@ -1,5 +1,5 @@
 import { Encoding, PrototypeEncoding, SymbolEncoding } from "../interface";
-import { getCtorName, getPrototypeName } from "../utils";
+import { getClassName, getCtorName, getPrototypeName } from "../utils";
 import { PreszrError } from "./index";
 
 export const errorDefinitions = {
@@ -14,7 +14,7 @@ export const errorDefinitions = {
             proto
         )}`;
     },
-    "bug/encode/no-highest-version"(encoding: PrototypeEncoding) {
+    "bug/encode/no-highest-version"(encoding: PrototypeEncoding<any>) {
         return `No max version set for prototype ${getPrototypeName(
             encoding.encodes
         )}`;
@@ -28,31 +28,31 @@ export const errorDefinitions = {
     "config/proto/couldnt-get-prototype"(ctor: Function) {
         return `Couldn't get prototype for constructor ${getCtorName(ctor)}`;
     },
-    "config/proto/encoding-exists"(encoding: PrototypeEncoding) {
+    "config/proto/encoding-exists"(encoding: PrototypeEncoding<any>) {
         return `Encoding with name, version ${encoding} already exists.`;
     },
     "config/proto/name-collision"(
-        existing: PrototypeEncoding,
-        encoding: PrototypeEncoding
+        existing: PrototypeEncoding<any>,
+        encoding: PrototypeEncoding<any>
     ) {
         return `Tried to register ${encoding}, but ${existing} has the same name and encodes another prototype.`;
     },
     "config/proto/proto-collision"(
-        existing: PrototypeEncoding,
-        nw: PrototypeEncoding
+        existing: PrototypeEncoding<any>,
+        nw: PrototypeEncoding<any>
     ) {
         return `Tried to register ${nw}, but encoding ${existing} already encodes the same prototype.`;
     },
-    "config/proto/version/bad-type"(encoding: PrototypeEncoding) {
+    "config/proto/version/bad-type"(encoding: PrototypeEncoding<any>) {
         return `In encoding ${encoding}, version is ${typeof encoding.version}. It should be a number.`;
     },
     "config/proto/version/bad-range"(
         [min, max]: number[],
-        encoding: PrototypeEncoding
+        encoding: PrototypeEncoding<any>
     ) {
         return `Version must be between ${min} and ${max}, but was ${encoding.version}`;
     },
-    "config/proto/version/not-safe"(encoding: PrototypeEncoding) {
+    "config/proto/version/not-safe"(encoding: PrototypeEncoding<any>) {
         return `Version must be a safe integer, but was ${encoding.version}`;
     },
     "config/spec/bad-encodes"(type: string) {
@@ -91,16 +91,22 @@ export const errorDefinitions = {
     "config/symbol/name-exists"(existing: SymbolEncoding) {
         return `Tried register symbol encoding, but encoding ${existing} with the same name.`;
     },
-    "decode/create/decode/call"() {
-        return `Illegal call to 'decode' during CREATE phase. You must only call it during INIT.`;
+    "decode/decode-unsafe/called-during-init"() {
+        return `There is no reason to use 'decodeUnsafe' during the INIT phase.`;
     },
-    "decode/init/decode/unknown-scalar"(input: any) {
+    "decode/decode/called-during-create"(value: any) {
+        return `Illegal call to 'decode' during CREATE phase. You can try to use 'decodeUnsafe' to get around this. `;
+    },
+    "decode/decode-unsafe/bad-type"(value: any) {
+        return `'decode-unsafe' was called with argument ${value}, which isn't a valid scalar.`;
+    },
+    "decode/decode/unknown-scalar"(input: any) {
         return `Tried to decode ${input}, which isn't a valid scalar.`;
     },
-    "decode/init/decode/bad-reference"(input: any) {
+    "decode/decode/bad-reference"(input: any) {
         return `Reference #${input} doesn't match any object.`;
     },
-    "decode/init/decode/bad-type"(input: any) {
+    "decode/decode/bad-type"(input: any) {
         return `'decode' was called with argument ${input}, which isn't a valid scalar.`;
     },
     "decode/init/decode/not-numeric"(input: any) {
@@ -145,6 +151,9 @@ export const errorDefinitions = {
     "decode/input/unknown-scalar"(v: any) {
         return `Input was ${v}, which is an unknown scalar.`;
     },
+    "encode/prepare/cycle"(v: any) {
+        return `Tried to encode object ${getClassName(v)}, but the object is `;
+    },
     "decode/input/bad-type"(v: any) {
         return `Input was ${typeof v}, an invalid type.`;
     },
@@ -166,7 +175,7 @@ export const errorDefinitions = {
     "decode/keys/unknown-proto-version"(
         name: string,
         wantedVersion: number,
-        existing: PrototypeEncoding
+        existing: PrototypeEncoding<any>
     ) {
         return `No match for ${name}@${wantedVersion}, but ${existing} exists.`;
     },

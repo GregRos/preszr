@@ -1,5 +1,7 @@
 import { isNumericString } from "../utils";
 import {
+    EncodeFunction,
+    Encoder,
     PrototypeEncoding,
     PrototypeSpecifier,
     SymbolSpecifier
@@ -29,10 +31,9 @@ export function isSymbolSpecifier(
     return typeof encoding.encodes === "symbol";
 }
 
-export function defineProtoEncoding<
-    Type extends object,
-    Class extends PrototypeEncodingCtor<Type>
->(cls: Class): PrototypeEncoding<Type> {
+export function defineProtoEncoding<Type extends object>(
+    cls: PrototypeEncodingCtor<Type>
+): PrototypeEncoding<Type> {
     return new cls();
 }
 
@@ -63,5 +64,16 @@ export function mustParseEncodingKey(key: string): EncodingKeyInfo {
         type: "prototype",
         name,
         version: +strVersion
+    };
+}
+
+export function wrapEncodeFunction<T>(
+    encode: EncodeFunction<T> | undefined
+): Encoder<T> | undefined {
+    if (!encode) {
+        return undefined;
+    }
+    return {
+        encode
     };
 }

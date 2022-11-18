@@ -1,4 +1,11 @@
-import { CreateContext, EncodeContext, PrototypeEncoding } from "../interface";
+import {
+    CreateContext,
+    Decoder,
+    EncodeContext,
+    Encoder,
+    PrototypeEncoding,
+    RequirementsContext
+} from "../interface";
 import { getBuiltInEncodingName } from "../utils";
 import { fromByteArray, toByteArray } from "base64-js";
 import {
@@ -8,14 +15,19 @@ import {
 } from "../opt-types";
 import { FixedIndexes } from "./fixed-indexes";
 import { defineProtoEncoding } from "./utils";
+import { EncodedEntity } from "../data";
 
 /**
  * A union of all typed array constructors.
  */
 export type TypedArrayConstructor = {
-    new (buffer: ArrayBuffer): any;
+    new (buffer: ArrayBufferLike, offset: number, length: number): {
+        buffer: ArrayBuffer;
+        length: number;
+        byteOffset: number;
+        byteLength: number;
+    };
 };
-
 export const arrayBufferEncoding = defineProtoEncoding(
     class ArrayBufferEncoding extends PrototypeEncoding<ArrayBuffer> {
         name = getBuiltInEncodingName("ArrayBuffer");
@@ -23,10 +35,12 @@ export const arrayBufferEncoding = defineProtoEncoding(
         fixedIndex = FixedIndexes.ArrayBuffer;
         encodes = ArrayBuffer.prototype;
 
-        encode(input: ArrayBuffer, ctx: EncodeContext): any {
-            const b64 = fromByteArray(new Uint8Array(input));
-            return b64;
-        }
+        encoder = {
+            encode(input: ArrayBuffer, ctx: EncodeContext): any {
+                const b64 = fromByteArray(new Uint8Array(input));
+                return b64;
+            }
+        };
 
         decoder = {
             create(encodedValue: string, ctx: CreateContext): any {
@@ -43,7 +57,7 @@ export const sharedArrayBufferEncoding = defineProtoEncoding(
         name = getBuiltInEncodingName("SharedArrayBuffer");
         version = 0;
         encodes = _SharedArrayBuffer.prototype;
-        encode = arrayBufferEncoding.encode.bind(arrayBufferEncoding);
+        encoder = arrayBufferEncoding.encoder;
         decoder = {
             create(encodedValue: string, ctx: CreateContext): any {
                 // This is not performant, but it's an uncommon use-case.
@@ -70,24 +84,63 @@ export function createBinEncoding(
             name = getBuiltInEncodingName(ctor.name);
             version = 0;
             encodes = ctor.prototype;
-            encode(
-                input: InstanceType<TypedArrayConstructor>,
-                ctx: EncodeContext
-            ): any {
-                return ctx.encode(input.buffer);
-            }
+            encoder: Encoder<any> = {
+                requirements(input: any, ctx) {
+                    ctx.require(input.buffer);
+                },
+                encode(
+                    input: InstanceType<TypedArrayConstructor>,
+                    ctx: EncodeContext
+                ): any {
+                    const ctor = input.constructor as Uint8ArrayConstructor;
+                    return [
+                        ctx.encode(input.buffer),
+                        input.byteOffset,
+                        input.length
+                    ];
+                }
+            };
             decoder = {
                 create(encodedValue: any, ctx: CreateContext): any {
-                    // As a hard-coded special case, we made sure that the buffer is encoded before the typed array
-                    // that references it. So this should work.
-                    // However, normally this would fail.
-                    const buf = (ctx as any).decode(encodedValue);
-                    return new ctor(buf);
+                    const [buffer, byteOffset, length] = encodedValue;
+                    // The buffer is the only problem here, and we made sure it was encoded via
+                    return new ctor(
+                        ctx.decodeUnsafe(buffer),
+                        byteOffset,
+                        length
+                    );
                 }
             };
         }
     );
 }
+
+export const dataViewEncoding = defineProtoEncoding(
+    class DataViewEncoding extends PrototypeEncoding<DataView> {
+        encodes = DataView.prototype;
+        name = getBuiltInEncodingName("DataView");
+        fixedIndex = FixedIndexes.DataView;
+        version = 0;
+        encoder: Encoder<DataView> = {
+            requirements(input, ctx) {
+                ctx.require(input.buffer);
+            },
+            encode(input: DataView, ctx: EncodeContext): EncodedEntity {
+                return [
+                    ctx.encode(input.buffer),
+                    input.byteOffset,
+                    input.byteLength
+                ];
+            }
+        };
+        decoder: Decoder = {
+            create(encoded: any[], ctx: CreateContext): unknown {
+                const [buffer, offset, length] = encoded;
+                return new DataView(buffer, offset, length);
+            }
+        };
+    }
+);
 
 export const typedArrayEncodings = [
     createBinEncoding(FixedIndexes.Uint8Array, Uint8Array),
@@ -99,7 +152,7 @@ export const typedArrayEncodings = [
     createBinEncoding(FixedIndexes.Int32Array, Int32Array),
     createBinEncoding(FixedIndexes.Float32Array, Float32Array),
     createBinEncoding(FixedIndexes.Float64Array, Float64Array),
-    createBinEncoding(FixedIndexes.DataView, DataView),
+    dataViewEncoding,
     createBinEncoding(FixedIndexes.BigInt64Array, _BigInt64Array),
     createBinEncoding(FixedIndexes.BigUint64Array, _BigUint64Array)
 ]

@@ -1,12 +1,15 @@
 import {
     Decoder,
     EncodeContext,
+    EncodeFunction,
+    Encoder,
     PrototypeEncoding,
     PrototypeSpecifier
 } from "../interface";
 import { EncodedEntity } from "../data";
 import { getPrototypeDecoder, getPrototypeEncoder } from "./objects";
 import { getErrorByCode } from "../errors/texts";
+import { wrapEncodeFunction } from "./utils";
 
 const MAX_VERSION = 999;
 const MIN_VERSION = 1;
@@ -15,7 +18,7 @@ export class UserEncoding<T extends object> extends PrototypeEncoding<T> {
     readonly decoder: Decoder;
     readonly name: string;
     readonly version: number;
-    readonly encode: (input: T, ctx: EncodeContext) => EncodedEntity;
+    readonly encoder: Encoder<T>;
 
     constructor(
         specifier: PrototypeSpecifier & { name: string; encodes: any },
@@ -26,7 +29,9 @@ export class UserEncoding<T extends object> extends PrototypeEncoding<T> {
         this.version = specifier.version ?? 1;
         this.encodes = specifier.encodes;
         this.decoder = specifier.decoder ?? getPrototypeDecoder(this.encodes);
-        this.encode = specifier.encode ?? getPrototypeEncoder(this.encodes);
+        this.encoder =
+            wrapEncodeFunction(specifier.encode) ??
+            getPrototypeEncoder(this.encodes);
 
         const { version, name } = this;
         if (typeof version !== "number") {

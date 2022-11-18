@@ -129,7 +129,7 @@ export class Preszr {
                     continue;
                 }
                 if (Array.isArray(cur)) {
-                    encoding = arrayEncoding;
+                    encoding = arrayEncoding as any;
                 } else {
                     encoding = objectEncoding;
                 }

@@ -17,14 +17,16 @@ export const mapEncoding = defineProtoEncoding(
         version = 0;
         encodes = Map.prototype;
 
-        encode(input: Map<any, any>, ctx: EncodeContext): any {
-            const array = [] as [ScalarValue, ScalarValue][];
-            for (const key of input.keys()) {
-                const value = input.get(key);
-                array.push([ctx.encode(key), ctx.encode(value)]);
+        encoder = {
+            encode(input: Map<any, any>, ctx: EncodeContext): any {
+                const array = [] as [ScalarValue, ScalarValue][];
+                for (const key of input.keys()) {
+                    const value = input.get(key);
+                    array.push([ctx.encode(key), ctx.encode(value)]);
+                }
+                return array;
             }
-            return array;
-        }
+        };
 
         decoder = new (class MapDecoder implements Decoder {
             create(encodedValue: any, ctx: CreateContext): any {
@@ -51,13 +53,15 @@ export const setEncoding = defineProtoEncoding(
         version = 0;
         encodes = Set.prototype;
 
-        encode(input: Set<any>, ctx: EncodeContext): EncodedEntity {
-            const outArray = [] as ScalarValue[];
-            for (const item of input) {
-                outArray.push(ctx.encode(item));
+        encoder = {
+            encode(input: Set<any>, ctx: EncodeContext): EncodedEntity {
+                const outArray = [] as ScalarValue[];
+                for (const item of input) {
+                    outArray.push(ctx.encode(item));
+                }
+                return outArray;
             }
-            return outArray;
-        }
+        };
 
         decoder = new (class SetDecoder implements Decoder {
             create(): any {

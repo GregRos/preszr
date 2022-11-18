@@ -22,16 +22,18 @@ export function createErrorEncoding(
             version = 0;
             name = getBuiltInEncodingName(errorCtor.name);
 
-            encode(input: any, ctx: EncodeContext): any {
-                const encodedAsObject = encodeObject(
-                    input,
-                    ctx,
-                    false,
-                    errorProperties
-                );
-                (ctx as any)._isImplicit = false;
-                return encodedAsObject;
-            }
+            encoder = {
+                encode(input: any, ctx: EncodeContext): any {
+                    const encodedAsObject = encodeObject(
+                        input,
+                        ctx,
+                        false,
+                        errorProperties
+                    );
+                    (ctx as any)._isImplicit = false;
+                    return encodedAsObject;
+                }
+            };
 
             decoder = {
                 create(encodedValue: any, ctx: CreateContext): any {

@@ -1,4 +1,4 @@
-import { EncodedEntity, ScalarValue } from "./data";
+import { EncodedEntity, EncodedScalar, Reference, ScalarValue } from "./data";
 import { getPrototypeName, getSymbolName } from "./utils";
 import { getErrorByCode } from "./errors/texts";
 
@@ -7,17 +7,18 @@ import { getErrorByCode } from "./errors/texts";
  */
 export interface EncodeContext {
     readonly self: PrototypeEncoding;
-    /**
-     * Encodes the given input. For entities, it will recursively encode them, add
-     * them to the final output as a side effect, and return a reference. For other
-     * values, it will return them as-is or encode them, usually as a string.
-     * @param value The value to encode.
-     * @param prevRealm If true, the value will be encoded into the previous realm.
-     */
-    encode(value: any, prevRealm?: boolean): ScalarValue;
 
     /**
-     * For internal use only.
+     * Encodes the given input. For entities, it will recursively encode them, add
+     * them to the final output as a side effect (if not already), and return a reference. For other
+     * values, it will return them as-is or encode them, usually as a string.
+     * @param value The value to encode.
+     */
+    encode(value: any): ScalarValue;
+
+    /**
+     * If true, encoding metadata for the current node won't be written. Used internally.
+     * @private
      */
     _isImplicit: boolean;
 
@@ -28,14 +29,65 @@ export interface EncodeContext {
     metadata: any;
 }
 
-export type Option<T> =
-    | undefined
-    | {
-          value: T;
-      };
+/**
+ * The context used for the REQUIREMENTS phase of encoding an object.
+ */
+export interface RequirementsContext {
+    /**
+     * The encoding current executing.
+     */
+    readonly self: PrototypeEncoding;
+
+    /**
+     * Encodes any entities before the object that's in its REQUIREMENTS phase.
+     * @param values The value(s) to require. Any non-entities are ignored.
+     */
+    require(...values: unknown[]): void;
+}
+
+export type EncodeFunction<T> = (input: T, ctx: EncodeContext) => any;
+
+export interface Encoder<T> {
+    /**
+     * A REQUIREMENTS phase lets you require objects that must be decoded before
+     * `value` can be decoded. It means they will be available to decode
+     * via `decodeUnsafe` during the CREATE stage.
+     *
+     * This phase happens before an object is added to the entity stream, meaning that
+     * anything encoded before REQUIREMENTS finishes is guaranteed to appear before it
+     * in the stream.
+     *
+     * Objects can be encoded into the stream by calling `ctx.require`, which does the
+     * same thing as `ctx.encode`. Like `ctx.encode`, it will recurse.  This will cause
+     * more encoders to be called. Some might have a REQUIREMENTS phase of their own,
+     * which is fine.
+     *
+     * However, if at any point an object in the REQUIREMENTS phase is the target of
+     * `ctx.encode` or `ctx.require` (determined by ref), an error is thrown.
+     * That's because an object ends up *requiring* itself, and would need to appear
+     * before itself in the stream, which is not supported.
+     *
+     * The REQUIREMENTS phase is needed to decode objects that require other objects
+     * before they are constructed, like `Uint8Array` which may require an `ArrayBuffer`.
+     *
+     * However, it creates much more fragile encoders, since they make some cycles illegal.
+     * It's not meant to be used from user code.
+     *
+     * @param value The value being encoded.
+     * @param ctx A context for the REQUIREMENTS phase.
+     */
+    requirements?(value: T, ctx: RequirementsContext): void;
+
+    /**
+     * Encodes the given value and returns a scalar of some sort.
+     * @param input The value to encode.
+     * @param ctx The encode context, which can be used to encode child values.
+     */
+    encode(input: T, ctx: EncodeContext): EncodedEntity;
+}
 
 /**
- * The context used by the create stage of the decoding process. Only
+ * The context used by the CREATE stage of the decoding process. Only
  * exposes the entity's metadata.
  */
 export interface CreateContext {
@@ -43,6 +95,18 @@ export interface CreateContext {
      * The encoding that's being executed.
      */
     readonly self: PrototypeEncoding;
+
+    /**
+     * Will return a decoded form of `scalar`. Will resolve references
+     * **only** to objects that have been already been CREATED. If it receives
+     * a reference to an object that hasn't been CREATED it will throw.
+     *
+     * Not meant to be used from user code.
+     * @internal
+     * @param scalar Scalar to decode
+     */
+    decodeUnsafe(scalar: ScalarValue): any;
+
     /**
      * Read the metadata value for the entity.
      */
@@ -78,7 +142,7 @@ export interface Decoder {
 export interface PrototypeSpecifier {
     // The key of the encoding. Must be unique. Will be inferred from the prototype if missing.
     name?: string | null;
-    // Optionally, a 0-based version number. If not supplied, defaults to 0.
+    // Optionally, a safe, positive integer. Defaults to 1.
     version?: number;
     // The prototype or constructor.
     encodes: object | Function;
@@ -101,7 +165,7 @@ export interface SymbolSpecifier {
 /**
  * A full preszr encoding of any type.
  */
-export type Encoding = SymbolEncoding | PrototypeEncoding<object>;
+export type Encoding = SymbolEncoding | PrototypeEncoding<any>;
 /**
  * These encodings specifiers can't be confused for configuration objects or
  * prototypes.
@@ -133,6 +197,7 @@ export abstract class BaseEncoding {
     abstract readonly name: string;
     abstract readonly fixedIndex?: number;
     abstract readonly key: string;
+
     protected abstract _toString(): string;
 
     get [Symbol.toStringTag]() {
@@ -197,7 +262,7 @@ export abstract class PrototypeEncoding<
     public abstract readonly encodes: T;
     public abstract readonly fixedIndex?: number;
 
-    abstract encode(x: T, ctx: EncodeContext): EncodedEntity;
+    abstract encoder: Encoder<T>;
 
     abstract decoder: Decoder;
 

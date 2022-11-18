@@ -15,12 +15,15 @@ export const regexpEncoding = defineProtoEncoding(
         name = getBuiltInEncodingName("RegExp");
         fixedIndex = FixedIndexes.RegExp;
 
-        encode({ source, flags }: RegExp, ctx: EncodeContext): any {
-            return flags ? [source, flags] : source;
-        }
+        encoder = {
+            encode(z: RegExp, ctx: EncodeContext) {
+                const { source, flags } = z;
+                return flags ? [source, flags] : source;
+            }
+        };
 
         decoder = {
-            create(input: string | string[], ctx: InitContext) {
+            create(input: string | string[], ctx: CreateContext) {
                 if (typeof input === "string") {
                     return new RegExp(input);
                 } else {
@@ -39,9 +42,11 @@ export const dateEncoding = defineProtoEncoding(
         fixedIndex = FixedIndexes.Date;
         name = getBuiltInEncodingName("Date");
 
-        encode(input: Date, ctx: EncodeContext): any {
-            return input.getTime();
-        }
+        encoder = {
+            encode(input: Date, ctx: EncodeContext): any {
+                return input.getTime();
+            }
+        };
 
         decoder = {
             create(encodedValue: number, ctx: CreateContext): any {
@@ -62,9 +67,11 @@ export function makeObjectWrappedEncoding<T extends object>(
             fixedIndex = index;
             encodes = ctor.prototype;
 
-            encode(input: any, ctx: EncodeContext): any {
-                return input.valueOf();
-            }
+            encoder = {
+                encode(input: any, ctx: EncodeContext): any {
+                    return input.valueOf();
+                }
+            };
 
             decoder = {
                 create(encodedValue: any, ctx: CreateContext): any {

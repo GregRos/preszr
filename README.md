@@ -4,9 +4,9 @@
 [![Coverage Status](https://coveralls.io/repos/github/GregRos/preszr/badge.svg?branch=master)](https://coveralls.io/github/GregRos/preszr?branch=master)
 [![npm](https://img.shields.io/npm/v/preszr)](https://www.npmjs.com/package/preszr)
 
-`preszr` is a *pre-serialization* JavaScript library that allows you to serialize objects with meaningful references and [prototypes](https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Objects/Object_prototypes). In other words, it's for encoding [object graphs](https://stackoverflow.com/a/2046774). 
+`preszr` is a schema-less *pre-serialization* JavaScript library that turns complicated objects with references and prototypes into simple ones that can be serialized. In other words, it's for encoding [object graphs](https://stackoverflow.com/a/2046774) as object trees.
 
-Here's is how you'd use it:
+Here's is how you use it:
 
 1. Take <a href="docs/">any value</a> and *encode* it with `preszr`, giving you a [preszr message](docs/format.md).
 2. You can take that array and *serialize* it with [`JSON.stringify`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify), or anything else that can serialize JS objects, like [BSON](https://www.mongodb.com/basics/bson).
@@ -15,7 +15,7 @@ Here's is how you'd use it:
 5. Then you *decode* it using `preszr`. 
 6. Now you have your thing back, with all its references and prototypes and everything (if any).
 
-`preszr` doesn't use any fancy algorithms, the only magic is in the <a href="docs/format.md">format</a>
+`preszr` doesn't use any fancy algorithms, the only magic is in the <a href="docs/format.md">format</a>.
 
 There's a library called [preserialize](https://preserialize.readthedocs.io/en/latest/) for python that does something similar, but `preszr` isn't related to it.
 
@@ -23,11 +23,11 @@ There's a library called [preserialize](https://preserialize.readthedocs.io/en/l
 
 🔗 Preserves references and prototypes!
 
-🐐 Encodes all built-in data types and values as of 2022!<sup>1 </sup>
+🐐 Supports all built-in data types and values as of 2022!<sup>1 </sup>
 
 🐤 Space-efficient format!
 
-🛠️ Super easy to encode custom types!
+🛠️ Super easy to encode custom types, with several layers of customization!
 
 💾 Basic versioning! 
 
@@ -35,22 +35,14 @@ There's a library called [preserialize](https://preserialize.readthedocs.io/en/l
 
 <sup>1 </sup><small>All platform-independent, built-in objects and primitives, except for some that are <a href="docs/supported.md">explicitly unsupported</a></small>.
 
-## Non-features
-
-🚫 Doesn't require schemas or decorators¡
-
-🔒 Doesn't require executing generated code¡
-
-🛡️ Doesn't modify the input¡
-
 ## Use cases
 
 All those emojis sure look nice, but when would you actually want to use `preszr`? Normally you'd want to keep communication between things as simple as possible to avoid tight coupling.
 
-Normally, yes. But sometimes things are not normal. For example;
+Normally, yes. But sometimes things aren't normal. For example:
 
-* You're hacking something together and just want objects to appear at the other end.
-* If your data is an object-graph, like if it's a decision tree, workflow, etc.
+* You just want to push your objects through the tubes and have them come out the other end.
+* Your data is an object-graph, like if it's a decision tree, workflow, etc.
 * Things are already tightly coupled so there is no use trying to minimize it. Maybe it's even deliberate.
 
 ## Usage
@@ -181,7 +173,8 @@ To encode objects, `preszr` uses objects called *encodings*. Here is what they l
 
 ```javascript
 {
-    // What it encodes. A constructor or prototype.
+    // The thing this encoding is for.
+    // A constructor or prototype.
 	encodes: UhhNumber
     
 	// A name. Can be usually be inferred.
@@ -261,7 +254,7 @@ The following are not:
 * `undefined`
 * [`document.all`](https://developer.mozilla.org/en-US/docs/Web/API/Document/all)
 
-Preszr won't check your results, though (for performance reasons), and if you return anything weird it can lead to *undefined behavior* **gasp!**
+Preszr won't check your results, though (for performance reasons), and if you return anything weird it can lead to *undefined behavior*.
 
 Each `encode` function is supposed to only ever encode a single prototype. When it stumbles on some internal value (that of a property, an element of a collection, or something else), it can just give control back so `preszr` can handle encoding it. It does that using the `ctx.encode` method. 
 
@@ -289,7 +282,7 @@ function encode(set, ctx) {
 
 It's usually that simple.
 
-`ctx.encode` can recurse - if it needs to encode a value of the type you're encoding down the line, it will call your `encode` function again. To protect from infinite recursion, calling `ctx.encode` with the same value as the input will throw an exception. 
+`ctx.encode` can recurse - if it needs to encode a value of the type you're encoding down the line, it will call your `encode` function again. 
 
 Calls to `encode` are, in general, hard to predict, so it's important to make sure your `encode` function doesn't cause side-effects or have an internal state.
 
@@ -328,12 +321,12 @@ However, you can't decode any internal data that was encoded using `ctx.encode`,
 
 The result of this stage will be an empty, uninitialized object. It'll have fields that are `undefined`, methods that don't work, etc.
 
-On the other hand, if you don't need to decode internal data (e.g. the object can't have references to other objects), you don't need the next stage at all, and just this function will be enough. One example is `Uint8Array`, which is just encoded as a base64 string. 
+On the other hand, if you don't need to decode internal data (e.g. the object can't have references to other objects), you don't need the next stage at all, and just this function will be enough. One example is `ArrayBuffer`, which is just encoded as a base64 string. 
 
 ```javascript
 const decoder = {
     create(base64) {
-        return new Uint8Array(base64ToBinary(base64));
+        return base64ToArrayBuffer(base64);
     }
 }
 ```
@@ -370,7 +363,7 @@ You can have an empty decoder object, `{}`. An empty decoder object will create 
 
 ### Caveats
 
-Like all things, `preszr` has a few limitations. Some things, it either won't or can't deal with.
+`preszr` has a few limitations when it comes to certain objects, however. As an example, let's take the following class that uses 
 
 #### Immutable objects
 
@@ -420,6 +413,8 @@ Object.assign(new Set(), {
 ```
 
 Seeing it's a `Set`, `preszr` will invoke the set encoding logic, which doesn't look at any keys at all.
+
+
 
 ## Symbols
 

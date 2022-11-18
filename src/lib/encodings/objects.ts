@@ -2,6 +2,7 @@ import {
     CreateContext,
     Decoder,
     EncodeContext,
+    Encoder,
     InitContext,
     PreszrUnsupportedValue,
     PrototypeEncoding
@@ -21,7 +22,7 @@ import {
     _SetIteratorProto,
     _WeakRef
 } from "../opt-types";
-import { defineProtoEncoding } from "./utils";
+import { defineProtoEncoding, wrapEncodeFunction } from "./utils";
 
 export const nullPlaceholder = {};
 
@@ -90,9 +91,11 @@ export const objectEncoding = defineProtoEncoding(
         fixedIndex = FixedIndexes.Object;
         name = getBuiltInEncodingName("object");
 
-        encode(input: any, ctx: EncodeContext): any {
-            return encodeObject(input, ctx, false);
-        }
+        encoder = {
+            encode(input: any, ctx: EncodeContext) {
+                return encodeObject(input, ctx, false);
+            }
+        };
 
         decoder = {
             create(encodedValue: any, ctx: CreateContext): any {
@@ -119,23 +122,25 @@ export const arrayEncoding = defineProtoEncoding(
         fixedIndex = FixedIndexes.Array;
         encodes = Array.prototype;
 
-        encode(input: any, ctx: EncodeContext): any {
-            const keys = Object.keys(input);
-            const isSparseCanFalseNegative = input.length !== keys.length;
-            if (isSparseCanFalseNegative) {
-                return encodeAsSparseArray(input, ctx);
-            }
-            // The array still might be sparse, even after that check.
-            const newArray = [] as any[];
-            for (let i = 0; i < keys.length; i++) {
-                if (i !== +keys[i]) {
+        encoder = {
+            encode(input: any, ctx: EncodeContext): any {
+                const keys = Object.keys(input);
+                const isSparseCanFalseNegative = input.length !== keys.length;
+                if (isSparseCanFalseNegative) {
                     return encodeAsSparseArray(input, ctx);
                 }
-                newArray.push(ctx.encode(input[i]));
+                // The array still might be sparse, even after that check.
+                const newArray = [] as any[];
+                for (let i = 0; i < keys.length; i++) {
+                    if (i !== +keys[i]) {
+                        return encodeAsSparseArray(input, ctx);
+                    }
+                    newArray.push(ctx.encode(input[i]));
+                }
+                ctx._isImplicit = true;
+                return newArray;
             }
-            ctx._isImplicit = true;
-            return newArray;
-        }
+        };
 
         decoder = {
             create(encodedValue: any, ctx: CreateContext): any {
@@ -161,7 +166,7 @@ export const nullPrototypeEncoding = defineProtoEncoding(
         encodes = nullPlaceholder;
         name = getBuiltInEncodingName("null");
         fixedIndex = FixedIndexes.NullProto;
-        encode = getPrototypeEncoder(null);
+        encoder = getPrototypeEncoder(null as any);
         decoder = getPrototypeDecoder(null);
     }
 );
@@ -175,11 +180,13 @@ export function getPrototypeDecoder(encodes: object | null) {
     } as Decoder;
 }
 
-export function getPrototypeEncoder(proto: object | null) {
-    return (input: any, ctx: EncodeContext) => {
-        const result = encodeObject(input, ctx, false);
-        (ctx as any)._isImplicit = false;
-        return result;
+export function getPrototypeEncoder<T>(proto: T): Encoder<T> {
+    return {
+        encode(input: T, ctx: EncodeContext) {
+            const result = encodeObject(input, ctx, false);
+            (ctx as any)._isImplicit = false;
+            return result;
+        }
     };
 }
 
@@ -196,9 +203,11 @@ class UnsupportedEncoding<T extends object> extends PrototypeEncoding<T> {
         this.name = name;
     }
 
-    encode(input: any, ctx: EncodeContext): any {
-        return 0;
-    }
+    encoder = {
+        encode(input: any, ctx: EncodeContext): any {
+            return 0;
+        }
+    };
 
     decoder = {
         create(encodedValue: any, ctx: CreateContext): any {

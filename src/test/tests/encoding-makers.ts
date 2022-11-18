@@ -49,7 +49,7 @@ test("encoding from class", t => {
     t.is(encoding.name, "TestClass");
     t.is(encoding.encodes, TestClass.prototype);
     const dummyCtx = getDummyCtx();
-    const result = encoding.encode(new TestClass(), dummyCtx);
+    const result = encoding.encoder.encode(new TestClass(), dummyCtx);
     t.deepEqual(result, { field: 5 });
 });
 
@@ -60,7 +60,7 @@ test("encoding from prototype", t => {
     t.is(encoding.name, "TestClass");
     t.is(encoding.encodes, TestClass.prototype);
     const dummyCtx = getDummyCtx();
-    const result = encoding.encode(new TestClass(), dummyCtx);
+    const result = encoding.encoder.encode(new TestClass(), dummyCtx);
     t.deepEqual(result, { field: 5 });
 });
 
