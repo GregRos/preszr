@@ -60,6 +60,12 @@
       ".ts",
       ".js"
     ],
+    "reporter": [
+      "lcov",
+      "text",
+      "text-summary",
+      "html"
+    ],
     "include": [
       "src/lib/**/*.ts",
       "dist/lib/**/*.js"
