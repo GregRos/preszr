@@ -14,6 +14,7 @@ import {
 import { mapEncoding, setEncoding } from "./collections";
 import { errorEncodings } from "./errors";
 import { EncodingStore } from "../encode/store";
+import { knownSymbols } from "./known-symbols";
 
 export { arrayEncoding, nullPlaceholder, objectEncoding };
 
@@ -32,7 +33,8 @@ export function getDefaultStore() {
         setEncoding,
         ...errorEncodings,
         sharedArrayBufferEncoding,
-        ...unsupportedEncodings
+        ...unsupportedEncodings,
+        ...knownSymbols
     );
     return store;
 }

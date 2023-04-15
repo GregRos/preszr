@@ -4,12 +4,12 @@
 [![Coverage Status](https://coveralls.io/repos/github/GregRos/preszr/badge.svg?branch=master)](https://coveralls.io/github/GregRos/preszr?branch=master)
 [![npm](https://img.shields.io/npm/v/preszr)](https://www.npmjs.com/package/preszr)
 
-`preszr` is a schema-less *pre-serialization* JavaScript library that turns complicated objects with references and prototypes into simple ones that can be serialized. In other words, it's for encoding [object graphs](https://stackoverflow.com/a/2046774) as object trees.
+`preszr` is a schema-less *pre-serialization* JavaScript library that turns complicated objects with references and prototypes into simple ones that can be serialized. 
 
-Here's is how you use it:
+Here's how you use it:
 
-1. Take <a href="docs/">any value</a> and *encode* it with `preszr`, giving you a [preszr message](docs/format.md).
-2. You can take that array and *serialize* it with [`JSON.stringify`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify), or anything else that can serialize JS objects, like [BSON](https://www.mongodb.com/basics/bson).
+1. Encode <a href="docs/">any value</a> with `preszr`, giving you a [preszr message](docs/format.md).
+2. You can take that array and *serialize* it with [`JSON.stringify`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify) or anything else that can serialize JS objects, like [BSON](https://www.mongodb.com/basics/bson).
 3. You send it via the network or maybe save it to file.
 4. At the other end (in time or space), you first *deserialize* the data using `JSON.parse` or whatever you used.
 5. Then you *decode* it using `preszr`. 
@@ -17,13 +17,11 @@ Here's is how you use it:
 
 `preszr` doesn't use any fancy algorithms, the only magic is in the <a href="docs/format.md">format</a>.
 
-There's a library called [preserialize](https://preserialize.readthedocs.io/en/latest/) for python that does something similar, but `preszr` isn't related to it.
-
 ## Features
 
 🔗 Preserves references and prototypes!
 
-🐐 Supports all built-in data types and values as of 2022!<sup>1 </sup>
+🐐 Supports all built-in data types and values as of 2023!<sup>1 </sup>
 
 🐤 Space-efficient format!
 
@@ -31,19 +29,19 @@ There's a library called [preserialize](https://preserialize.readthedocs.io/en/l
 
 💾 Basic versioning! 
 
-🌍 Should work in all standard JS environments!
+🌍 Works in all standard JS environments!
 
-<sup>1 </sup><small>All platform-independent, built-in objects and primitives, except for some that are <a href="docs/supported.md">explicitly unsupported</a></small>.
+<sup>1 </sup><small>Some types <a href="docs/supported.md">explicitly unsupported</a></small>.
 
-## Use cases
+## Use case
 
 All those emojis sure look nice, but when would you actually want to use `preszr`? Normally you'd want to keep communication between things as simple as possible to avoid tight coupling.
 
 Normally, yes. But sometimes things aren't normal. For example:
 
-* You just want to push your objects through the tubes and have them come out the other end.
-* Your data is an object-graph, like if it's a decision tree, workflow, etc.
-* Things are already tightly coupled so there is no use trying to minimize it. Maybe it's even deliberate.
+* You just want to push your objects through the tubes and have them out the other end.
+* Your data is an object graph, like if it's a decision tree, workflow, etc.
+* Things are tightly coupled due to other reasons.
 
 ## Usage
 
@@ -163,9 +161,9 @@ yarn add preszr
 
 `preszr` follows [semver](https://semver.org/), and changes in the format of a *preszr message* will always increment the major version.
 
-To make sure it doesn't decode data incorrectly, `preszr` injects its major version into <a href="docs/format.md">non-trivial *preszr messages*</a>. `preszr` will use that version number to determine if it can decode the message or not. Right now `preszr` will error unless that number is the same, but in the future it might have some fallback.
+To ensure it doesn't decode data incorrectly, `preszr` injects its major version into <a href="docs/format.md">non-trivial *preszr messages*</a>. `preszr` will use that version number to determine whether it can decode the message. Right now, `preszr` will error unless that number is the same, but in the future, it might have some fallback.
 
-This is one of the features that allows you to safely write preszr messages to disk.
+This is one of the features that allow you to safely write preszr messages to disk.
 
 # Customization
 
@@ -177,7 +175,7 @@ To encode objects, `preszr` uses objects called *encodings*. Here is what they l
     // A constructor or prototype.
 	encodes: UhhNumber
     
-	// A name. Can be usually be inferred.
+	// A name. Can usually be inferred.
 	name: "NumberOrSomething"
     
     // A version. Defaults to 1. We'll talk about these later.
@@ -194,9 +192,9 @@ To encode objects, `preszr` uses objects called *encodings*. Here is what they l
 }
 ```
 
-When encoding, `preszr` will use the encoding of the nearest prototype of an object that it knows, possibly down to `Object.prototype` if it doesn't find anything else. You can't have two encodings for the same prototype, unless they're versioned (but we'll talk about versioning later). The same is true for encodings with the same name.
+When encoding, `preszr` will use the encoding of the nearest prototype of an object that it knows, possibly down to `Object.prototype` if it doesn't find anything else. You can't have two encodings for the same prototype unless they're versioned (but we'll talk about versioning later). The same is true for encodings with the same name.
 
-These objects go into the `encodes` property of the `Preszr` configuration object. The order doesn't matter and has no effect. When you put a constructor in there like we did in the Usage section, `preszr` will just generate a complete encoding behind the scenes, inferring or using defaults for everything except the `encodes` property (which is required).
+These objects go into the `encodes` property of the `Preszr` configuration object. The order doesn't matter. When you put a constructor in there, like in the Usage section, preszr will generate a complete encoding behind the scenes, inferring or using defaults for everything except the `encodes` property (which is required).
 
 In some cases, like if `preszr` fails to infer the constructor name or there is a collision, you'll need to supply a basic encoding object. It can just include the `name` and `encodes` properties, though:
 
@@ -225,7 +223,9 @@ The default encoding logic is pretty dumb, but it will work for most normal obje
 
 <sup>1</sup><small> Inherited or non-enumerable keys are not copied. Symbol keys are copied though, if they are enumerable.</small>
 
-Some objects can't be encoded like this. For example, `Map` and `Set` use hidden internal data. Some of your objects might too. They also might depend on variables bound to closures or on the phase of the moon. For those objects, you'll need to write custom encoding logic. That's the `encodes` function and the `decoder` object. While you can have neither and just use the default behavior, if you specify one of them you have to also specify the other.
+Some objects can't be encoded like this. For example, `Map` and `Set` use hidden internal data. Some of your objects might too. They also might depend on variables bound to closures or on the phase of the moon. 
+
+For those objects, you'll need to write custom encoding logic. That's the `encodes` function and the `decoder` object. While you can have neither and just use the default behavior if you specify one of them, you have to also specify the other.
 
 ## Encoding
 
@@ -254,11 +254,11 @@ The following are not:
 * `undefined`
 * [`document.all`](https://developer.mozilla.org/en-US/docs/Web/API/Document/all)
 
-Preszr won't check your results, though (for performance reasons), and if you return anything weird it can lead to *undefined behavior*.
+Preszr won't check your results, though (for performance reasons), and if you return anything weird, it can lead to *undefined behavior*.
 
-Each `encode` function is supposed to only ever encode a single prototype. When it stumbles on some internal value (that of a property, an element of a collection, or something else), it can just give control back so `preszr` can handle encoding it. It does that using the `ctx.encode` method. 
+Each `encode` function is supposed to only ever encode a single prototype. When it stumbles on some internal value (that of a property, an element of a collection, or something else), it can give control back so `preszr` can handle encoding it. It does that using the `ctx.encode` method. 
 
-`ctx.encode` is different from the previous functions called `encode` we talked about. It's only for encoding the internals of an object - it doesn't return a *preszr message* or anything like that. 
+`ctx.encode` differs from the previous functions called `encode` we discussed. It's only for encoding the internals of an object - it doesn't return a *preszr message* or anything like that. 
 
 Instead, it will always return a JSON-legal primitive that you just need to plug in the right place - either the value itself, an encoded string, or a reference (<a href="docs/supported.md">which is also a string</a>).
 
@@ -284,7 +284,7 @@ It's usually that simple.
 
 `ctx.encode` can recurse - if it needs to encode a value of the type you're encoding down the line, it will call your `encode` function again. 
 
-Calls to `encode` are, in general, hard to predict, so it's important to make sure your `encode` function doesn't cause side-effects or have an internal state.
+Calls to `encode` are generally hard to predict, so it's important to make sure your `encode` function doesn't cause side effects or have an internal state.
 
 ## Decoding
 
@@ -361,61 +361,6 @@ Unlike `ctx.encode`, `ctx.decode` is not recursive. Objects you get from it will
 
 You can have an empty decoder object, `{}`. An empty decoder object will create the object using `Object.create` and not initialize anything. I don't know why you'd want to do that though. Maybe if you're just testing the encoding part.
 
-### Caveats
-
-`preszr` has a few limitations when it comes to certain objects, however. As an example, let's take the following class that uses 
-
-#### Immutable objects
-
-`preszr` can't decode objects that can only be initialized using a constructor. Let's look at some examples.
-
-This object uses [JS private fields](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_class_fields) that can't be modified from outside the class:
-
-```javascript
-class ClassWithPrivateField {
-    #value;
-    constructor(input) {
-        this.#value = input;
-    }
-    get value() {
-        return this.#value;
-    }
-}
-```
-
-Something similar can be achieved with a closure:
-
-```javascript
-function createObject(value) {
-    return {
-        get value() {
-            return value;
-		}
-    }
-}
-```
-
-Any decoder will need to decode `value` (since it's internal data that could be an object), but this raises a problem:
-
-1. During **CREATE**, decoding values isn't possible since objects haven't been created yet.
-2. During **INIT**, you can't modify `obj.value` and you can't return a new object either. 
-
-In some cases, you can forcibly call the constructor on an existing object, but not in the cases above. `preszr` doesn't allow you to break the laws of JavaScript, so you'll need to change your code if you want to encode these.
-
-#### Objects with stray keys
-
-`preszr` doesn't handle things like `Set` objects with string object keys:
-
-```javascript
-Object.assign(new Set(), {
-    a: 1
-})
-```
-
-Seeing it's a `Set`, `preszr` will invoke the set encoding logic, which doesn't look at any keys at all.
-
-
-
 ## Symbols
 
 `preszr` can also deal with [JavaScript symbols](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol), both as values and as object keys. Just like with prototypes, `preszr` knows about all the [built-in symbols](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol#static_properties) (though most are not relevant to data), but you'll need to tell it about your custom symbols so it can reproduce them.
@@ -472,22 +417,22 @@ But first, let's look at how `preszr` manages these versions in general.
 
 The rule is that two encodings with the same *key* can't exist on a `Preszr` object.
 
-* For built-in encodings, the version is always `0`. Instead of using this system, **any change in a built-in encoding will cause a change in the major version of the library.**
+* For built-in encodings, the version is always `0`. Instead of using this system, **any change in a built-in encoding will cause a change in the library’s major version.**
 * For user-defined encodings, the version defaults to `1`, but can be any positive, [safe](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isSafeInteger#:~:text=A%20safe%20integer%20is%20an,fit%20the%20IEEE%2D754%20representation.) integer.
 
 Another rule is that two encodings with the same name must encode the same prototype.
 
-When `preszr` receives a value to encode, it will encode it using the encoding that has the highest version, noting that version down in the *preszr message*. It won't do this when decoding, though. Instead, `preszr` will try to find a decoder that matches the encoding key exactly. If it can't find, it will throw an error.
+When `preszr` receives a value to encode, it will encode it using the encoding with the highest version, noting that version down in the *preszr message*. It won't do this when decoding, though. Instead, `preszr` will try to find a decoder that matches the encoding key exactly. If it can't find, it will throw an error.
 
 This follows the [robustness principle](https://en.wikipedia.org/wiki/Robustness_principle):
 
 > Be conservative in what you send, be liberal in what you accept
 
-It means that you'll be able to read legacy data, but never write it, and updating it is as easy as decoding and then re-encoding it. It was mainly designed this way to make the versioning system as simple as possible, though.
+It means that you'll be able to read legacy data, but never write it, and updating it is as easy as decoding and then re-encoding it. 
 
 When you version an encoding, there are a few more restrictions you have to follow:
 
-* If you have a versioned encoding, each instance must have the `version` property - it will never be inferred This makes it clear that your encoding is versioned.
+* If you have a versioned encoding, each instance must have the `version` property - it will never be inferred. This makes it clear that your encoding is versioned.
 * You must also specify the `name` property. This is because a change in your object can cause the inferred name to change.
 
 Versioned encodings still go into the `encodes` list of encodings, in any order, as separate objects. Grouping them together doesn't do anything.

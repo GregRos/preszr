@@ -130,3 +130,74 @@ test("unrecognized symbol name generator", t => {
         )
     });
 }
+{
+    const knownSymbolTest = testBuilder(Preszr())
+        .title(x => x.original.description)
+        .getSimple();
+
+    test(
+        knownSymbolTest,
+        Symbol.asyncIterator,
+        preszr(encoded(0, "Symbol.asyncIterator.S"))
+    );
+
+    test(
+        knownSymbolTest,
+        Symbol.hasInstance,
+        preszr(encoded(0, "Symbol.hasInstance.S"))
+    );
+
+    test(
+        knownSymbolTest,
+        Symbol.isConcatSpreadable,
+        preszr(encoded(0, "Symbol.isConcatSpreadable.S"))
+    );
+
+    test(
+        knownSymbolTest,
+        Symbol.iterator,
+        preszr(encoded(0, "Symbol.iterator.S"))
+    );
+
+    test(knownSymbolTest, Symbol.match, preszr(encoded(0, "Symbol.match.S")));
+
+    test(
+        knownSymbolTest,
+        Symbol.matchAll,
+        preszr(encoded(0, "Symbol.matchAll.S"))
+    );
+
+    test(
+        knownSymbolTest,
+        Symbol.replace,
+        preszr(encoded(0, "Symbol.replace.S"))
+    );
+
+    test(knownSymbolTest, Symbol.search, preszr(encoded(0, "Symbol.search.S")));
+
+    test(
+        knownSymbolTest,
+        Symbol.species,
+        preszr(encoded(0, "Symbol.species.S"))
+    );
+
+    test(knownSymbolTest, Symbol.split, preszr(encoded(0, "Symbol.split.S")));
+
+    test(
+        knownSymbolTest,
+        Symbol.toPrimitive,
+        preszr(encoded(0, "Symbol.toPrimitive.S"))
+    );
+
+    test(
+        knownSymbolTest,
+        Symbol.toStringTag,
+        preszr(encoded(0, "Symbol.toStringTag.S"))
+    );
+
+    test(
+        knownSymbolTest,
+        Symbol.unscopables,
+        preszr(encoded(0, "Symbol.unscopables.S"))
+    );
+}
