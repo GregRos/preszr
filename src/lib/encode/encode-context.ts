@@ -54,10 +54,11 @@ export class EncodeCtx implements EncodeContext {
         return inner;
     }
 
-    private _initNextCell(value: any): Reference {
-        this._entityStream.push(value);
+    private _initNextCell(real: any, representation: any): Reference {
         const ref = `${this._entityStream.length}`;
-        this._objectToRef.set(value, ref);
+
+        this._entityStream.push(representation);
+        this._objectToRef.set(real, ref);
         return ref;
     }
 
@@ -69,18 +70,18 @@ export class EncodeCtx implements EncodeContext {
 
     private _createNewRef(value: Entity): Reference {
         const { _entityStream: msg, _encodingSpec, _metadata, _store } = this;
-        const index = msg.length;
         if (typeof value === "string") {
-            return this._initNextCell(value);
+            return this._initNextCell(value, value);
         }
         if (typeof value === "symbol") {
+            const index = msg.length;
             const encoding = this._mustGetBySymbol(value);
             this._encodingSpec[index] =
                 this._getEncodingIndexAndRegister(encoding);
             if ("metadata" in encoding && encoding.metadata) {
                 this._metadata[index] = encoding.metadata;
             }
-            return this._initNextCell(0);
+            return this._initNextCell(value, 0);
         }
 
         if (this._requirementsStack.has(value)) {
@@ -98,23 +99,25 @@ export class EncodeCtx implements EncodeContext {
                 this._requirementsStack.delete(value);
             }
         }
+
         // Now that the object's REQUIREMENTS stage is finished, we can create a cell for it.
-        const ref = this._initNextCell(value);
+        const ref = this._initNextCell(value, 0);
+
         const preszed = encoding.encoder.encode(value, this);
         this.self = null!;
         // _isImplicit will be set only on specific library encodings.
         // For example `object`. This is to make sure regular objects don't get the extra
         // characters needed to mark their encodings.
         if (!this._isImplicit) {
-            _encodingSpec[index] = this._getEncodingIndexAndRegister(encoding);
+            _encodingSpec[ref] = this._getEncodingIndexAndRegister(encoding);
         }
 
         this._isImplicit = false;
         if (this.metadata !== undefined) {
-            _metadata[index] = this.metadata;
+            _metadata[ref] = this.metadata;
         }
         this.metadata = oldMetadata;
-        msg[index] = preszed;
+        msg[+ref] = preszed;
         return ref;
     }
 
@@ -139,14 +142,15 @@ export class EncodeCtx implements EncodeContext {
         return foundRef;
     }
 
-    finish() {
+    finish(selected: string) {
         // This returns a message we have so far.
         const wm = this._entityStream;
         wm[0] = [
             version,
             this._makeEncodingKeys(),
             this._encodingSpec,
-            this._metadata
+            this._metadata,
+            +selected
         ];
         return wm;
     }

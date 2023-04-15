@@ -9,8 +9,6 @@ const primtiveTests = testBuilder(defaultPreszr)
     )
     .getSimple();
 
-test.failing("check test fails on mismatch", primtiveTests, 1, 2);
-
 test(primtiveTests, true, true);
 test(primtiveTests, null, null);
 test(primtiveTests, Infinity, "Infinity");

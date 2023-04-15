@@ -1,9 +1,11 @@
 import test from "ava";
 import { getPrototypeName } from "@lib/utils";
-import { encoded, preszr, testBuilder } from "../tools";
+import { encoded, preszr, preszrReturnAt, testBuilder } from "../tools";
 import { defaultPreszr } from "@lib/default";
 import { createArrayBuffer, createSharedArrayBuffer } from "../utils";
 import { FixedIndexes } from "@lib/encodings/fixed-indexes";
+import { decode, encode } from "@lib";
+import { TypedArrayConstructor } from "@lib/encodings/binary";
 
 const binaryOutputDeepEqual = testBuilder(defaultPreszr)
     .title(({ original }) => `Binary Type ${getPrototypeName(original)}`)
@@ -30,6 +32,15 @@ test(
     preszr(encoded(base64, FixedIndexes.ArrayBuffer))
 );
 
+function makeTypedArray(
+    type: FixedIndexes,
+    bufferRef: string,
+    length: number,
+    offset = 0
+) {
+    return encoded([bufferRef, offset, length], type);
+}
+
 test(
     binaryOutputDeepEqual,
     createSharedArrayBuffer(1, 2, 3, 4, 5, 6, 7, 8),
@@ -39,109 +50,161 @@ test(
 test(
     binaryOutputDeepEqual,
     new Uint8Array(arrayBuffer),
-    preszr(
+    preszrReturnAt(
+        2,
         encoded(base64, FixedIndexes.ArrayBuffer),
-        encoded("1", FixedIndexes.Uint8Array)
+        makeTypedArray(FixedIndexes.Uint8Array, "1", arrayBuffer.byteLength)
     )
 );
 
 test(
     binaryOutputDeepEqual,
     new Uint16Array(arrayBuffer),
-    preszr(
+    preszrReturnAt(
+        2,
         encoded(base64, FixedIndexes.ArrayBuffer),
-        encoded("1", FixedIndexes.Uint16Array)
+        makeTypedArray(
+            FixedIndexes.Uint16Array,
+            "1",
+            arrayBuffer.byteLength / 2
+        )
     )
 );
 
 test(
     binaryOutputDeepEqual,
     new Uint32Array(arrayBuffer),
-    preszr(
+    preszrReturnAt(
+        2,
         encoded(base64, FixedIndexes.ArrayBuffer),
-        encoded("1", FixedIndexes.Uint32Array)
+        makeTypedArray(
+            FixedIndexes.Uint32Array,
+            "1",
+            arrayBuffer.byteLength / 4
+        )
     )
 );
 
 test(
     binaryOutputDeepEqual,
     new Uint8ClampedArray(arrayBuffer),
-    preszr(
+    preszrReturnAt(
+        2,
         encoded(base64, FixedIndexes.ArrayBuffer),
-        encoded("1", FixedIndexes.Uint8ClampedArray)
+        makeTypedArray(
+            FixedIndexes.Uint8ClampedArray,
+            "1",
+            arrayBuffer.byteLength
+        )
     )
 );
 
 test(
     binaryOutputDeepEqual,
     new BigUint64Array(arrayBuffer),
-    preszr(
+    preszrReturnAt(
+        2,
         encoded(base64, FixedIndexes.ArrayBuffer),
-        encoded("1", FixedIndexes.BigUint64Array)
+        makeTypedArray(
+            FixedIndexes.BigUint64Array,
+            "1",
+            arrayBuffer.byteLength / 8
+        )
     )
 );
 
 test(
     binaryOutputDeepEqual,
     new Int8Array(arrayBuffer),
-    preszr(
+    preszrReturnAt(
+        2,
         encoded(base64, FixedIndexes.ArrayBuffer),
-        encoded("1", FixedIndexes.Int8Array)
+        makeTypedArray(FixedIndexes.Int8Array, "1", arrayBuffer.byteLength)
     )
 );
 
 test(
     binaryOutputDeepEqual,
     new Int16Array(arrayBuffer),
-    preszr(
+    preszrReturnAt(
+        2,
         encoded(base64, FixedIndexes.ArrayBuffer),
-        encoded("1", FixedIndexes.Int16Array)
+        makeTypedArray(FixedIndexes.Int16Array, "1", arrayBuffer.byteLength / 2)
     )
 );
 
 test(
     binaryOutputDeepEqual,
     new Int32Array(arrayBuffer),
-    preszr(
+    preszrReturnAt(
+        2,
         encoded(base64, FixedIndexes.ArrayBuffer),
-        encoded("1", FixedIndexes.Int32Array)
+        makeTypedArray(FixedIndexes.Int32Array, "1", arrayBuffer.byteLength / 4)
     )
 );
 
 test(
     binaryOutputDeepEqual,
     new BigInt64Array(arrayBuffer),
-    preszr(
+    preszrReturnAt(
+        2,
         encoded(base64, FixedIndexes.ArrayBuffer),
-        encoded("1", FixedIndexes.BigInt64Array)
+        makeTypedArray(
+            FixedIndexes.BigInt64Array,
+            "1",
+            arrayBuffer.byteLength / 8
+        )
     )
 );
 
 test(
     binaryOutputDeepEqual,
     new Float32Array(arrayBuffer),
-    preszr(
+    preszrReturnAt(
+        2,
         encoded(base64, FixedIndexes.ArrayBuffer),
-        encoded("1", FixedIndexes.Float32Array)
+        makeTypedArray(
+            FixedIndexes.Float32Array,
+            "1",
+            arrayBuffer.byteLength / 4
+        )
     )
 );
 
 test(
     binaryOutputDeepEqual,
     new Float64Array(arrayBuffer),
-    preszr(
+    preszrReturnAt(
+        2,
         encoded(base64, FixedIndexes.ArrayBuffer),
-        encoded("1", FixedIndexes.Float64Array)
+        makeTypedArray(
+            FixedIndexes.Float64Array,
+            "1",
+            arrayBuffer.byteLength / 8
+        )
     )
 );
 
 test(
     binaryOutputDeepEqual,
     new DataView(arrayBuffer),
-    preszr(encoded(base64, FixedIndexes.DataView))
+    preszrReturnAt(
+        2,
+        encoded(base64, FixedIndexes.ArrayBuffer),
+        makeTypedArray(FixedIndexes.DataView, "1", arrayBuffer.byteLength)
+    )
 );
 
 {
     const commonData = new Uint8Array([1, 2, 3]);
-    const a = new Uint8Array(commonData.buffer, 4);
+    const b = new Uint8Array(commonData.buffer, 1);
+
+    test("arrays with common buffer", t => {
+        const msg = {
+            a: commonData,
+            b: b
+        };
+        const recoded = decode(encode(msg)) as typeof msg;
+        t.is(recoded.a.buffer, recoded.b.buffer);
+    });
 }

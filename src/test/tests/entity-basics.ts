@@ -21,11 +21,12 @@ test("decoding - error when trying to decode anomalous object", t => {
         [], // no header
         [1], // invalid header
         [[]], // no version
-        [[pkgVersion, [], {}, {}]], // no data
+        [[pkgVersion, [], {}, {}, 1]], // no data
         [["g", {}, {}], 1], // non-numeric version
         [[1, {}, {}], 1], // non-string version
         [[pkgVersion], 1], // no encoding info
-        [[pkgVersion, {}], 1] // no metadata,
+        [[pkgVersion, {}], 1], // no metadata,
+        [[pkgVersion, [], {}, {}], 1] // no root reference
     ] as any[];
 
     for (const payload of badPayloads) {
@@ -34,14 +35,14 @@ test("decoding - error when trying to decode anomalous object", t => {
 });
 
 test("decoding - error when trying to decode wrong version", t => {
-    const encoded = [[pkgVersion + 1, [], {}, {}], {}] as any;
+    const encoded = [[pkgVersion + 1, [], {}, {}, 1], {}] as any;
     t.throws(() => decode(encoded), {
         code: "decode/input/version/mismatch"
     });
 });
 
 test("decoding error - unknown encoding", t => {
-    const encoded = [[pkgVersion, ["test.v0"], { 1: 0 }, {}], 0] as any;
+    const encoded = [[pkgVersion, ["test.v0"], { 1: 0 }, {}, 1], 0] as any;
     t.throws(() => decode(encoded), {
         code: "decode/keys/unknown-proto"
     });

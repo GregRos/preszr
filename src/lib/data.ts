@@ -21,7 +21,7 @@ export interface Metadata {
 
 export type KeyList = string[];
 
-export type Header = [Version, KeyList, KeyMap, Metadata];
+export type Header = [Version, KeyList, KeyMap, Metadata, number];
 
 export type Reference = string;
 

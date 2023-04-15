@@ -133,6 +133,7 @@ export const errorDefinitions = {
     "decode/input/header/no-metadata"() {
         return `Header had no metadata, or metadata was not a plain object.`;
     },
+    "decode/input/header/no-root": () => `Header had no root reference.`,
     "decode/input/header/no-keys"() {
         return `Header had no key list, or key list wasn't an array.`;
     },

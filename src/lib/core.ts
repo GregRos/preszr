@@ -76,7 +76,9 @@ export class Preszr {
                     Array.isArray(header[2])
                 ) {
                     throw getErrorByCode("decode/input/header/no-metadata")();
-                } else if (header.length > 4) {
+                } else if (typeof header[4] !== "number") {
+                    throw getErrorByCode("decode/input/header/no-root")();
+                } else if (header.length > 5) {
                     throw getErrorByCode("decode/input/header/too-long")(
                         header
                     );
@@ -106,7 +108,7 @@ export class Preszr {
         // We check the header is in Preszr format.
         this._checkInputHeader(input);
         // Deconstruct the header to its parts
-        const [[, encodingKeys, encodingSpec, metadata]] = input;
+        const [[, encodingKeys, encodingSpec, metadata, root]] = input;
         const targetArray = Array(input.length - 1);
         const needToInit = new Map<number, PrototypeEncoding>();
         // For optimization purposes, create one instance of `InitContext`.
@@ -169,7 +171,7 @@ export class Preszr {
             );
             ctx.self = null!;
         }
-        return targetArray[1];
+        return targetArray[root];
     }
 
     encode(root: any): PreszrOutput {
@@ -178,8 +180,8 @@ export class Preszr {
             return tryScalar;
         }
         const ctx = new EncodeCtx(this._store);
-        ctx.encode(root);
-        const result = ctx.finish();
+        const ref = ctx.encode(root) as string;
+        const result = ctx.finish(ref);
         return result;
     }
 }
