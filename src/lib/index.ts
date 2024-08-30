@@ -3,9 +3,13 @@ import { PreszrOutput } from "./data";
 import {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     EncodingSpecifier,
-    PreszrConfig
+    PreszrConfig,
+    type CtorSpecifier,
+    type PrototypeSpecifier,
+    type SymbolSpecifier
 } from "./interface";
 import { defaultPreszr } from "./default";
+import type { isSimpleEncodingSpec } from "./utils";
 
 export {
     Encoding,
@@ -34,6 +38,13 @@ export const encode = (value: unknown): PreszrOutput =>
 export const decode = <T = unknown>(encoded: PreszrOutput): T =>
     defaultPreszr.decode(encoded) as T;
 
+type SpecArray<Ts extends any[]> = {
+    [K in keyof Ts]: Ts[K] extends null | object
+        ? PrototypeSpecifier<Ts[K]> | CtorSpecifier<Ts[K]>
+        : Ts[K] extends symbol
+        ? Ts[K] | SymbolSpecifier<Ts[K]>
+        : never;
+};
 /**
  * Creates a new `Preszr` instance. Can be called with or without `new`.
  * @param config The configuration. Should be the same in the source and destination.
@@ -47,12 +58,12 @@ export const Preszr = function Preszr(arg: any) {
     }
     return new PreszrClass(arg ?? {});
 } as unknown as {
-    (specs: EncodingSpecifier[]): Preszr;
-    (config: PreszrConfig): Preszr;
+    <Ts extends any[]>(specs: SpecArray<Ts>): Preszr;
+    <Ts extends any[]>(config: PreszrConfig<SpecArray<Ts>>): Preszr;
     (): Preszr;
-    new (specs: EncodingSpecifier[]): Preszr;
+    new <Ts extends any[]>(specs: SpecArray<Ts>): Preszr;
     new (): Preszr;
-    new (config: PreszrConfig): Preszr;
+    new <Ts extends any[]>(config: PreszrConfig<SpecArray<Ts>>): Preszr;
 };
 
 /**

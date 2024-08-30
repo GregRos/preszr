@@ -133,8 +133,8 @@ export const dataViewEncoding = defineProtoEncoding(
                 ];
             }
         };
-        decoder: Decoder = {
-            create(encoded: any[], ctx: CreateContext): unknown {
+        decoder: Decoder<DataView> = {
+            create(encoded: any[], ctx: CreateContext) {
                 const [buffer, offset, length] = encoded;
                 return new DataView(ctx.decodeUnsafe(buffer), offset, length);
             }

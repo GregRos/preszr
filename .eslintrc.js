@@ -4,5 +4,8 @@ module.exports = {
     extends: ["@gregros/eslint-config"],
     parserOptions: {
         project: [path.join(__dirname, "tsconfig.json")]
+    },
+    rules: {
+        "@typescript-eslint/ban-ts-comment": "off",
     }
 };

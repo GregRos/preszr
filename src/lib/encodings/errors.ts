@@ -27,7 +27,6 @@ export function createErrorEncoding(
                     const encodedAsObject = encodeObject(
                         input,
                         ctx,
-                        false,
                         errorProperties
                     );
                     (ctx as any)._isImplicit = false;

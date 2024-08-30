@@ -7,6 +7,8 @@ import {
     SymbolSpecifier
 } from "../interface";
 import { getErrorByCode } from "../errors/texts";
+import { decode_badHeader } from "../errors/texts2";
+import { ParseError } from "../errors/errors";
 
 export interface ProtoEncodingKeyInfo {
     type: "prototype";
@@ -26,8 +28,8 @@ export type PrototypeEncodingCtor<T extends object> = {
 };
 
 export function isSymbolSpecifier(
-    encoding: PrototypeSpecifier | SymbolSpecifier
-): encoding is SymbolSpecifier {
+    encoding: PrototypeSpecifier<any> | SymbolSpecifier<any>
+): encoding is SymbolSpecifier<any> {
     return typeof encoding.encodes === "symbol";
 }
 
@@ -40,7 +42,7 @@ export function defineProtoEncoding<Type extends object>(
 export function mustParseEncodingKey(key: string): EncodingKeyInfo {
     const lastDot = key.lastIndexOf(".");
     if (lastDot === -1) {
-        throw getErrorByCode("decode/keys/bad-format")(key);
+        throw decode_badHeader(ParseError.header__key_unknown_format, key);
     }
     const strPostfix = key.slice(lastDot + 1);
     const name = key.slice(0, lastDot);
@@ -51,14 +53,14 @@ export function mustParseEncodingKey(key: string): EncodingKeyInfo {
         };
     }
     if (!strPostfix.startsWith("v")) {
-        throw getErrorByCode("decode/keys/bad-format")(key);
+        throw decode_badHeader(ParseError.header__key_unknown_format, key);
     }
     const strVersion = strPostfix.slice(1);
     if (!isNumericString(strVersion)) {
-        throw getErrorByCode("decode/keys/bad-format")(key);
+        throw decode_badHeader(ParseError.header__key_unknown_format, key);
     }
     if (!name) {
-        throw getErrorByCode("decode/keys/bad-format")(key);
+        throw decode_badHeader(ParseError.header__key_unknown_format, key);
     }
     return {
         type: "prototype",

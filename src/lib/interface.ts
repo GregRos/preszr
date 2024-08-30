@@ -1,6 +1,12 @@
 import { EncodedEntity, EncodedScalar, Reference, ScalarValue } from "./data";
-import { getPrototypeName, getSymbolName } from "./utils";
+import { getProtoName, getSymbolName } from "./utils";
 import { getErrorByCode } from "./errors/texts";
+import {
+    bug_fixedIndexCollision,
+    config_encoding_failedToInfer,
+    config_encoding_invalid_encodes,
+    config_encoding_targetCollision
+} from "./errors/texts2";
 
 /**
  * The context used by the encoding process.
@@ -111,6 +117,12 @@ export interface CreateContext {
      * Read the metadata value for the entity.
      */
     readonly metadata: any;
+
+    /**
+     * An extra object that can be used to store state during the decoding process.
+     * It can be accessed during the INIT phase.
+     */
+    set state(value: any);
 }
 
 /**
@@ -123,74 +135,79 @@ export interface InitContext {
 
     // Resolves references and decodes encoded scalars. This isn't a recursive call.
     decode(value: ScalarValue): unknown;
+    readonly state: any;
 }
 
 /**
  * The decoding logic for a prototype encoding.
  */
-export interface Decoder {
+export interface Decoder<T> {
     // Creates an instance of the entity without referencing any other encoded entities.
-    create(encoded: EncodedEntity, ctx: CreateContext): unknown;
+    create(encoded: EncodedEntity, ctx: CreateContext): T;
 
     // Fills in additional data by resolving references to other entities.
-    init?(target: unknown, encoded: EncodedEntity, ctx: InitContext): void;
+    init?(target: T, encoded: EncodedEntity, ctx: InitContext): void;
 }
 
 /**
  * Specifies a prototype encoding. Missing fields will be filled in automatically.
  */
-export interface PrototypeSpecifier {
+export interface PrototypeSpecifier<T extends object | null> {
     // The key of the encoding. Must be unique. Will be inferred from the prototype if missing.
     name?: string | null;
     // Optionally, a safe, positive integer. Defaults to 1.
     version?: number;
     // The prototype or constructor.
-    encodes: object | Function;
+    encodes: T;
     // The decoding logic. If missing, the default decoding will be used, which will fill in
     // the object's properties and attach the correct prototype.
-    decoder?: Decoder;
+    decoder?: Decoder<T>;
     // The encoding logic. If missing, the default encode function will be used, which
     // will iterate over the object's own enumerable properties and recursively encode them.
-    encode?(input: any, ctx: EncodeContext): EncodedEntity;
+    encode?(input: T, ctx: EncodeContext): EncodedEntity;
 }
 
 /**
  * A full symbol encoding.
  */
-export interface SymbolSpecifier {
+export interface SymbolSpecifier<T extends symbol> {
     name: string;
-    encodes: symbol;
+    encodes: T;
 }
 
 /**
  * A full preszr encoding of any type.
  */
 export type Encoding = SymbolEncoding | PrototypeEncoding<any>;
+
+export type CtorSpecifier<T> = { new (...args: any[]): T };
+
 /**
  * These encodings specifiers can't be confused for configuration objects or
  * prototypes.
  */
-export type BasicSpecifier = symbol | Function;
+export type BasicSpecifier<T> = CtorSpecifier<T> | (T & symbol);
 
 /**
  * An encoding specifier. Can be a symbol or constructor for a shorthand
  * symbol or prototype encoding. You can also give symbol or prototype encoding specifier
  * if you want to be more explicit.
  */
-export type EncodingSpecifier =
-    | BasicSpecifier
-    | PrototypeSpecifier
-    | SymbolSpecifier;
+export type EncodingSpecifier<T = any> =
+    | BasicSpecifier<T>
+    | CtorSpecifier<T>
+    | PrototypeSpecifier<T & object>
+    | SymbolSpecifier<T & symbol>;
 
 /**
  * Configuration for an Preszr instance.
  */
-export interface PreszrConfig {
+export interface PreszrConfig<Specifiers extends EncodingSpecifier[]> {
     /**
      * An array of encoding specifiers. If you put your constructors and symbols here,
      * the Preszr will recognize them.
      */
-    encodes: EncodingSpecifier[];
+    encodes: Specifiers;
 }
 
 export abstract class BaseEncoding {
@@ -219,6 +236,10 @@ export class SymbolEncoding extends BaseEncoding {
         super();
     }
 
+    get version() {
+        return "S";
+    }
+
     protected _toString(): string {
         return `[PreszrSymbolEncoding "${this.name}" ${getSymbolName(
             this.encodes
@@ -228,22 +249,25 @@ export class SymbolEncoding extends BaseEncoding {
     get key() {
         return `${this.name}.S`;
     }
+    get simpleKey() {
+        return this.name;
+    }
 
     static fromSymbol(s: symbol) {
         const name = getSymbolName(s);
         if (!name) {
-            throw getErrorByCode("config/symbol/no-name")(s);
+            throw config_encoding_failedToInfer(s);
         }
         return new SymbolEncoding(name, s);
     }
 
-    static fromSpecifier(spec: SymbolSpecifier) {
+    static fromSpecifier<T extends symbol>(spec: SymbolSpecifier<T>) {
         if (!spec.encodes) {
-            throw getErrorByCode("config/spec/no-encodes")();
+            throw config_encoding_invalid_encodes(spec);
         }
         const name = spec.name ?? getSymbolName(spec.encodes);
         if (!name) {
-            throw getErrorByCode("config/symbol/no-name")(spec.encodes);
+            throw config_encoding_failedToInfer(spec.encodes);
         }
 
         return new SymbolEncoding(name, spec.encodes);
@@ -264,7 +288,11 @@ export abstract class PrototypeEncoding<
 
     abstract encoder: Encoder<T>;
 
-    abstract decoder: Decoder;
+    abstract decoder: Decoder<T>;
+
+    get simpleKey() {
+        return this.version > 0 ? this.key : this.name.replace("/", "");
+    }
 
     get key() {
         return `${this.name}.v${this.version}`;
@@ -273,21 +301,12 @@ export abstract class PrototypeEncoding<
     protected _toString(): string {
         return `[PreszrPrototypeEncoding "${this.name}@${
             this.version
-        }" ${getPrototypeName(this.encodes)}]`;
+        }" ${getProtoName(this.encodes)}]`;
     }
 
     mustBeCompatible(other: PrototypeEncoding) {
-        if (this.encodes !== other.encodes) {
-            throw getErrorByCode("config/proto/proto-collision")(other, this);
-        }
         if (this.name !== other.name) {
-            throw getErrorByCode("config/proto/name-collision")(other, this);
-        }
-        if (this.fixedIndex !== other.fixedIndex) {
-            throw getErrorByCode("bug/config/fixed-index-collision")(
-                this,
-                other
-            );
+            throw config_encoding_targetCollision(this, other);
         }
     }
 }

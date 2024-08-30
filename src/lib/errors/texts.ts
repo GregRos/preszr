@@ -1,26 +1,26 @@
 import { Encoding, PrototypeEncoding, SymbolEncoding } from "../interface";
-import { getClassName, getCtorName, getPrototypeName } from "../utils";
-import { PreszrError } from "./index";
+import { getClassName, getCtorName, getProtoName } from "../utils";
+import { Preszr } from "./index";
 
-export const errorDefinitions = {
+const aaa = {
     "bug/config/fixed-index-collision"(nw: Encoding, existing: Encoding) {
-        return `Couldn't register ${nw} because ${existing} has the same fixed index.`;
+        return `Encodings ${nw}, ${existing} have the same fixed index ${nw.fixedIndex}. This is a bug.`;
     },
-    "bug/config/unknown-encoding"(encoding: any) {
-        return `Encoding ${encoding} was of an unknown type.`;
+    "bug/config/unknown-encoding"(encoding: any, type: string) {
+        return `Type of ${encoding} was '${type}', which is unknown. This is a bug,`;
     },
     "bug/encode/proto-without-match"(proto: object) {
-        return `Failed to find an encoding for prototype ${getPrototypeName(
+        return `Failed to find an encoding for prototype ${getProtoName(
             proto
         )}`;
     },
     "bug/encode/no-highest-version"(encoding: PrototypeEncoding<any>) {
-        return `No max version set for prototype ${getPrototypeName(
+        return `No max version set for prototype ${getProtoName(
             encoding.encodes
         )}`;
     },
     "config/bad-type"(value: any) {
-        return `Configobject passed to Preszr must be an object, but was a ${typeof value}`;
+        return `  passed to Preszr must be an object, but was a ${typeof value}`;
     },
     "config/encodes/not-array"(value: any) {
         return `config.encodes must be an array, but was: ${value}`;
@@ -59,7 +59,7 @@ export const errorDefinitions = {
         return `'encodes' property on a spec must be a symbol, function, or object. It was a ${type}.`;
     },
     "config/spec/name-illegal-builtin"(proto: object) {
-        return `'Name' property is illegal because ${getPrototypeName(
+        return `'Name' property is illegal because ${getProtoName(
             proto
         )} is built-in. Remove it.`;
     },
@@ -133,7 +133,8 @@ export const errorDefinitions = {
     "decode/input/header/no-metadata"() {
         return `Header had no metadata, or metadata was not a plain object.`;
     },
-    "decode/input/header/no-root": () => `Header had no root reference.`,
+    "decode/input/header/no-root": (value: any) =>
+        `Header had no root reference; it was ${value}.`,
     "decode/input/header/no-keys"() {
         return `Header had no key list, or key list wasn't an array.`;
     },
@@ -184,6 +185,7 @@ export const errorDefinitions = {
         return `No symbol encoding named ${name}.`;
     }
 };
+export const errorDefinitions = {};
 
 export type ErrorDefinitions = typeof errorDefinitions;
 
@@ -193,6 +195,6 @@ export function getErrorByCode<T extends ErrorCode>(code: T) {
     const func = errorDefinitions[code];
     return (...args: Parameters<typeof func>) => {
         const message = (func as any).apply(errorDefinitions, args);
-        return new PreszrError(code, message);
+        return new Preszr(code, message);
     };
 }

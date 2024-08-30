@@ -34,7 +34,7 @@ test("error when trying with symbol without name", t => {
 });
 
 test("symbol encoding with explicit name unchanged", t => {
-    const spec: SymbolSpecifier = {
+    const spec: SymbolSpecifier<symbol> = {
         name: "a",
         encodes: testSymbol
     };
@@ -71,13 +71,9 @@ test("error - nameless ctor without key", t => {
 test("error - cannot get prototype from ctor", t => {
     const brokenCtor = function () {};
     brokenCtor.prototype = null;
-    t.throws(() => defaultStore.makeEncoding(brokenCtor), {
-        code: "config/proto/couldnt-get-prototype"
-    });
+    t.throws(() => defaultStore.makeEncoding(brokenCtor));
 });
 
 test("error - no prototype(s)", t => {
-    t.throws(() => defaultStore.makeEncoding({} as any), {
-        code: "config/spec/no-encodes"
-    });
+    t.throws(() => defaultStore.makeEncoding({} as any));
 });

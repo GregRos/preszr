@@ -1,4 +1,4 @@
-import { isNumeric } from "./utils";
+import { isReference } from "./utils";
 import { _BigInt } from "./opt-types";
 
 export type Version = string;
@@ -42,10 +42,7 @@ export const infinityEncoding = "Infinity";
 export const negInfinityEncoding = "-Infinity";
 export const negZeroEncoding = "-0";
 export const nanEncoding = "NaN";
-
 export const noResultPlaceholder = "";
-export const unknownScalar = "X";
-export const badType = "B";
 export function tryEncodeScalar(num: any): EncodedScalar | Primitive {
     if (num === null || typeof num === "boolean") {
         return num;
@@ -74,32 +71,75 @@ export function tryEncodeScalar(num: any): EncodedScalar | Primitive {
     return noResultPlaceholder;
 }
 
-export function tryDecodeScalar(candidate: any) {
+export const enum ResultType {
+    Scalar,
+    Reference,
+    BadType,
+    BadString
+}
+
+export type DecodeScalarResult =
+    | {
+          type: ResultType.Scalar;
+          value: Primitive;
+      }
+    | {
+          type: ResultType.Reference;
+          value: number;
+      }
+    | {
+          type: ResultType.BadType;
+          value: string;
+      }
+    | {
+          type: ResultType.BadString;
+          value: undefined;
+      };
+
+const decodeResultBox = {
+    type: ResultType.Scalar,
+    value: 1
+} as DecodeScalarResult;
+const badType = { type: ResultType.BadType, value: undefined } as const;
+const badString = { type: ResultType.BadString, value: undefined } as const;
+export function tryDecodeScalar(candidate: any): DecodeScalarResult {
     const t = typeof candidate;
+    decodeResultBox.type = ResultType.Scalar;
     if (t === "boolean" || t === "number" || candidate === null) {
-        return candidate;
+        decodeResultBox.value = candidate;
+        return decodeResultBox;
     } else if (t === "string") {
         if (candidate.startsWith("B")) {
             const result = _BigInt(candidate.slice(1));
-            return result;
+            decodeResultBox.value = result;
+            return decodeResultBox;
         }
         switch (candidate) {
             case infinityEncoding:
-                return Infinity;
+                decodeResultBox.value = Infinity;
+                return decodeResultBox;
             case negInfinityEncoding:
-                return -Infinity;
+                decodeResultBox.value = -Infinity;
+                return decodeResultBox;
             case nanEncoding:
-                return NaN;
+                decodeResultBox.value = NaN;
+                return decodeResultBox;
             case negZeroEncoding:
-                return -0;
+                decodeResultBox.value = -0;
+                return decodeResultBox;
             case undefinedEncoding:
-                return undefined;
+                decodeResultBox.value = undefined;
+                return decodeResultBox;
         }
-        if (isNumeric(candidate)) {
-            return noResultPlaceholder;
+        if (isReference(candidate)) {
+            decodeResultBox.type = ResultType.Reference;
+            decodeResultBox.value = +candidate;
+            return decodeResultBox;
         }
-        return unknownScalar;
+        return badString;
     } else {
-        return badType;
+        decodeResultBox.type = ResultType.BadType;
+        decodeResultBox.value = t;
+        return decodeResultBox;
     }
 }

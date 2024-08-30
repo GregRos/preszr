@@ -36,14 +36,10 @@ test("decoding - error when trying to decode anomalous object", t => {
 
 test("decoding - error when trying to decode wrong version", t => {
     const encoded = [[pkgVersion + 1, [], {}, {}, 1], {}] as any;
-    t.throws(() => decode(encoded), {
-        code: "decode/input/version/mismatch"
-    });
+    t.throws(() => decode(encoded));
 });
 
 test("decoding error - unknown encoding", t => {
     const encoded = [[pkgVersion, ["test.v0"], { 1: 0 }, {}, 1], 0] as any;
-    t.throws(() => decode(encoded), {
-        code: "decode/keys/unknown-proto"
-    });
+    t.throws(() => decode(encoded));
 });

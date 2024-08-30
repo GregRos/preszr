@@ -9,7 +9,7 @@ import { encoded, preszr, testBuilder } from "../tools";
 
     const versionedPreszr = Preszr([
         {
-            encodes: TestClass,
+            encodes: TestClass.prototype,
             version: 1,
             encode(input, ctx) {
                 return input.val;
@@ -21,7 +21,7 @@ import { encoded, preszr, testBuilder } from "../tools";
             }
         },
         {
-            encodes: TestClass,
+            encodes: TestClass.prototype,
             version: 2,
             encode(input) {
                 return input.val * 2;

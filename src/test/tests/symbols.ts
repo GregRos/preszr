@@ -84,7 +84,9 @@ test("unrecognized symbol name generator", t => {
             )
         );
         const result = knows1.decode(encodedValue);
-        const keys = Object.getOwnPropertySymbols(result);
+        const keys = Object.getOwnPropertySymbols(result).filter(
+            x => x.description !== "PRESZR_DECODED"
+        );
         t.is(keys.length, 1);
         const [symbKey] = keys;
         t.is(typeof symbKey, "symbol");

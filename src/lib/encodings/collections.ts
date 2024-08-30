@@ -28,7 +28,7 @@ export const mapEncoding = defineProtoEncoding(
             }
         };
 
-        decoder = new (class MapDecoder implements Decoder {
+        decoder = new (class MapDecoder implements Decoder<Map<any, any>> {
             create(encodedValue: any, ctx: CreateContext): any {
                 return new Map();
             }
@@ -63,7 +63,7 @@ export const setEncoding = defineProtoEncoding(
             }
         };
 
-        decoder = new (class SetDecoder implements Decoder {
+        decoder = new (class SetDecoder implements Decoder<Set<any>> {
             create(): any {
                 return new Set();
             }

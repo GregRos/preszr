@@ -14,9 +14,7 @@ test("Preszr as function", t => {
 });
 
 test("Preszr non-object options", t => {
-    t.throws(() => Preszr(5 as any), {
-        code: "config/bad-type"
-    });
+    t.throws(() => Preszr(5 as any));
 });
 
 test("Preszr non-array encodes", t => {

@@ -1,12 +1,15 @@
 import {
-    badType,
     noResultPlaceholder,
+    ResultType,
     ScalarValue,
-    tryDecodeScalar,
-    unknownScalar
+    tryDecodeScalar
 } from "../data";
+import {
+    decode_encoding_badCall,
+    decode_encoding_decode_badType,
+    decode_encoding_refOutOfBounds
+} from "../errors/texts2";
 import { PrototypeEncoding } from "../interface";
-import { getErrorByCode } from "../errors/texts";
 
 enum DecodeStage {
     Create = 0,
@@ -20,6 +23,7 @@ export class DecodeContext {
 
     constructor(private _entityStream: any[]) {}
 
+    state: any;
     next() {
         this._stage = DecodeStage.Init;
     }
@@ -30,17 +34,22 @@ export class DecodeContext {
      * @private
      */
     private _decode(value: ScalarValue) {
-        const decodedPrimitive = tryDecodeScalar(value);
-        switch (decodedPrimitive) {
-            case noResultPlaceholder:
-                const entity = this._entityStream[value as any];
-                return entity;
-            case unknownScalar:
-                throw getErrorByCode("decode/decode/unknown-scalar")(value);
-            case badType:
-                throw getErrorByCode("decode/decode/bad-type")(value);
+        const result = tryDecodeScalar(value);
+        switch (result.type) {
+            case ResultType.Reference:
+                if (result.value >= this._entityStream.length) {
+                    throw decode_encoding_refOutOfBounds(
+                        this.self,
+                        result.value
+                    );
+                }
+                return this._entityStream[result.value];
+            case ResultType.Scalar:
+                return result.value;
+            case ResultType.BadType:
+                throw decode_encoding_decode_badType(this.self, value);
             default:
-                return decodedPrimitive;
+                throw new Error("Unexpected result type");
         }
     }
 
@@ -53,21 +62,16 @@ export class DecodeContext {
      */
     decodeUnsafe(value: ScalarValue) {
         if (this._stage === DecodeStage.Init) {
-            throw getErrorByCode("decode/decode-unsafe/called-during-init")();
-        }
-        if (value !== null && typeof value === "object") {
-            throw getErrorByCode("decode/decode-unsafe/bad-type")(value);
+            throw decode_encoding_badCall(this.self, "decodeUnsafe", "INIT");
         }
         return this._decode(value);
     }
 
     decode(value: ScalarValue): unknown {
         if (this._stage === DecodeStage.Create) {
-            throw getErrorByCode("decode/decode/called-during-create")(value);
+            throw decode_encoding_badCall(this.self, "decode", "CREATE");
         }
-        if (value !== null && typeof value === "object") {
-            throw getErrorByCode("decode/decode/bad-type")(value);
-        }
+
         return this._decode(value);
     }
 }

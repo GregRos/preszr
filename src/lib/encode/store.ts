@@ -7,11 +7,22 @@ import {
     SymbolEncoding
 } from "../interface";
 import { isSymbolSpecifier, mustParseEncodingKey } from "../encodings/utils";
-import { getProto, getPrototypeName } from "../utils";
+import { getProto, getProtoName } from "../utils";
 import { FixedIndexes } from "../encodings/fixed-indexes";
 import { nullPlaceholder } from "../encodings";
 import { UserEncoding } from "../encodings/user-encoding";
 import { getErrorByCode } from "../errors/texts";
+import {
+    bug_fixedIndexCollision,
+    config_encoding_failedToInfer,
+    config_encoding_fullCollision,
+    config_nameIllegalBuiltIn,
+    config_encoding_targetCollision,
+    decode_unknownEncoding,
+    decode_unknownEncodingVersion,
+    config_encoding_bad,
+    warn_encode_unknown_prototype
+} from "../errors/texts2";
 
 export class EncodingStore {
     // We use multiple caches to speed up encoding and decoding.
@@ -69,10 +80,7 @@ export class EncodingStore {
         const existingEncoding = this._protoToEncoding.get(encoding.encodes);
         // It's illegal to have two different encodings for the same prototype, since it becomes ambiguous.
         if (existingEncoding && existingEncoding.name !== encoding.name) {
-            throw getErrorByCode("config/proto/proto-collision")(
-                existingEncoding,
-                encoding
-            );
+            throw config_encoding_targetCollision(existingEncoding, encoding);
         }
         // However, it's okay to have the same encoding with different versions reference different prototypes.
         if (!existingEncoding || existingEncoding.version < encoding.version) {
@@ -87,7 +95,7 @@ export class EncodingStore {
         } else if (encoding instanceof PrototypeEncoding) {
             this._addProtoEncoding(encoding);
         } else {
-            throw getErrorByCode("bug/config/unknown-encoding")(encoding);
+            throw new Error("Internal error – unknown encoding type.");
         }
     }
 
@@ -96,54 +104,42 @@ export class EncodingStore {
         if (fixed != null) {
             const existing = this._indexToEncoding[fixed];
             if (existing && existing.name !== encoding.name) {
-                throw getErrorByCode("bug/config/fixed-index-collision")(
-                    encoding,
-                    existing
-                );
+                throw bug_fixedIndexCollision(encoding, existing);
             }
             this._indexToEncoding[fixed] = encoding;
         }
     }
 
     makeEncodingFromCtor(ctor: Function) {
+        if (!ctor.prototype) {
+            throw config_encoding_failedToInfer(ctor);
+        }
         return this.makeEncodingFromProtoSpec({
-            encodes: ctor
+            encodes: ctor.prototype
         });
     }
 
-    makeEncodingFromProtoSpec(
-        specifier: PrototypeSpecifier
+    makeEncodingFromProtoSpec<T extends object>(
+        specifier: PrototypeSpecifier<T>
     ): PrototypeEncoding {
-        let proto: object;
-        if (typeof specifier.encodes === "function") {
-            proto = getProto(specifier.encodes);
-            if (!proto) {
-                throw getErrorByCode("config/proto/couldnt-get-prototype")(
-                    specifier.encodes
-                );
-            }
-        } else if (typeof specifier.encodes === "object") {
-            proto = specifier.encodes;
-        } else {
-            throw getErrorByCode("config/spec/bad-encodes")(specifier.encodes);
-        }
-        const builtIn = this._getBuiltInEncoding(proto);
+        const proto = specifier.encodes;
+        const builtIn = this._getBuiltInEncoding(proto as object);
         let name = specifier.name;
         let fixedIndex: number | undefined = undefined;
         if (builtIn) {
             if (name) {
-                throw getErrorByCode("config/spec/name-illegal-builtin")(proto);
+                throw config_nameIllegalBuiltIn(builtIn);
             }
             name = builtIn.name;
             fixedIndex = builtIn.fixedIndex;
         } else {
-            name ??= getPrototypeName(proto);
+            name ??= getProtoName(proto);
             if (!name) {
-                throw getErrorByCode("config/spec/proto/no-name")(proto);
+                throw config_encoding_failedToInfer(proto);
             }
         }
 
-        const encoding = new UserEncoding(
+        const encoding = new UserEncoding<T>(
             {
                 encodes: proto,
                 encode: specifier.encode,
@@ -164,10 +160,10 @@ export class EncodingStore {
             return SymbolEncoding.fromSymbol(encoding);
         }
         if (typeof encoding !== "object") {
-            throw getErrorByCode("config/spec/bad-type")(encoding);
+            throw config_encoding_bad(encoding as any);
         }
         if (!encoding.encodes) {
-            throw getErrorByCode("config/spec/no-encodes")();
+            throw config_encoding_bad(encoding);
         }
         if (isSymbolSpecifier(encoding)) {
             return SymbolEncoding.fromSpecifier(encoding);
@@ -182,7 +178,7 @@ export class EncodingStore {
                 encoding instanceof BaseEncoding
                     ? encoding
                     : this.makeEncoding(encoding);
-            this._addEncoding(fullEncoding);
+            this._addEncoding(fullEncoding as Encoding);
         }
     }
 
@@ -198,8 +194,9 @@ export class EncodingStore {
             versioned = new Map<number, PrototypeEncoding>();
             this._nameToProtoEncodings.set(encoding.name, versioned);
         }
-        if (versioned.get(encoding.version)) {
-            throw getErrorByCode("config/proto/encoding-exists")(encoding);
+        const existing = versioned.get(encoding.version);
+        if (existing) {
+            throw config_encoding_fullCollision(existing, encoding);
         }
         versioned.set(encoding.version, encoding);
         this._registerProtos(encoding);
@@ -234,14 +231,12 @@ export class EncodingStore {
         const existingByKey = this._keyToEncoding.get(
             encoding.key
         ) as SymbolEncoding;
-        if (existingByKey) {
-            throw getErrorByCode("config/symbol/name-exists")(existingByKey);
-        }
+
         if (existingBySymbol) {
-            throw getErrorByCode("config/symbol/already-encoded")(
-                existingBySymbol,
-                encoding
-            );
+            throw config_encoding_targetCollision(existingBySymbol, encoding);
+        }
+        if (existingByKey) {
+            throw config_encoding_fullCollision(existingByKey, encoding);
         }
         this._symbolToEncoding.set(encoding.encodes, encoding);
         this._keyToEncoding.set(encoding.key, encoding);
@@ -255,12 +250,6 @@ export class EncodingStore {
 
     mustGetByIndex(ix: number) {
         const encoding = this._indexToEncoding[ix];
-        if (!encoding) {
-            if (ix < FixedIndexes.End) {
-                throw getErrorByCode("decode/map/unknown-builtin-index")(ix);
-            }
-            throw getErrorByCode("decode/map/unknown-index")(ix);
-        }
         return encoding;
     }
 
@@ -275,20 +264,15 @@ export class EncodingStore {
         // info as possible.
         const info = mustParseEncodingKey(key);
         if (info.type === "symbol") {
-            throw getErrorByCode("decode/keys/unknown-symbol")(info.name);
+            throw decode_unknownEncoding("symbol", info.name);
         } else {
             const namedProtoEncoding = this._nameToProtoEncodings
                 .get(info.name)
                 ?.get(-1);
-
             if (!namedProtoEncoding) {
-                throw getErrorByCode("decode/keys/unknown-proto")(info.name);
+                throw decode_unknownEncoding("prototype", info.name);
             }
-            throw getErrorByCode("decode/keys/unknown-proto-version")(
-                info.name,
-                info.version,
-                namedProtoEncoding
-            );
+            throw decode_unknownEncodingVersion(info.name, info.version);
         }
     }
 
@@ -297,13 +281,12 @@ export class EncodingStore {
         // encoding.
         const cache = new WeakMap<object, PrototypeEncoding>();
         for (const encoding of this.getProtoEncodings()) {
-            if (!(encoding as any)) {
-                getErrorByCode("bug/encode/no-highest-version")(encoding);
-            }
             cache.set(encoding.encodes, encoding);
         }
         return cache;
     }
+
+    _warnedForPrototypes = new WeakSet<object>();
 
     mustGetByProto(obj: object): PrototypeEncoding & { name: string } {
         if (!this._cacheProtoToEncoding) {
@@ -326,14 +309,22 @@ export class EncodingStore {
                 break;
             }
             if (proto === nullPlaceholder) {
-                throw getErrorByCode("bug/encode/proto-without-match")(
-                    chain[0]
-                );
+                throw new Error("proto no match");
             }
             chain.push(proto);
         }
-        for (const proto of chain) {
+        for (const proto of chain.slice(0, 2)) {
             this._cacheProtoToEncoding.set(proto, foundEncoding);
+        }
+        if (
+            chain.length > 1 &&
+            chain[1] &&
+            !this._warnedForPrototypes.has(chain[1])
+        ) {
+            this._warnedForPrototypes.add(chain[1]);
+            console.warn(
+                warn_encode_unknown_prototype(chain[1], foundEncoding)
+            );
         }
         return foundEncoding;
     }

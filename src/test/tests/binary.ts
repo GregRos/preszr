@@ -1,14 +1,14 @@
 import test from "ava";
-import { getPrototypeName } from "@lib/utils";
 import { encoded, preszr, preszrReturnAt, testBuilder } from "../tools";
 import { defaultPreszr } from "@lib/default";
 import { createArrayBuffer, createSharedArrayBuffer } from "../utils";
 import { FixedIndexes } from "@lib/encodings/fixed-indexes";
 import { decode, encode } from "@lib";
 import { TypedArrayConstructor } from "@lib/encodings/binary";
+import { getProtoName } from "@lib/utils";
 
 const binaryOutputDeepEqual = testBuilder(defaultPreszr)
-    .title(({ original }) => `Binary Type ${getPrototypeName(original)}`)
+    .title(({ original }) => `Binary Type ${getProtoName(original)}`)
     .getSimple();
 
 test("deepEqual works on binary types", t => {

@@ -7,7 +7,7 @@ import {
     PreszrUnsupportedValue,
     PrototypeEncoding
 } from "../interface";
-import { getBuiltInEncodingName, getPrototypeName } from "../utils";
+import { getBuiltInEncodingName, getProtoName } from "../utils";
 import { ScalarValue } from "../data";
 import { FixedIndexes } from "./fixed-indexes";
 import {
@@ -26,14 +26,9 @@ import { defineProtoEncoding, wrapEncodeFunction } from "./utils";
 
 export const nullPlaceholder = {};
 
-function getAllOwnKeys(obj: object, onlyEnumerable: boolean): PropertyKey[] {
+function getAllOwnKeys(obj: object): PropertyKey[] {
     const keys = Reflect.ownKeys(obj);
-    if (onlyEnumerable) {
-        return keys.filter(x =>
-            Object.prototype.propertyIsEnumerable.call(obj, x)
-        );
-    }
-    return keys;
+    return keys.filter(x => Object.prototype.propertyIsEnumerable.call(obj, x));
 }
 
 export function decodeObject(target: any, input: any, ctx: InitContext) {
@@ -58,12 +53,11 @@ export function decodeObject(target: any, input: any, ctx: InitContext) {
 export function encodeObject(
     input: any,
     ctx: EncodeContext,
-    alsoNonEnumerable: boolean,
     explicitlyInclude = [] as string[]
 ) {
     const strKeyObject: any = {};
     let symbKeyObject: Record<string, ScalarValue> | undefined;
-    for (const key of getAllOwnKeys(input, !alsoNonEnumerable)) {
+    for (const key of getAllOwnKeys(input)) {
         const value = input[key];
         if (typeof key === "symbol") {
             symbKeyObject ??= {};
@@ -93,7 +87,7 @@ export const objectEncoding = defineProtoEncoding(
 
         encoder = {
             encode(input: any, ctx: EncodeContext) {
-                return encodeObject(input, ctx, false);
+                return encodeObject(input, ctx);
             }
         };
 
@@ -110,7 +104,7 @@ export const objectEncoding = defineProtoEncoding(
 
 function encodeAsSparseArray(input: any, ctx: EncodeContext) {
     // Sparse arrays are serialized like objects.
-    const result = encodeObject(input, ctx, false);
+    const result = encodeObject(input, ctx);
     ctx._isImplicit = false;
     return result;
 }
@@ -167,23 +161,23 @@ export const nullPrototypeEncoding = defineProtoEncoding(
         name = getBuiltInEncodingName("null");
         fixedIndex = FixedIndexes.NullProto;
         encoder = getPrototypeEncoder(null as any);
-        decoder = getPrototypeDecoder(null);
+        decoder = getPrototypeDecoder(null) as any;
     }
 );
 
-export function getPrototypeDecoder(encodes: object | null) {
+export function getPrototypeDecoder<T extends object | null>(encodes: T) {
     return {
         init: objectEncoding.decoder.init,
         create(encodedValue: any, ctx: CreateContext): any {
             return Object.create(encodes);
         }
-    } as Decoder;
+    } as Decoder<T>;
 }
 
 export function getPrototypeEncoder<T>(proto: T): Encoder<T> {
     return {
         encode(input: T, ctx: EncodeContext) {
-            const result = encodeObject(input, ctx, false);
+            const result = encodeObject(input, ctx);
             (ctx as any)._isImplicit = false;
             return result;
         }
@@ -231,7 +225,7 @@ export const unsupportedEncodings = [
 ]
     .filter(x => x[0])
     .map(([ctor, index]) => {
-        const name = getBuiltInEncodingName(getPrototypeName(ctor.prototype));
+        const name = getBuiltInEncodingName(getProtoName(ctor.prototype));
         return new UnsupportedEncoding(name, ctor.prototype, index);
     });
 
@@ -243,7 +237,7 @@ unsupportedEncodings.push(
     ].map(
         ([proto, index]) =>
             new UnsupportedEncoding(
-                getBuiltInEncodingName(getPrototypeName(proto)),
+                getBuiltInEncodingName(getProtoName(proto)),
                 proto,
                 index
             )

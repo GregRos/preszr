@@ -1,5 +1,5 @@
 import { pathToFileURL } from "url";
-
+Error.stackTraceLimit = 1000;
 Object.assign(global, require("lodash"));
 const tsconfigPaths = require("tsconfig-paths");
 const path = require("path");

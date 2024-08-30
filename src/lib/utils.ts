@@ -1,12 +1,5 @@
 import { BasicSpecifier } from "./interface";
 
-let packageObj;
-try {
-    packageObj = require("../../package.json");
-} catch (err) {
-    packageObj = require("./package.json");
-}
-
 export function cloneDeep<T>(source: T): T {
     if (typeof source !== "object" || !source) {
         return source;
@@ -39,6 +32,13 @@ function _defaultsDeep(target: any, source: any) {
     return target;
 }
 
+export function defaultsDeep(target: any, ...sources: any[]) {
+    for (const source of sources) {
+        target = _defaultsDeep(target, source);
+    }
+    return target;
+}
+
 export function maxBy<T>(target: T[], projection: (x: T, n: number) => number) {
     if (target.length === 0) {
         return undefined;
@@ -53,13 +53,6 @@ export function maxBy<T>(target: T[], projection: (x: T, n: number) => number) {
         }
     }
     return target[maxIndex];
-}
-
-export function defaultsDeep(target: any, ...sources: any[]) {
-    for (const source of sources) {
-        target = _defaultsDeep(target, source);
-    }
-    return target;
 }
 
 export function flatten<T>(arrs: T[][]) {
@@ -90,11 +83,21 @@ export function getProto(protoOrCtor: Function | object) {
         : protoOrCtor;
 }
 
-export function isNumeric(x: string) {
+export function isReference(x: string) {
     return !Array.isArray(x) && +x === parseInt(x);
 }
 
-export function getPrototypeName(proto: object | null) {
+export function getEncodesName(proto: object | null | Function | symbol) {
+    return proto === null
+        ? "null"
+        : typeof proto === "function"
+        ? getCtorName(proto)
+        : typeof proto === "symbol"
+        ? getSymbolName(proto)
+        : getProtoName(proto);
+}
+
+export function getProtoName(proto: object | null) {
     return proto === null
         ? "null"
         : (proto as any)[Symbol.toStringTag] ?? proto.constructor.name;
@@ -102,6 +105,16 @@ export function getPrototypeName(proto: object | null) {
 
 export function getCtorName(ctor: Function) {
     return ctor.name;
+}
+
+export function getThingName(anything: any) {
+    return anything === null
+        ? "null"
+        : typeof anything === "function" || typeof anything === "object"
+        ? getClassName(anything)
+        : typeof anything === "symbol"
+        ? getSymbolName(anything)
+        : typeof anything;
 }
 
 export function getClassName(
@@ -122,9 +135,21 @@ export function getUnrecognizedSymbol(name: string) {
     return Symbol(getUnrecognizedSymbolName(name));
 }
 
+export function isObject(x: any): x is object {
+    return typeof x === "object" && x !== null;
+}
+
+export function isFunction(x: any): x is Function {
+    return typeof x === "function";
+}
+
+export function isString(x: any): x is string {
+    return typeof x === "string";
+}
+
 export function isSimpleEncodingSpec(
     candidate: unknown
-): candidate is BasicSpecifier {
+): candidate is BasicSpecifier<any> {
     return typeof candidate === "symbol" || typeof candidate === "function";
 }
 
@@ -142,4 +167,4 @@ export function setsEqual(a: Set<any> | any[], b: typeof a) {
     return true;
 }
 
-export const version = packageObj.version.split(".")[0];
+export { version } from "./version";
