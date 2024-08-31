@@ -195,9 +195,7 @@ export function decode_encoding_decode_badType(encoding: Encoding, value: any) {
     return new Preszr(
         decode_encoding_error(
             encoding,
-            `called ${getThingName(value)}, with a ${getThingName(
-                value
-            )} which isn't a basic primitive`
+            `called decode with a ${getThingName(value)} which isn't a basic primitive`
         ),
         [encoding, value]
     )
