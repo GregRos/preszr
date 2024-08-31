@@ -12,7 +12,6 @@ import { DecodeContext } from "./encode/decode-context"
 import { EncodeCtx } from "./encode/encode-context"
 import { arrayEncoding, getDefaultStore, objectEncoding } from "./encodings"
 import { FixedIndexes } from "./encodings/fixed-indexes"
-import { ParseError } from "./errors/errors"
 import {
     decode_badHeader,
     decode_badMessage,
@@ -20,7 +19,8 @@ import {
     decode_input_badString,
     decode_input_badType,
     invalidConfig
-} from "./errors/texts2"
+} from "./errors"
+import { ParseError } from "./errors/parse-errors"
 import { Encoding, PreszrConfig, PrototypeEncoding } from "./interface"
 import { getUnrecognizedSymbol, isFunction, isObject, isReference, version } from "./utils"
 

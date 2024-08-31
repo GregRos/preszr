@@ -1,6 +1,6 @@
 // This file tries to acquire ctors that might not exist in some environments.
 
-import { decode_type_unsupported_in_environment } from "./errors/texts2"
+import { decode_type_unsupported_in_environment } from "./errors"
 declare interface WeakRef<T> {}
 declare const WeakRef: {
     prototype: WeakRef<any>

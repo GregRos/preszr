@@ -1,7 +1,7 @@
 import { Entity, noResultPlaceholder, PreszrFormat, Reference, tryEncodeScalar } from "../data"
 import { FixedIndexes } from "../encodings/fixed-indexes"
 import { getUnrecSymbolEncoding } from "../encodings/unrec-symbol"
-import { encode_require_cycle } from "../errors/texts2"
+import { encode_require_cycle } from "../errors"
 import { EncodeContext, Encoding, PrototypeEncoding, SymbolEncoding } from "../interface"
 import { version } from "../utils"
 import { EncodingStore } from "./store"

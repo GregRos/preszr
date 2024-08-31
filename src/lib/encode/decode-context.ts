@@ -3,7 +3,7 @@ import {
     decode_encoding_badCall,
     decode_encoding_decode_badType,
     decode_encoding_refOutOfBounds
-} from "../errors/texts2"
+} from "../errors"
 import { PrototypeEncoding } from "../interface"
 
 enum DecodeStage {

@@ -23,7 +23,7 @@ export const enum ParseError {
     header__no_metadata = 0x30F,
     header__metadata_not_object = 0x31DF,
     header__metadata_key_not_reference = 0x36F,
-    header__metadata_key_out_of_bounds = 0x3aF,
+    header__metadata_key_out_of_bounds = 0x3AF,
 
     header__no_root_reference = 0x40F,
     header__root_reference_not_integer = 0x41F,

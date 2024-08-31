@@ -1,5 +1,5 @@
-import { ParseError } from "../errors/errors"
-import { decode_badHeader } from "../errors/texts2"
+import { decode_badHeader } from "../errors"
+import { ParseError } from "../errors/parse-errors"
 import {
     EncodeFunction,
     Encoder,

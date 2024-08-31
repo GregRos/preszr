@@ -12,7 +12,7 @@ import {
     decode_unknownEncoding,
     decode_unknownEncodingVersion,
     warn_encode_unknown_prototype
-} from "../errors/texts2"
+} from "../errors"
 import {
     BaseEncoding,
     Encoding,

@@ -3,7 +3,7 @@ import {
     config_encoding_failedToInfer,
     config_encoding_invalid_encodes,
     config_encoding_targetCollision
-} from "./errors/texts2"
+} from "./errors"
 import { getProtoName, getSymbolName } from "./utils"
 
 /** The context used by the encoding process. */

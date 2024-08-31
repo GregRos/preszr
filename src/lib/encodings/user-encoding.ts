@@ -1,4 +1,4 @@
-import { config_encoding_badName, config_encoding_badVersion } from "../errors/texts2"
+import { config_encoding_badName, config_encoding_badVersion } from "../errors"
 import { Decoder, Encoder, PrototypeEncoding, PrototypeSpecifier } from "../interface"
 import { getPrototypeDecoder, getPrototypeEncoder } from "./objects"
 import { wrapEncodeFunction } from "./utils"
