@@ -1,19 +1,22 @@
-import { Encoding, PrototypeSpecifier, SymbolSpecifier } from "..";
-import { getThingName, version } from "../utils";
-import { ParseError } from "./errors";
+import { Encoding } from ".."
+import { getThingName, version } from "../utils"
+import { ParseError } from "./errors"
 
 export class Preszr extends Error {
-    constructor(public readonly message: string, readonly exemplar: any) {
-        super(message);
+    constructor(
+        public readonly message: string,
+        readonly exemplar: any
+    ) {
+        super(message)
     }
 }
 
 function config(rest: string) {
-    return `Config – ${rest}`;
+    return `Config – ${rest}`
 }
 
 export function invalidConfig(value: any) {
-    return new Preszr(config("invalid configuration."), value);
+    return new Preszr(config("invalid configuration."), value)
 }
 
 export function bug_fixedIndexCollision(nw: Encoding, existing: Encoding) {
@@ -22,7 +25,7 @@ export function bug_fixedIndexCollision(nw: Encoding, existing: Encoding) {
             `Encodings ${nw}, ${existing} both use fixed index ${nw.fixedIndex}. This is probably a bug.`
         ),
         [nw, existing]
-    );
+    )
 }
 
 export function config_encoding_failedToInfer(input: any) {
@@ -33,32 +36,24 @@ export function config_encoding_failedToInfer(input: any) {
             )}. Specify them explicitly.`
         ),
         input
-    );
+    )
 }
 
 export function config_encoding_invalid_encodes(encodes: any) {
     return new Preszr(
-        config(
-            `encoding had an invalid encodes property ${getThingName(encodes)}`
-        ),
+        config(`encoding had an invalid encodes property ${getThingName(encodes)}`),
         encodes
-    );
+    )
 }
 
-export function config_encoding_fullCollision(
-    existing: Encoding,
-    another: Encoding
-) {
-    return new Preszr(
-        config(`encoding ${existing.simpleKey} was specified twice.`),
-        [existing, another]
-    );
+export function config_encoding_fullCollision(existing: Encoding, another: Encoding) {
+    return new Preszr(config(`encoding ${existing.simpleKey} was specified twice.`), [
+        existing,
+        another
+    ])
 }
 
-export function config_encoding_targetCollision(
-    existing: Encoding,
-    encoding: Encoding
-) {
+export function config_encoding_targetCollision(existing: Encoding, encoding: Encoding) {
     return new Preszr(
         config(
             `encodings ${encoding.name}, ${
@@ -66,7 +61,7 @@ export function config_encoding_targetCollision(
             } can't both encode ${getThingName(existing.encodes)}`
         ),
         [existing, encoding]
-    );
+    )
 }
 
 export function config_nameIllegalBuiltIn(encoding: Encoding) {
@@ -77,11 +72,11 @@ export function config_nameIllegalBuiltIn(encoding: Encoding) {
             )} had the name '${encoding.name}', which is illegal.`
         ),
         [encoding]
-    );
+    )
 }
 
 function config_encoding(encoding: Encoding, rest: string) {
-    return config(`Encoding ${encoding.simpleKey} – ${rest}`);
+    return config(`Encoding ${encoding.simpleKey} – ${rest}`)
 }
 
 export function config_encoding_bad(encoding: any) {
@@ -92,59 +87,48 @@ export function config_encoding_bad(encoding: any) {
             )} wasn't an object or didn't have the required structure`
         ),
         undefined
-    );
+    )
 }
 
 export function config_encoding_badVersion(encoding: Encoding, wasnt: any) {
     return new Preszr(
-        config_encoding(
-            encoding,
-            `had version ${wasnt}, which is not an int between 0 and 999`
-        ),
+        config_encoding(encoding, `had version ${wasnt}, which is not an int between 0 and 999`),
         [encoding]
-    );
+    )
 }
 
 export function config_encoding_badName(encoding: Encoding) {
     return new Preszr(
         config_encoding(
             encoding,
-            `had a name of type ${getThingName(
-                encoding.name
-            )}, which isn't valid.`
+            `had a name of type ${getThingName(encoding.name)}, which isn't valid.`
         ),
         encoding
-    );
+    )
 }
 
 function decode(rest: string) {
-    return `Decode – ${rest}`;
+    return `Decode – ${rest}`
 }
 
 function bad(rest: string) {
-    return decode(`Invalid – ${rest}`);
+    return decode(`Invalid – ${rest}`)
 }
 
 function parseError(code: ParseError) {
-    return `ParseError 0x${code.toString(16).toUpperCase()}`;
+    return `ParseError 0x${code.toString(16).toUpperCase()}`
 }
 
 export function decode_input_badString(value: any) {
-    return new Preszr(decode(`input was an invalid string.`), value);
+    return new Preszr(decode(`input was an invalid string.`), value)
 }
 
 export function decode_input_badType(value: any) {
-    return new Preszr(
-        decode(`input was a ${getThingName(value)}, which is invalid`),
-        value
-    );
+    return new Preszr(decode(`input was a ${getThingName(value)}, which is invalid`), value)
 }
 
 export function decode_badMessage(code: ParseError, value: any) {
-    return new Preszr(
-        bad(`not a preszr message (${parseError(code)}).`),
-        value
-    );
+    return new Preszr(bad(`not a preszr message (${parseError(code)}).`), value)
 }
 
 export function decode_badHeader(code: ParseError, value: any) {
@@ -155,7 +139,7 @@ export function decode_badHeader(code: ParseError, value: any) {
             )}). Not a preszr message or corrupted. ${JSON.stringify(value)}`
         ),
         value
-    );
+    )
 }
 
 export function decode_badMessageVersion(headerVersion: string) {
@@ -164,16 +148,14 @@ export function decode_badMessageVersion(headerVersion: string) {
             `message was created by v${headerVersion}, but this library is v${version}, which is incompatible`
         ),
         headerVersion
-    );
+    )
 }
 
 export function decode_unknownEncoding(type: string, name: string) {
     return new Preszr(
-        decode(
-            `message refers to ${type} encoding ${name}, but the decoder doesn't have it.`
-        ),
+        decode(`message refers to ${type} encoding ${name}, but the decoder doesn't have it.`),
         [name, version]
-    );
+    )
 }
 
 export function decode_unknownEncodingVersion(name: string, version: number) {
@@ -182,38 +164,31 @@ export function decode_unknownEncodingVersion(name: string, version: number) {
             `message referred to encoding ${name} version ${version}, but the decoder doesn't have that version.`
         ),
         [name, version]
-    );
+    )
 }
 
 function decode_encoding_error(encoding: Encoding, rest: string) {
-    return decode(`${encoding.simpleKey} – ${rest}`);
+    return decode(`${encoding.simpleKey} – ${rest}`)
 }
 
 function encode_encoding_error(encoding: Encoding, rest: string) {
-    return encode(`${encoding.simpleKey} – ${rest}`);
+    return encode(`${encoding.simpleKey} – ${rest}`)
 }
 
-export function decode_encoding_badCall(
-    encoding: Encoding,
-    methodName: string,
-    stage: string
-) {
+export function decode_encoding_badCall(encoding: Encoding, methodName: string, stage: string) {
     return new Preszr(
         decode_encoding_error(
             encoding,
             `called ${methodName} at ${stage.toUpperCase()}, which is illegal`
         ),
         [encoding, methodName, stage]
-    );
+    )
 }
 
 export function encode_require_cycle(cyclePoint: any) {
-    return new Preszr(
-        encode(`cycle in requirements mechanism. this is a bug.`),
-        {
-            cycleStartsAt: cyclePoint
-        }
-    );
+    return new Preszr(encode(`cycle in requirements mechanism. this is a bug.`), {
+        cycleStartsAt: cyclePoint
+    })
 }
 
 export function decode_encoding_decode_badType(encoding: Encoding, value: any) {
@@ -225,43 +200,35 @@ export function decode_encoding_decode_badType(encoding: Encoding, value: any) {
             )} which isn't a basic primitive`
         ),
         [encoding, value]
-    );
+    )
 }
 
 export function decode_encoding_refOutOfBounds(caller: Encoding, value: any) {
     return new Preszr(
-        decode_encoding_error(
-            caller,
-            `tried to decode ref "${value}", but it was out of bounds.`
-        ),
+        decode_encoding_error(caller, `tried to decode ref "${value}", but it was out of bounds.`),
         [caller, value]
-    );
+    )
 }
 
 function warn(rest: string) {
-    return `[Preszr] ${rest}`;
+    return `[Preszr] ${rest}`
 }
 function encode(rest: string) {
-    return `Encode – ${rest}`;
+    return `Encode – ${rest}`
 }
-export function warn_encode_unknown_prototype(
-    proto: object,
-    instead: Encoding
-) {
+export function warn_encode_unknown_prototype(proto: object, instead: Encoding) {
     return warn(
         encode(
-            `tried to encode unknown prototype ${getThingName(
-                proto
-            )}. Encoding ${
+            `tried to encode unknown prototype ${getThingName(proto)}. Encoding ${
                 instead.simpleKey
             } was used instead, which may result in broken objects. To get rid of this message, register the prototype.`
         )
-    );
+    )
 }
 
 export function decode_type_unsupported_in_environment(name: string) {
     return new Preszr(
         `Message contained an encoding of type ${name}, but it doesn't exist in this environment.`,
         name
-    );
+    )
 }

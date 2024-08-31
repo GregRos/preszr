@@ -1,5 +1,5 @@
-import test from "ava";
-import { Preszr } from "@lib/core";
+import { Preszr } from "@lib/core"
+import test from "ava"
 
 class TestClass {}
 
@@ -9,5 +9,5 @@ test("error - two encodings, identical keys", t => {
             new Preszr({
                 encodes: [TestClass, TestClass]
             })
-    );
-});
+    )
+})

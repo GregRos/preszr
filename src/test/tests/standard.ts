@@ -1,8 +1,8 @@
-import test from "ava";
-import { decode, encode, Preszr } from "@lib";
+import { decode, encode, Preszr } from "@lib"
+import test from "ava"
 
 test("simple object", t => {
-    const obj2 = {};
+    const obj2 = {}
     const obj = {
         boolean: true,
         number: 1,
@@ -27,35 +27,33 @@ test("simple object", t => {
         regexp: /abc/gi,
         ref1: obj2,
         ref2: obj2
-    };
+    }
 
-    const decoded = decode<any>(JSON.parse(JSON.stringify(encode(obj))));
-    t.deepEqual(decoded, obj);
-    t.is(decoded.ref1, decoded.ref2);
-});
+    const decoded = decode<any>(JSON.parse(JSON.stringify(encode(obj))))
+    t.deepEqual(decoded, obj)
+    t.is(decoded.ref1, decoded.ref2)
+})
 
 test("circular references", t => {
     const obj = {
         circular: null as any
-    };
-    obj.circular = obj;
-    const decoded = decode<any>(JSON.parse(JSON.stringify(encode(obj))));
-    t.is(decoded, decoded.circular);
-});
+    }
+    obj.circular = obj
+    const decoded = decode<any>(JSON.parse(JSON.stringify(encode(obj))))
+    t.is(decoded, decoded.circular)
+})
 
 test("custom class", t => {
     class MyCustomClass {
         myMethod() {
-            return 10;
+            return 10
         }
     }
     const preszr = Preszr({
         encodes: [MyCustomClass]
-    });
-    const instance = new MyCustomClass();
-    const decoded = preszr.decode(
-        JSON.parse(JSON.stringify(preszr.encode(instance)))
-    );
-    t.deepEqual(decoded, instance);
-    t.is(instance.myMethod(), 10);
-});
+    })
+    const instance = new MyCustomClass()
+    const decoded = preszr.decode(JSON.parse(JSON.stringify(preszr.encode(instance))))
+    t.deepEqual(decoded, instance)
+    t.is(instance.myMethod(), 10)
+})

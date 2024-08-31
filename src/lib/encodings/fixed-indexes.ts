@@ -1,7 +1,7 @@
 // Fixed indexes for built-in encodings. This makes payloads smaller
 // and access a tiny bit faster for them.
 export enum FixedIndexes {
-    /*** UNSUPPORTED BLOCK */
+    /** UNSUPPORTED BLOCK */
 
     // OBJECT BLOCK
     Object = 1,

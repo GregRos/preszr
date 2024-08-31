@@ -1,9 +1,7 @@
-import { SymbolEncoding } from "../interface";
-import { FixedIndexes } from "./fixed-indexes";
-import { getSymbolName } from "../utils";
+import { SymbolEncoding } from "../interface"
 
 export function getKnownSymbolEncoding(s: symbol): SymbolEncoding[] {
-    return s ? [new SymbolEncoding(`${s.description}`, s)] : [];
+    return s ? [new SymbolEncoding(`${s.description}`, s)] : []
 }
 
 export const knownSymbols = [
@@ -20,4 +18,4 @@ export const knownSymbols = [
     ...getKnownSymbolEncoding(Symbol.toPrimitive),
     ...getKnownSymbolEncoding(Symbol.toStringTag),
     ...getKnownSymbolEncoding(Symbol.unscopables)
-] as SymbolEncoding[];
+] as SymbolEncoding[]

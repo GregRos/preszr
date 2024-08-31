@@ -1,3 +1,3 @@
-import { Preszr as PreszrClass } from "./core";
+import { Preszr as PreszrClass } from "./core"
 
-export const defaultPreszr = new PreszrClass();
+export const defaultPreszr = new PreszrClass()

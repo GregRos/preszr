@@ -1,6 +1,6 @@
-import { encode, Preszr } from "../lib";
+import { encode, Preszr } from "../lib"
 
-const obj2 = {};
+const obj2 = {}
 const obj = {
     boolean: true,
     number: 1,
@@ -25,7 +25,7 @@ const obj = {
     regexp: /abc/gi,
     ref1: obj2,
     ref2: obj2
-};
+}
 
 class ExampleVersionedClass {}
 
@@ -40,6 +40,6 @@ const preszr = Preszr([
         version: 2,
         encodes: ExampleVersionedClass
     }
-]);
-console.log(preszr);
-console.log(JSON.stringify(encode(obj), null, 2));
+])
+console.log(preszr)
+console.log(JSON.stringify(encode(obj), null, 2))

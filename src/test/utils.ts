@@ -1,100 +1,96 @@
-import { Header, PreszrFormat } from "@lib/data";
-import { version } from "@lib/utils";
-import { ExecutionContext, Macro } from "ava";
-import { cloneDeep } from "lodash";
-import { Preszr } from "@lib/core";
-import { InitContext, EncodeContext } from "@lib";
+import { EncodeContext, InitContext } from "@lib"
+import { Preszr } from "@lib/core"
+import { Header, PreszrFormat } from "@lib/data"
+import { version } from "@lib/utils"
+import { ExecutionContext, Macro } from "ava"
+import { cloneDeep } from "lodash"
 
 export const stringify = (value: any) => {
     if (typeof value === "object") {
-        return JSON.stringify(value);
+        return JSON.stringify(value)
     }
     if (typeof value === "bigint") {
-        return `${value}n`;
+        return `${value}n`
     }
     if (Object.is(value, -0)) {
-        return "-0";
+        return "-0"
     }
-    return `${value}`;
-};
+    return `${value}`
+}
 
 export function getImplicitClassEncodingKey(cls: string) {
-    return `${cls}.v1`;
+    return `${cls}.v1`
 }
 
 export function createSparseArray<T>(arrayLikeObj: Record<any, T>): T[] {
-    const arr = [] as T[];
+    const arr = [] as T[]
     for (const [key, value] of Object.entries(arrayLikeObj)) {
-        arr[key] = value;
+        arr[key] = value
     }
-    return arr;
+    return arr
 }
 
 export function createArrayBuffer(...bytes: number[]) {
-    const arr = new Uint8Array(bytes);
-    return arr.buffer;
+    const arr = new Uint8Array(bytes)
+    return arr.buffer
 }
 
 export function createSharedArrayBuffer(...bytes: number[]) {
-    const sharedArrayBuffer = new SharedArrayBuffer(bytes.length);
-    const asBytes = new Uint8Array(sharedArrayBuffer);
+    const sharedArrayBuffer = new SharedArrayBuffer(bytes.length)
+    const asBytes = new Uint8Array(sharedArrayBuffer)
     for (let i = 0; i < asBytes.length; i++) {
-        asBytes[i] = bytes[i];
+        asBytes[i] = bytes[i]
     }
-    return asBytes.buffer as SharedArrayBuffer;
+    return asBytes.buffer as SharedArrayBuffer
 }
 
 export function embedPreszrVersion(encoded) {
-    encoded = cloneDeep(encoded);
-    const encodingSpec = encoded[0].shift();
-    encoded[0].unshift(version, ...getEncodingComponent(encodingSpec));
-    return encoded;
+    encoded = cloneDeep(encoded)
+    const encodingSpec = encoded[0].shift()
+    encoded[0].unshift(version, ...getEncodingComponent(encodingSpec))
+    return encoded
 }
 
 export function getEncodingComponent(encodingSpec) {
-    const encodingKeys = [] as string[];
+    const encodingKeys = [] as string[]
     for (const [, value] of Object.entries(encodingSpec) as any[]) {
         if (!encodingKeys.includes(value)) {
-            encodingKeys.push(value);
+            encodingKeys.push(value)
         }
     }
     for (const [key, value] of Object.entries(encodingSpec) as any[]) {
-        encodingSpec[key] = encodingKeys.indexOf(value);
+        encodingSpec[key] = encodingKeys.indexOf(value)
     }
 
-    return [encodingKeys, encodingSpec];
+    return [encodingKeys, encodingSpec]
 }
 
 export function simplifyEncoding(encoding: PreszrFormat) {
-    const clone = cloneDeep(encoding);
-    const [[, keys, info]] = clone;
+    const clone = cloneDeep(encoding)
+    const [[, keys, info]] = clone
     for (const [k, v] of Object.entries(info)) {
-        info[k] = keys[v];
+        info[k] = keys[v]
     }
-    clone[0].splice(1, 1);
-    return clone;
+    clone[0].splice(1, 1)
+    return clone
 }
 
 export function createPreszrRep([encodingSpec, meta], ...arr): PreszrFormat {
-    const header = [
-        version,
-        ...getEncodingComponent(encodingSpec),
-        meta
-    ] as Header;
-    return [header, ...arr];
+    const header = [version, ...getEncodingComponent(encodingSpec), meta] as Header
+    return [header, ...arr]
 }
 
 export function preszrDefaultHeader(...arr): PreszrFormat {
-    return createPreszrRep([{}, {}], ...arr);
+    return createPreszrRep([{}, {}], ...arr)
 }
 
 export function createWithTitle(macro, argsFunc, titleFunc) {
-    const newMacro = (t, ...args) => macro(t, ...argsFunc(...args));
-    newMacro.title = titleFunc;
-    return newMacro;
+    const newMacro = (t, ...args) => macro(t, ...argsFunc(...args))
+    newMacro.title = titleFunc
+    return newMacro
 }
 
-const defaultPreszr = new Preszr();
+const defaultPreszr = new Preszr()
 
 export const testEncodeMacro: any = (
     t: ExecutionContext,
@@ -102,9 +98,9 @@ export const testEncodeMacro: any = (
     encoded: any,
     preszr = defaultPreszr
 ) => {
-    const rEncoded = preszr.encode(decoded) as any;
-    t.deepEqual(simplifyEncoding(rEncoded), simplifyEncoding(encoded));
-};
+    const rEncoded = preszr.encode(decoded) as any
+    t.deepEqual(simplifyEncoding(rEncoded), simplifyEncoding(encoded))
+}
 
 export const testDecodeMacro: any = (
     t: ExecutionContext,
@@ -112,21 +108,16 @@ export const testDecodeMacro: any = (
     encoded: any,
     preszr = defaultPreszr
 ) => {
-    const rDecoded = preszr.decode(encoded);
-    t.deepEqual(rDecoded, decoded);
-};
+    const rDecoded = preszr.decode(encoded)
+    t.deepEqual(rDecoded, decoded)
+}
 
-export const testEncodeMacroBindPreszr = preszr => (a, b, c) =>
-    testEncodeMacro(a, b, c, preszr);
+export const testEncodeMacroBindPreszr = preszr => (a, b, c) => testEncodeMacro(a, b, c, preszr)
 
-export const testDecodeMacroBindPreszr = preszr => (a, b, c) =>
-    testDecodeMacro(a, b, c, preszr);
+export const testDecodeMacroBindPreszr = preszr => (a, b, c) => testDecodeMacro(a, b, c, preszr)
 
 export const combAttachHeader = titleFunc => {
-    const attachHeader = (decoded, encoded) => [
-        decoded,
-        preszrDefaultHeader(...encoded)
-    ];
+    const attachHeader = (decoded, encoded) => [decoded, preszrDefaultHeader(...encoded)]
     return [
         createWithTitle(
             testEncodeMacro,
@@ -138,45 +129,37 @@ export const combAttachHeader = titleFunc => {
             attachHeader,
             (title, ...args) => `decode:: ${title ?? titleFunc(...args)}`
         )
-    ] as unknown as [Macro<any>, Macro<any>];
-};
+    ] as unknown as [Macro<any>, Macro<any>]
+}
 
 export function getDummyCtx() {
     return {
         encode: x => x,
         decode: x => x
-    } as EncodeContext & InitContext;
+    } as EncodeContext & InitContext
 }
 
 export interface EncodeDecodeMacros {
-    decode(t: ExecutionContext, decoded, encoded);
+    decode(t: ExecutionContext, decoded, encoded)
 
-    encode(t: ExecutionContext, decoded, encoded);
+    encode(t: ExecutionContext, decoded, encoded)
 }
 
 export const encodeDecodeMacro = (args: EncodeDecodeMacros) => {
     return [
         createWithTitle(
             args.encode,
-            (decoded, encoded, preszr) => [
-                decoded,
-                embedPreszrVersion(encoded),
-                preszr
-            ],
+            (decoded, encoded, preszr) => [decoded, embedPreszrVersion(encoded), preszr],
             title => `encode :: ${title}`
         ),
         createWithTitle(
             args.decode,
-            (decoded, encoded, preszr) => [
-                decoded,
-                embedPreszrVersion(encoded),
-                preszr
-            ],
+            (decoded, encoded, preszr) => [decoded, embedPreszrVersion(encoded), preszr],
             title => `decode :: ${title}`
         )
-    ] as [any, any];
-};
+    ] as [any, any]
+}
 
 export function toBase64(buf: ArrayBuffer) {
-    return Buffer.from(buf).toString("base64");
+    return Buffer.from(buf).toString("base64")
 }
