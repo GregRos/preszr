@@ -9,6 +9,4 @@ export default function embedTrace(target: any, encodingKey: string) {
         writable: true,
         configurable: true
     });
-
-    target[PRESZR_DECODED] = {};
 }

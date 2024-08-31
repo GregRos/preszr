@@ -13,8 +13,6 @@ import {
     config_encoding_badVersion
 } from "../errors/texts2";
 
-const MAX_VERSION = 999;
-const MIN_VERSION = 1;
 export class UserEncoding<T extends object> extends PrototypeEncoding<T> {
     readonly encodes: T;
     readonly decoder: Decoder<T>;

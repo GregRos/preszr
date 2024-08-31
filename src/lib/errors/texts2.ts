@@ -18,7 +18,9 @@ export function invalidConfig(value: any) {
 
 export function bug_fixedIndexCollision(nw: Encoding, existing: Encoding) {
     return new Preszr(
-        `Collision – Encodings ${nw}, ${existing} both use fixed index ${nw.fixedIndex}. This is probably a bug.`,
+        config(
+            `Encodings ${nw}, ${existing} both use fixed index ${nw.fixedIndex}. This is probably a bug.`
+        ),
         [nw, existing]
     );
 }
@@ -72,7 +74,7 @@ export function config_nameIllegalBuiltIn(encoding: Encoding) {
         config(
             `encoding for built-in ${getThingName(
                 encoding.encodes
-            )} had a name ${encoding.name}, which is illegal.`
+            )} had the name '${encoding.name}', which is illegal.`
         ),
         [encoding]
     );
@@ -254,5 +256,12 @@ export function warn_encode_unknown_prototype(
                 instead.simpleKey
             } was used instead, which may result in broken objects. To get rid of this message, register the prototype.`
         )
+    );
+}
+
+export function decode_type_unsupported_in_environment(name: string) {
+    return new Preszr(
+        `Message contained an encoding of type ${name}, but it doesn't exist in this environment.`,
+        name
     );
 }

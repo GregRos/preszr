@@ -1,0 +1,40 @@
+{
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "**/*.aux": true,
+    "**/*.bbl": true,
+    "**/*.fdb_latexmk": true,
+    "**/*.fls": true,
+    "**/*.out": true,
+    "**/*.synctex.gz": true,
+    "**/.idea": true,
+    "**/.mypy_cache": true,
+    "**/__pycache__": true,
+    "**/dist": true,
+    "**/dist_aux": true,
+    "**/*.log": true,
+    "coverage": true,
+    ".nyc_output": true,
+    ".yarn": true
+  },
+  "typescript.tsserver.experimental.enableProjectDiagnostics": true,
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "*.ts": "${capture}.async.ts, ${capture}.sync.ts, ${capture}.sync.test.ts, ${capture}.async.test.ts, ${capture}.ctor.ts, ${capture}.class.ts",
+    "*.sync.ts": "${capture}.sync.test.ts",
+    "*.async.ts": "${capture}.async.test.ts",
+    "*.js": "${capture}.js.map, ${capture}.min.js, ${capture}.d.ts",
+    "package.json": ".npmignore",
+    "tsconfig.json": "tsconfig.esm.json, tsconfig.cjs.json, tsconfig.test.json",
+    "tsconfig.base.json": "tsconfig.base.*.json",
+    ".yarnrc.yml": "yarn.lock",
+    ".eslintrc*": ".eslintignore",
+    ".prettierrc*": ".prettierignore, .editorconfig",
+    ".gitignore": ".gitattributes"
+  }
+}

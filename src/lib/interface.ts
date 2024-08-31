@@ -1,6 +1,5 @@
 import { EncodedEntity, EncodedScalar, Reference, ScalarValue } from "./data";
 import { getProtoName, getSymbolName } from "./utils";
-import { getErrorByCode } from "./errors/texts";
 import {
     bug_fixedIndexCollision,
     config_encoding_failedToInfer,
@@ -241,7 +240,7 @@ export class SymbolEncoding extends BaseEncoding {
     }
 
     protected _toString(): string {
-        return `[PreszrSymbolEncoding "${this.name}" ${getSymbolName(
+        return `[PreszrEncoding "${this.key}" for ${getSymbolName(
             this.encodes
         )}]`;
     }
@@ -299,9 +298,9 @@ export abstract class PrototypeEncoding<
     }
 
     protected _toString(): string {
-        return `[PreszrPrototypeEncoding "${this.name}@${
-            this.version
-        }" ${getProtoName(this.encodes)}]`;
+        return `[PreszrEncoding "${this.key}" for ${getProtoName(
+            this.encodes
+        )}]`;
     }
 
     mustBeCompatible(other: PrototypeEncoding) {

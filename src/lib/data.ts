@@ -43,30 +43,46 @@ export const negInfinityEncoding = "-Infinity";
 export const negZeroEncoding = "-0";
 export const nanEncoding = "NaN";
 export const noResultPlaceholder = "";
+
+const constMappings = [
+    [undefined, undefinedEncoding],
+    [Infinity, infinityEncoding],
+    [-Infinity, negInfinityEncoding],
+    [-0, negZeroEncoding],
+    [NaN, nanEncoding]
+] as const;
+
+function tryEncodeConst(value: any) {
+    for (const pair of constMappings) {
+        if (Object.is(value, pair[0])) {
+            return pair;
+        }
+    }
+    return undefined;
+}
+
+function tryDecodeConst(value: string) {
+    for (const pair of constMappings) {
+        if (pair[1] === value) {
+            return pair;
+        }
+    }
+    return undefined;
+}
+
 export function tryEncodeScalar(num: any): EncodedScalar | Primitive {
-    if (num === null || typeof num === "boolean") {
+    // First, try to see if it's a constant that needs to be encoded
+    const encodedConst = tryEncodeConst(num);
+    if (encodedConst !== undefined) {
+        return encodedConst[1];
+    }
+    // if it's a JSON-legal primitive that's not a string, just return it
+    if (num === null || typeof num === "boolean" || typeof num === "number") {
         return num;
     }
-    if (num === undefined) {
-        return undefinedEncoding;
-    }
+    // If it's bigint, encode it
     if (typeof num === "bigint") {
         return `B${num}`;
-    }
-    if (Object.is(num, -0)) {
-        return negZeroEncoding;
-    }
-    if (num === Infinity) {
-        return infinityEncoding;
-    }
-    if (num === -Infinity) {
-        return negInfinityEncoding;
-    }
-    if (Object.is(num, NaN)) {
-        return nanEncoding;
-    }
-    if (typeof num === "number") {
-        return num;
     }
     return noResultPlaceholder;
 }
@@ -81,7 +97,7 @@ export const enum ResultType {
 export type DecodeScalarResult =
     | {
           type: ResultType.Scalar;
-          value: Primitive;
+          value: Primitive | bigint | undefined | symbol;
       }
     | {
           type: ResultType.Reference;
@@ -96,50 +112,37 @@ export type DecodeScalarResult =
           value: undefined;
       };
 
-const decodeResultBox = {
+const result = {
     type: ResultType.Scalar,
     value: 1
 } as DecodeScalarResult;
-const badType = { type: ResultType.BadType, value: undefined } as const;
 const badString = { type: ResultType.BadString, value: undefined } as const;
 export function tryDecodeScalar(candidate: any): DecodeScalarResult {
+    // This function is more complicated because it also tries to detect references
     const t = typeof candidate;
-    decodeResultBox.type = ResultType.Scalar;
+    result.type = ResultType.Scalar;
     if (t === "boolean" || t === "number" || candidate === null) {
-        decodeResultBox.value = candidate;
-        return decodeResultBox;
+        result.value = candidate;
+        return result;
     } else if (t === "string") {
         if (candidate.startsWith("B")) {
-            const result = _BigInt(candidate.slice(1));
-            decodeResultBox.value = result;
-            return decodeResultBox;
+            result.value = _BigInt(candidate.slice(1));
+            return result;
         }
-        switch (candidate) {
-            case infinityEncoding:
-                decodeResultBox.value = Infinity;
-                return decodeResultBox;
-            case negInfinityEncoding:
-                decodeResultBox.value = -Infinity;
-                return decodeResultBox;
-            case nanEncoding:
-                decodeResultBox.value = NaN;
-                return decodeResultBox;
-            case negZeroEncoding:
-                decodeResultBox.value = -0;
-                return decodeResultBox;
-            case undefinedEncoding:
-                decodeResultBox.value = undefined;
-                return decodeResultBox;
+        const decodedConst = tryDecodeConst(candidate);
+        if (decodedConst !== undefined) {
+            result.value = decodedConst[0];
+            return result;
         }
         if (isReference(candidate)) {
-            decodeResultBox.type = ResultType.Reference;
-            decodeResultBox.value = +candidate;
-            return decodeResultBox;
+            result.type = ResultType.Reference;
+            result.value = +candidate;
+            return result;
         }
         return badString;
     } else {
-        decodeResultBox.type = ResultType.BadType;
-        decodeResultBox.value = t;
-        return decodeResultBox;
+        result.type = ResultType.BadType;
+        result.value = t;
+        return result;
     }
 }

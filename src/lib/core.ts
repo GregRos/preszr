@@ -24,7 +24,6 @@ import { arrayEncoding, getDefaultStore, objectEncoding } from "./encodings";
 import { EncodeCtx } from "./encode/encode-context";
 import { FixedIndexes } from "./encodings/fixed-indexes";
 import { DecodeContext } from "./encode/decode-context";
-import { getErrorByCode } from "./errors/texts";
 import {
     decode_badHeader,
     decode_badMessage,

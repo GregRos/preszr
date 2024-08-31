@@ -12,12 +12,7 @@ import { ScalarValue } from "../data";
 import { FixedIndexes } from "./fixed-indexes";
 import {
     _ArrayIteratorProto,
-    _AsyncFunction,
-    _AsyncGenerator,
-    _AsyncGeneratorFunction,
     _FinalizationRegistry,
-    _Generator,
-    _GeneratorFunction,
     _MapIteratorProto,
     _SetIteratorProto,
     _WeakRef
@@ -210,19 +205,17 @@ class UnsupportedEncoding<T extends object> extends PrototypeEncoding<T> {
     };
 }
 
-export const unsupportedEncodings = [
-    [Function, FixedIndexes.Function],
-    [_GeneratorFunction, FixedIndexes.GeneratorFunction],
-    [_Generator, FixedIndexes.Generator],
-    [Promise, FixedIndexes.Promise],
-    [WeakSet, FixedIndexes.WeakSet],
-    [WeakMap, FixedIndexes.WeakMap],
-    [_AsyncGenerator, FixedIndexes.AsyncGenerator],
-    [_AsyncGeneratorFunction, FixedIndexes.AsyncGeneratorFunction],
-    [_FinalizationRegistry, FixedIndexes.FinalizationRegistry],
-    [_AsyncFunction, FixedIndexes.AsyncFunction],
-    [_WeakRef, FixedIndexes.WeakRef]
-]
+export const unsupportedEncodings = (
+    [
+        [Function, FixedIndexes.Function],
+
+        [Promise, FixedIndexes.Promise],
+        [WeakSet, FixedIndexes.WeakSet],
+        [WeakMap, FixedIndexes.WeakMap],
+        [_FinalizationRegistry as any, FixedIndexes.FinalizationRegistry],
+        [_WeakRef as any, FixedIndexes.WeakRef]
+    ] as const
+)
     .filter(x => x[0])
     .map(([ctor, index]) => {
         const name = getBuiltInEncodingName(getProtoName(ctor.prototype));

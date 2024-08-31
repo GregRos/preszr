@@ -6,7 +6,6 @@ import {
     PrototypeSpecifier,
     SymbolSpecifier
 } from "../interface";
-import { getErrorByCode } from "../errors/texts";
 import { decode_badHeader } from "../errors/texts2";
 import { ParseError } from "../errors/errors";
 

@@ -11,7 +11,6 @@ import { getProto, getProtoName } from "../utils";
 import { FixedIndexes } from "../encodings/fixed-indexes";
 import { nullPlaceholder } from "../encodings";
 import { UserEncoding } from "../encodings/user-encoding";
-import { getErrorByCode } from "../errors/texts";
 import {
     bug_fixedIndexCollision,
     config_encoding_failedToInfer,

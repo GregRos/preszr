@@ -30,46 +30,16 @@ test("unsupported - WeakRef", compare, {
     decoded: new PreszrUnsupportedValue("WeakRef")
 });
 
-test("unsupported - GeneratorFunction", compare, {
-    original: function* () {},
-    encoded: preszr(encoded(0, FixedIndexes.GeneratorFunction)),
-    decoded: new PreszrUnsupportedValue("GeneratorFunction")
-});
-
-test("unsupported - Generator", compare, {
-    original: (function* () {})(),
-    encoded: preszr(encoded(0, FixedIndexes.Generator)),
-    decoded: new PreszrUnsupportedValue("Generator")
-});
-
 test("unsupported - Promise", compare, {
     original: Promise.resolve(),
     encoded: preszr(encoded(0, FixedIndexes.Promise)),
     decoded: new PreszrUnsupportedValue("Promise")
 });
 
-test("unsupported - AsyncGeneratorFunction", compare, {
-    original: async function* () {},
-    encoded: preszr(encoded(0, FixedIndexes.AsyncGeneratorFunction)),
-    decoded: new PreszrUnsupportedValue("AsyncGeneratorFunction")
-});
-
-test("unsupported - AsyncGenerator", compare, {
-    original: (async function* () {})(),
-    encoded: preszr(encoded(0, FixedIndexes.AsyncGenerator)),
-    decoded: new PreszrUnsupportedValue("AsyncGenerator")
-});
-
 test("unsupported - FinalizationRegistry", compare, {
     original: new FinalizationRegistry(() => {}),
     encoded: preszr(encoded(0, FixedIndexes.FinalizationRegistry)),
     decoded: new PreszrUnsupportedValue("FinalizationRegistry")
-});
-
-test("unsupported - AsyncFunction", compare, {
-    original: async function () {},
-    encoded: preszr(encoded(0, FixedIndexes.AsyncFunction)),
-    decoded: new PreszrUnsupportedValue("AsyncFunction")
 });
 
 test("unsupported - ArrayIterator", compare, {

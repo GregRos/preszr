@@ -15,7 +15,6 @@ import {
 import { FixedIndexes } from "../encodings/fixed-indexes";
 import { EncodingStore } from "./store";
 import { getUnrecSymbolEncoding } from "../encodings/unrec-symbol";
-import { getErrorByCode } from "../errors/texts";
 import { encode_require_cycle } from "../errors/texts2";
 
 const TypedArray = Object.getPrototypeOf(Uint8Array.prototype)
