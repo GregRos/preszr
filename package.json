@@ -1,14 +1,16 @@
 {
   "name": "preszr",
-  "version": "2.2.0",
-  "description": "A lightweight library for encoding complex objects so they can be serialized.",
+  "version": "2.3.0",
+  "description": "Shove arbitrary JavaScript objects through the pipes.",
   "keywords": [
     "object-graph",
     "graph",
     "serialize",
     "deserialize",
     "serialization",
-    "json.stringify"
+    "json.stringify",
+    "circular",
+    "prototype"
   ],
   "repository": {
     "type": "git",
@@ -25,15 +27,14 @@
     "prettier:fix": "prettier --write .",
     "prettier": "prettier --check 'src/**/*.ts'",
     "eslint": "eslint 'src/**/*.ts'",
-    "eslint:fix": "eslint --fix 'src/**/*.ts",
+    "eslint:fix": "eslint --fix 'src/**/*.ts'",
     "lint:check": "run-s -c prettier eslint",
     "lint:fix": "run-s prettier:fix eslint:fix",
     "test": "nyc ava",
     "test:no-cover": "ava",
     "watch": "node tools/create-version-stub.cjs && tsc -b tsconfig.all.json -w",
     "docs": "node dist/generate-docs/run.js",
-    "tidy": "yarn install && run-s build:clean lint:fix test",
-    "prepublishOnly": "node tools/packaging.cjs"
+    "tidy": "yarn install && run-s build:clean lint:fix test"
   },
   "ava": {
     "extensions": [],
@@ -72,8 +73,7 @@
     "sourceMap": true
   },
   "dependencies": {
-    "base64-js": "^1.5.1",
-    "doddle": "^3.2.0"
+    "base64-js": "^1.5.1"
   },
   "devDependencies": {
     "@ava/typescript": "^3.0.1",

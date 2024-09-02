@@ -4,18 +4,18 @@
 [![Coverage Status](https://coveralls.io/repos/github/GregRos/preszr/badge.svg?branch=master)](https://coveralls.io/github/GregRos/preszr?branch=master)
 [![npm](https://img.shields.io/npm/v/preszr)](https://www.npmjs.com/package/preszr)
 
-`preszr` is a schema-less _pre-serialization_ JavaScript library that turns complicated objects with references and prototypes into simple ones that can be serialized.
+`preszr` is a schema-less _pre-serialization_ JavaScript library that lets you shove arbitrary JavaScript objects through the pipes.
 
 Here's how you use it:
 
-1. Encode <a href="docs/">any value</a> with `preszr`, giving you a [preszr message](docs/format.md).
-2. You can take that array and _serialize_ it with [`JSON.stringify`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify) or anything else that can serialize JS objects, like [BSON](https://www.mongodb.com/basics/bson).
+1. Encode <a href="docs/">any value</a> with `preszr`. You get a flat, JSON-legal value that's usually an array or sometimes a primitive.
+2. You can take it and _serialize_ it with [`JSON.stringify`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify) or anything else that can serialize JS objects, like [BSON](https://www.mongodb.com/basics/bson).
 3. You send it via the network or maybe save it to file.
 4. At the other end (in time or space), you first _deserialize_ the data using `JSON.parse` or whatever you used.
 5. Then you _decode_ it using `preszr`.
 6. Now you have your thing back, with all its references and prototypes and everything (if any).
 
-`preszr` doesn't use any fancy algorithms, the only magic is in the <a href="docs/format.md">format</a>.
+`preszr` uses a strict, well-defined, and extensible <a href="docs/format.md">format</a> that can encode any JavaScript object.
 
 ## Features
 
@@ -23,25 +23,9 @@ Here's how you use it:
 
 🐐 Supports all built-in data types and values as of 2023!<sup>1 </sup>
 
-🐤 Space-efficient format!
-
 🛠️ Super easy to encode custom types, with several layers of customization!
 
-💾 Basic versioning!
-
-🌍 Works in all standard JS environments!
-
-<sup>1 </sup><small>Some types <a href="docs/supported.md">explicitly unsupported</a></small>.
-
-## Use case
-
-All those emojis sure look nice, but when would you actually want to use `preszr`? Normally you'd want to keep communication between things as simple as possible to avoid tight coupling.
-
-Normally, yes. But sometimes things aren't normal. For example:
-
--   You just want to push your objects through the tubes and have them out the other end.
--   Your data is an object graph, like if it's a decision tree, workflow, etc.
--   Things are tightly coupled due to other reasons.
+🌍 Written in vanilla JS to work in all environments.
 
 ## Usage
 

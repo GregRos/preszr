@@ -1513,13 +1513,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"doddle@npm:^3.2.0":
-  version: 3.2.0
-  resolution: "doddle@npm:3.2.0"
-  checksum: 10c0/e6c8b9b59e58b6a3c28b5758434f260ff80ba548d26948b65cca4e7bd694810a8fce097af48b2e3c0c1d175bb25962232cf5096ecc6eaec6d1bcf5c45c2935ed
-  languageName: node
-  linkType: hard
-
 "eastasianwidth@npm:^0.2.0":
   version: 0.2.0
   resolution: "eastasianwidth@npm:0.2.0"
@@ -4161,7 +4154,6 @@ __metadata:
     "@typescript-eslint/parser": "npm:7.6.0"
     ava: "npm:^4.3.3"
     base64-js: "npm:^1.5.1"
-    doddle: "npm:^3.2.0"
     eslint: "npm:^8"
     lodash: "npm:^4.17.21"
     npm-run-all: "npm:^4.1.5"
