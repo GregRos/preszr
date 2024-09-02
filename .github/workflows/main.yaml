@@ -39,14 +39,14 @@ jobs:
       - name: lint:check
         run: yarn run lint:check
       - name: test
-        run: yarn run test:coverage
+        run: yarn run test
       - name: code coverage
         uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Setup token
         run: 'echo "npmAuthToken: ${NPM_TOKEN}" >> ~/.yarnrc.yml'
-      - name: publish doddle
+      - name: publish preszr
         run: yarn npm publish --access public
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
