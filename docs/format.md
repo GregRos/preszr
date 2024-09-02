@@ -1,11 +1,11 @@
 # Preszr Output
 
-The *preszr output* is the result of encoding a value using `preszr`. If used to encode an input, it will:
+The _preszr output_ is the result of encoding a value using `preszr`. If used to encode an input, it will:
 
 1. For JSON-legal primitives except strings, it will return the value unchanged.
-2. For JSON-illegal primitives, it will return an encoded string. For example, encoding a `bigint` returns the string `B${n}`. 
+2. For JSON-illegal primitives, it will return an encoded string. For example, encoding a `bigint` returns the string `B${n}`.
 
-For strings and non-primitives, it will return a *preszr message* - which is an always with a specific format. These inputs are also known as *entities* in the context of this library.
+For strings and non-primitives, it will return a _preszr message_ - which is an always with a specific format. These inputs are also known as _entities_ in the context of this library.
 
 ## Preszr messages
 
@@ -15,23 +15,23 @@ Preszr is largely devoted to making decoding and encoding as transparent, effici
 2. Make it easy to detect bad inputs.
 3. Light encoding for references, since they are very common.
 4. No magic properties inside objects passed by the user.
-5. Flexible enough to encode *almost all* JS built-ins.
+5. Flexible enough to encode _almost all_ JS built-ins.
 6. Allow custom encodings for user objects.
 7. Heavily optimize for encoding built-ins vs custom objects.
 
-The *preszr message* is an array as follows:
+The _preszr message_ is an array as follows:
 
 ```typescript
 [header, preszrEntity1, preszrEntity2, preszrEntity3, ...]
 ```
 
-The first element of the array is always the *header*, which contains version and encoding information. All the other elements are the results of applying an encoding on an *entity*.
+The first element of the array is always the _header_, which contains version and encoding information. All the other elements are the results of applying an encoding on an _entity_.
 
 While encoding a value `preszr` will encode its contents recursively. Each entity encoded in this way will be added to the end of the array, so that the final result will contain all encoded entities in the order of appearance.
 
-When an entity is encoded using the `ctx.encode` function, it will return an *preszr reference* to the entity, which is just a numeric string that is the index of the encoded entity in the array, e.g. `"1"`, `"2"`, etc. Note that because the first element is always the header, `"0"` doesn't correspond to anything.
+When an entity is encoded using the `ctx.encode` function, it will return an _preszr reference_ to the entity, which is just a numeric string that is the index of the encoded entity in the array, e.g. `"1"`, `"2"`, etc. Note that because the first element is always the header, `"0"` doesn't correspond to anything.
 
-When strings appear inside encoded entities, they are *always* encoded scalars or references (if numeric).
+When strings appear inside encoded entities, they are _always_ encoded scalars or references (if numeric).
 
 The exact format of an preszr encoded entity varies depending on the encoding:
 
@@ -42,7 +42,7 @@ The exact format of an preszr encoded entity varies depending on the encoding:
 
 ## Encoding names and keys
 
-An encoding is identified using its *encoding key*, which is composed of an *encoding name* and a *suffix*.
+An encoding is identified using its _encoding key_, which is composed of an _encoding name_ and a _suffix_.
 
 1. For prototype encodings (which are versioned), the format is `${name}.v${version}`.
 2. For symbol encodings, the format is `${name}.S`.
@@ -52,26 +52,26 @@ An encoding is identified using its *encoding key*, which is composed of an *enc
 The header contains information about how the data was encoded. Its format is as follows:
 
 ```javascript
-[majorVersion, keyList, keyMap, metadata]
+;[majorVersion, keyList, keyMap, metadata]
 ```
 
 ### Major Version
 
-The major version of the package, as a string. You can only decode *preszr message* messages encoded by the same major version.
+The major version of the package, as a string. You can only decode _preszr message_ messages encoded by the same major version.
 
 ### Key List
 
 An array of the keys of all the encodings used by this message. For example:
 
 ```typescript
-["Type1.v1", "Type2.v3", "Symbol1.S"]
+;["Type1.v1", "Type2.v3", "Symbol1.S"]
 ```
 
-Built-in objects have encoding keys, but they will never appear in *preszr messages* for efficiency purposes.
+Built-in objects have encoding keys, but they will never appear in _preszr messages_ for efficiency purposes.
 
 ### Encoding Map
 
-Each key is an *preszr reference* of an encoded entity and its value is an index that matches up to the encoding.
+Each key is an _preszr reference_ of an encoded entity and its value is an index that matches up to the encoding.
 
 ```typescript
 {
@@ -88,9 +88,9 @@ There are two types of indexes:
 
 The key map won't have entries for:
 
-* Regular objects.
-* Regular arrays.
-* Strings.
+-   Regular objects.
+-   Regular arrays.
+-   Strings.
 
 Instead, the encoding will be decided implicitly according to the type of the encoded entity.
 
@@ -107,7 +107,7 @@ Metadata is used to store extra information about an encoded entity. Its format 
 
 Metadata doesn't do anything unless an encoding explicitly uses it.
 
-While it's always possible to store this data in the encoded entity itself, creating a separate metadata object allows more flexibility in how it is encoded. 
+While it's always possible to store this data in the encoded entity itself, creating a separate metadata object allows more flexibility in how it is encoded.
 
 Built-in encodings rarely use this feature.
 
@@ -116,72 +116,72 @@ Built-in encodings rarely use this feature.
 Here is the output of a big object with lots of different values:
 
 ```javascript
-[
-  [
-    "2",       // Major version
-    [],        // Key list (empty)
-    {    
-      "3": 42, // Key map, uses only built-in encodings
-      "4": 76, // Note that for some indexes there is no
-      "8": 12, // entry here, since they are implicit.
-      "9": 13,
-      "10": 14,
-      "12": 31,
-      "13": 30
+;[
+    [
+        "2", // Major version
+        [], // Key list (empty)
+        {
+            3: 42, // Key map, uses only built-in encodings
+            4: 76, // Note that for some indexes there is no
+            8: 12, // entry here, since they are implicit.
+            9: 13,
+            10: 14,
+            12: 31,
+            13: 30
+        },
+        {}
+    ],
+    {
+        boolean: true, // Some JSON-legal primitives aren't encoded.
+        number: 1,
+        nonJsonNumber: "Infinity",
+        string: "2", // This references index #2 in the message.
+        alsoString: "2", // Another reference to the same index.
+        undefined: "-", // JSON-illegal scalars have special encodings.
+        null: null,
+        bigint: "B1000000000000000000000000", // bigint encoding.
+        binary: "3", // Binary data is encoded as base64.
+        error: "4", // Errors have special encodings.
+        nullProtoObject: "8",
+        map: "9",
+        set: "10",
+        array: "11",
+        date: "12",
+        regexp: "13",
+        ref1: "14",
+        ref2: "14"
     },
+    "hello", // This is just the string "hello".
+    "AQIDBA==", // Binary data is usually encoded as base64.
+    {
+        stack: "5", // This encodes an Error object.
+        name: "6",
+        message: "7"
+    },
+    "Error...", // Error stack trace.
+    "Error", // Error name.
+    "", // Error message.
+    {
+        value: 5
+    },
+    [
+        [
+            // Maps are encoded as pair lists.
+            1, 1
+        ]
+    ],
+    [
+        5 // Sets are encoded as arrays.
+    ],
+    [
+        // Arrays are encoded as arrays without a key mapping
+        1
+    ],
+    1654561825399, // Date objects are encoded as timestamps.
+    [
+        "abc", // Regular expressions are encoded as strings or pairs.
+        "gi"
+    ],
     {}
-  ],
-  {
-    "boolean": true,   // Some JSON-legal primitives aren't encoded.
-    "number": 1,
-    "nonJsonNumber": "Infinity",
-    "string": "2",     // This references index #2 in the message.
-    "alsoString": "2", // Another reference to the same index.
-    "undefined": "-",  // JSON-illegal scalars have special encodings.
-    "null": null,
-    "bigint": "B1000000000000000000000000", // bigint encoding.
-    "binary": "3",     // Binary data is encoded as base64.
-    "error": "4",      // Errors have special encodings.
-    "nullProtoObject": "8",
-    "map": "9",
-    "set": "10",
-    "array": "11",
-    "date": "12",
-    "regexp": "13",
-    "ref1": "14",
-    "ref2": "14"
-  },
-  "hello",    // This is just the string "hello".
-  "AQIDBA==", // Binary data is usually encoded as base64.
-  {
-    "stack": "5", // This encodes an Error object.
-    "name": "6",
-    "message": "7"
-  },
-  "Error...", // Error stack trace.
-  "Error",    // Error name.
-  "",         // Error message.
-  {
-    "value": 5
-  },
-  [
-    [            // Maps are encoded as pair lists.
-      1,
-      1
-    ]
-  ],
-  [              
-    5            // Sets are encoded as arrays.
-  ],
-  [              // Arrays are encoded as arrays without a key mapping
-    1
-  ],
-  1654561825399, // Date objects are encoded as timestamps.
-  [
-    "abc",       // Regular expressions are encoded as strings or pairs.
-    "gi"
-  ],
-  {}
 ]
-
 ```
