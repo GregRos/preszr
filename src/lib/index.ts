@@ -57,11 +57,11 @@ export const Preszr = function Preszr(arg: any) {
     return new PreszrClass(arg ?? {})
 } as unknown as {
     <Ts extends any[]>(specs: SpecArray<Ts>): Preszr
-    <Ts extends any[]>(config: PreszrConfig<SpecArray<Ts>>): Preszr
+    <Ts extends any[]>(config: Partial<PreszrConfig<SpecArray<Ts>>>): Preszr
     (): Preszr
     new <Ts extends any[]>(specs: SpecArray<Ts>): Preszr
     new (): Preszr
-    new <Ts extends any[]>(config: PreszrConfig<SpecArray<Ts>>): Preszr
+    new <Ts extends any[]>(config: Partial<PreszrConfig<SpecArray<Ts>>>): Preszr
 }
 
 /** A configured Preszr instance used for encoding and decoding. */

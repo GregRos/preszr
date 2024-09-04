@@ -1,5 +1,5 @@
-const PRESZR_DECODED = Symbol("PRESZR_DECODED")
-export default function embedTrace(target: any, encodingKey: string) {
+const PRESZR_DECODED = Symbol("preszr.decoded")
+export default function embedMetadata(target: any, encodingKey: string) {
     if (target[PRESZR_DECODED]) {
         throw new Error("Already decoded")
     }

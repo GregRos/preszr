@@ -52,7 +52,7 @@ An encoding is identified using its _encoding key_, which is composed of an _enc
 The header contains information about how the data was encoded. Its format is as follows:
 
 ```javascript
-[majorVersion, keyList, keyMap, metadata]
+;[majorVersion, keyList, keyMap, metadata]
 ```
 
 ### Major Version
@@ -64,7 +64,7 @@ The major version of the package, as a string. You can only decode _preszr messa
 An array of the keys of all the encodings used by this message. For example:
 
 ```typescript
-["Type1.v1", "Type2.v3", "Symbol1.S"]
+;["Type1.v1", "Type2.v3", "Symbol1.S"]
 ```
 
 Built-in objects have encoding keys, but they will never appear in _preszr messages_ for efficiency purposes.
@@ -116,7 +116,7 @@ Built-in encodings rarely use this feature.
 Here is the output of a big object with lots of different values:
 
 ```javascript
-[
+;[
     [
         "2", // Major version
         [], // Key list (empty)

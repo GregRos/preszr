@@ -183,6 +183,7 @@ export interface PreszrConfig<Specifiers extends EncodingSpecifier[]> {
      * will recognize them.
      */
     encodes: Specifiers
+    embedMetadata: boolean
 }
 
 export abstract class BaseEncoding {

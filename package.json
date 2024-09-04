@@ -1,6 +1,6 @@
 {
   "name": "preszr",
-  "version": "2.3.1",
+  "version": "2.4.0",
   "description": "Shove arbitrary JavaScript objects through the pipes.",
   "keywords": [
     "object-graph",
@@ -12,8 +12,8 @@
     "circular",
     "prototype"
   ],
-  "repository": "github:GregRos/preszr",
   "homepage": "https://github.com/GregRos/preszr",
+  "repository": "github:GregRos/preszr",
   "license": "MIT",
   "author": "GregRos",
   "main": "dist/lib/index.js",

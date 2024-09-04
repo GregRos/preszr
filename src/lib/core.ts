@@ -7,7 +7,7 @@ import {
     tryDecodeScalar,
     tryEncodeScalar
 } from "./data"
-import embedTrace from "./embed-trace"
+import embedMetadata from "./embed-trace"
 import { DecodeContext } from "./encode/decode-context"
 import { EncodeCtx } from "./encode/encode-context"
 import { arrayEncoding, getDefaultStore, objectEncoding } from "./encodings"
@@ -27,7 +27,7 @@ import { getUnrecognizedSymbol, isFunction, isObject, isReference, version } fro
 /** The class used to encode and decode things in the preszr format. */
 export class Preszr {
     private _store = getDefaultStore()
-
+    private _embedMetadata = false
     constructor(config?: Partial<PreszrConfig<any>>) {
         if (config && !isObject(config)) {
             throw invalidConfig(config)
@@ -47,6 +47,7 @@ export class Preszr {
                 ;(this as any)[key] = value.bind(this)
             }
         }
+        this._embedMetadata = config.embedMetadata ?? false
     }
 
     private _checkHeaderWellformed(input: PreszrFormat) {
@@ -204,7 +205,9 @@ export class Preszr {
             if (ctx.state !== undefined) {
                 states.set(i, ctx.state)
             }
-            embedTrace(targetArray[i], protoEnc.key)
+            if (this._embedMetadata) {
+                embedMetadata(targetArray[i], protoEnc.key)
+            }
             ctx.self = null!
             if (protoEnc.decoder.init) {
                 needToInit.set(i, protoEnc)
@@ -237,5 +240,6 @@ export class Preszr {
 }
 
 export const defaultConfig: PreszrConfig<never[]> = {
-    encodes: []
+    encodes: [],
+    embedMetadata: false
 }
